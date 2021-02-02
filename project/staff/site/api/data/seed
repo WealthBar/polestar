@@ -1,0 +1,6 @@
+#!/bin/bash
+echo "seed ${DB_URL}"
+psql -X -e -d ${DB_URL} --echo-all -f ./data/seed.sql
+
+echo "seed ${TEST_DB_URL}"
+psql -X -e -d ${TEST_DB_URL} --echo-all -f ./data/seed.sql

@@ -1,0 +1,3 @@
+#!/bin/bash
+d=$(date "+%Y%m%d%H%M%S")
+pg_dump -f./data/snapshots/$PROJECT_NAME-$CONFIG_ENV-$d -Fd -d $DB_URL

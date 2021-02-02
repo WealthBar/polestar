@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ $1 =~ ^[a-z0-9_]+$ ]]
+then
+  d=$(date "+%Y%m%d%H%M%S")
+  echo "creating: ./data/migrations/${d}_$1.sql"
+  touch ./data/migrations/${d}_$1.sql
+else
+  echo "provide a name that is all lower case, digits, and underscoes. i.e. matchs /^[a-z0-9_]+$/"
+  exit
+fi

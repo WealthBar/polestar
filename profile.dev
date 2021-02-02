@@ -1,0 +1,1 @@
+nginx: node ./nginx/nginx.conf.js && nginx -c $(pwd)/nginx/nginx.conf

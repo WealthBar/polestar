@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+PORT=$(cat .port) yarn dev

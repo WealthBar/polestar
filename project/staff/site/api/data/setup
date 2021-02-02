@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "dropping db"
+echo "drop database ${PROJECT_NAME};" | psql -X -e -d ${DB_URL_DBA}
+echo "creating db"
+echo "create database ${PROJECT_NAME};" | psql -X -e -d ${DB_URL_DBA}
+
+echo "dropping test db"
+echo "drop database ${PROJECT_NAME}_test;" | psql -X -e -d ${DB_URL_DBA}
+echo "creating test db"
+echo "create database ${PROJECT_NAME}_test;" | psql -X -e -d ${DB_URL_DBA}

@@ -1,0 +1,27 @@
+{
+  "require": [
+    "source-map-support/register"
+  ],
+  "cache": false,
+  "extension": [ ".js" ],
+  "include": [
+    "dist/*.js",
+    "dist/**/*.js"
+  ],
+  "exclude": [
+    "**/*.test.js",
+    "**/*.type.js"
+  ],
+  "check-coverage": true,
+  "statements": 100,
+  "branches": 100,
+  "lines": 100,
+  "functions": 100,
+  "sourceMap": true,
+  "instrument": true,
+  "reporter": [
+    "text-summary",
+    "html"
+  ],
+  "all": true
+}

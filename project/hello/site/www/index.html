@@ -1,0 +1,18 @@
+<html>
+<script>
+let appUrl;
+
+function onLoad() {
+ const origin = window.location.origin;
+ if (origin && origin.match(/^https?:\/\/www\./i)) {
+  appUrl = origin.replace('www','app');
+  const aref = document.createElement('a');
+  aref.setAttribute('href', appUrl);
+  aref.innerText = "Goto App";
+  document.getElementsByTagName('body')[0].appendChild(aref);
+ }
+}
+</script>
+<body onload="onLoad()">
+</body>
+</html>

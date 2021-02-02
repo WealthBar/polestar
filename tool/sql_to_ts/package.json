@@ -1,0 +1,23 @@
+{
+  "name": "tool_sql_to_ts",
+  "version": "1.0.3",
+  "description": "Convert .sql files to _sql.ts files",
+  "bin": {
+    "sql_to_ts": "./bin/sql_to_ts.js"
+  },
+  "scripts": {
+    "build": "rm -rf bin; tsc",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue"
+  },
+  "author": "Cliff Hammerschmidt",
+  "license": "MIT",
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "lib_script": "link:../../lib/script",
+    "eslint": "^7.17.0",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
+  }
+}

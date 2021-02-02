@@ -1,0 +1,31 @@
+{
+  "name": "lib_frontend",
+  "version": "0.1.0",
+  "description": "Lib functions that can be used anywhere.",
+  "repository": "git@gitlab.wealth.bar:wealthbar/cidihub",
+  "author": "developers@wealthbar.com",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "lib_agnostic": "link:../agnostic"
+  },
+  "dev_dependencies": {
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^14.14.10",
+    "@types/sinon": "^9.0.9",
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "eslint": "^7.14.0",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
+    "sinon": "^9.2.1",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.1.2"
+  },
+  "scripts": {
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
+    "coverage": "yarn test; open coverage/index.html",
+    "test": "NODE_ENV=test nyc mocha"
+  }
+}
