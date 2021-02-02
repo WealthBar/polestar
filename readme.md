@@ -14,12 +14,13 @@ specific naming conventions, or it will not work.
 
 ## filenames
 
-* Always lower case. The `.gitignore` will strip out any files with upper case letters in them.
+* Always lower case using snake case.
+* No hyphens.
 
 ## `crypt` directories
 
-All `crypt` directories must have a `.gitattributes` to encrypt their content. I'm hoping
-to find a global way to solve this still.
+All `crypt` directories will be encrypted using `git-crypt`.
+This is done via a the top level `.gitattributes` file.
 
 ## `config` directories
 
