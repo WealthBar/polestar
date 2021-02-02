@@ -12,6 +12,10 @@ The primary goals are to:
 We are aiming for "if you name it right, it just works". That means you'll have to follow
 specific naming conventions, or it will not work.
 
+## filenames
+
+* Always lower case. The `.gitignore` will strip out any files with upper case letters in them.
+
 ## `crypt` directories
 
 All `crypt` directories must have a `.gitattributes` to encrypt their content. I'm hoping
