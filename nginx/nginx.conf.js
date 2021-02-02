@@ -17,7 +17,7 @@ function readdirRecursiveSync(path, cb) {
   }
 }
 
-readdirRecursiveSync('.', (file) => {
+readdirRecursiveSync('project', (file) => {
   if (file.endsWith('/.port'))
   {
     const m = file.match(/project\/(?<domain>[^/]+)\/site\/(?<subdomain>[^/]+)/);
