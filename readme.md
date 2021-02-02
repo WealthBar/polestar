@@ -122,7 +122,7 @@ if (./init && ./lint && ./test && ./pack) {
 }
 ```
 
-Deployments will target a DO Kubernetes cluster for now. 
+Deployments will target a DO Kubernetes cluster for now.
 
 ### Tasks: `project/<domain>/task/<name>`
 
@@ -177,8 +177,6 @@ asdf.local.             0       IN      A       127.0.0.1
 ...
 ```
 
-# TODO
-
 # Running locally
 
 ## Startup `nginx`
@@ -201,3 +199,50 @@ You may need to stop and restart, or not, depending on what stack the site uses 
 
 We might create some `project/<domain>/procfile.dev` files to run all of the sites for a given domain if that
 becomes more convenient.
+
+# TODO
+
+## Managing databases.
+
+`project/hubdb` has the start of the db setup work.
+
+A DB could be shared by many other projects it has to be external to any given project and managed as 
+its own _thing_. "Deployment" for a DB is either initial setup, or the incremental application of
+a schema migrations, or the alternation of data.
+
+This should probably be moved to its own top level pattern, something like:
+
+```
+db/<domain>/
+ init/
+ migration/
+    <tz>.sql
+ data/<subdomain>/(main|project|local)/
+    seed
+    once/
+        <tz>.sql
+```
+
+e.g. for the existing WB database we'd have something like:
+
+```
+db/wbdb/
+ init/
+    schema.sql # base schema setup
+ migration/
+    <tz>.sql # schema migrations
+ data/ci/(main|project|local)/
+    seed.sql # base data setup
+    once/
+        <tz>.sql # "account" fixes
+ data/ac/(main|project|local)/
+    seed.sql # base data setup
+    once/
+        <tz>.sql # "account" fixes
+```
+
+## Managing local ports
+
+- Update the `nginx.conf.js` to detect port conflicts and automatically assign ports
+  when the `.port` file is empty.
+
