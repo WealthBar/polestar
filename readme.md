@@ -22,7 +22,11 @@ specific naming conventions, or it will not work.
 All `crypt` directories will be encrypted using `git-crypt`.
 This is done via a the top level `.gitattributes` file.
 
-## `config` directories
+* `crypt/main/` will contain the production secrets
+* `crypt/project/` will contain secrets used for project branch deployments
+* `crypt/local/` will contain secrets used for local development
+
+## `config` directories/files
 
 TBD
 
@@ -90,18 +94,35 @@ Each `site` is expected to provide shell scripts as follows:
 * `lint` - lint the code
 * `pack` - package the site via docker
 
+These provide a level-of-indirection for CI and CD to hook into that can be standardized
+across various technologies allowing us to avoid having CI/DB configuration for each site.
+
+If any of the shell scripts fail they should return a non-zero error code.
+
+TBD: versioning. Probably use a `.version` file.
 
 #### Common `ENV` variables
 
 TBD
 
-#### Common CI
+#### Common CI/CD
 
-TBD
+goal: no custom configuration of CI/CD per site.
 
-#### Common CD
+CI effectively will run:
 
-TBD
+```
+if (./init && ./lint && ./test && ./pack) {
+ if (branch === 'main') {
+  trigger main deployment
+ }
+ if (branch.match(/k\d+\.project/)) {
+  trigger project deployment
+ }
+}
+```
+
+Deployments will target a DO Kubernetes cluster for now. 
 
 ### Tasks: `project/<domain>/task/<name>`
 
@@ -111,11 +132,8 @@ TBD
 
 TBD
 
-#### Common CI
+#### Common CI/CD
 
-TBD
+goal: no custom configuration of CI/CD per task.
 
-#### Common CD
-
-TBD
 # TODO
