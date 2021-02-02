@@ -136,4 +136,45 @@ TBD
 
 goal: no custom configuration of CI/CD per task.
 
+
+# `*.local` DNS setup
+```
+$ brew install dnsmasq
+$ echo 'address=/.local/127.0.0.1' > /usr/local/etc/dnsmasq.conf
+$ sudo cp -v /usr/local/Celler/dnsmasq/<version>homebrew.mxcl.dnsmasq.plist /Library/LaunchDaemons
+$ sudo launchctl load -w /Library/LaunchDaemons/homebrew.mxcl.dnsmasq.plist
+```
+
+You can manually start and stop the service with the following commands
+
+```
+$ sudo launchctl stop homebrew.mxcl.dnsmasq
+$ sudo launchctl start homebrew.mxcl.dnsmasq
+```
+
+In `System Preferences -> Network -> Advanced -> DNS` add `127.0.0.1` as your first DNS server 
+entry (be sure to have your second entry as your original DNS server).
+
+If you have both WiFi and wired you’ll need to update both network interface settings.
+
+To confirm:
+
+```
+$ dig google.com
+...
+;; ANSWER SECTION:
+google.com.             159     IN      A       216.58.217.46
+...
+```
+
+and
+
+```
+$ dig asdf.local
+...
+;; ANSWER SECTION:
+asdf.local.             0       IN      A       127.0.0.1
+...
+```
+
 # TODO
