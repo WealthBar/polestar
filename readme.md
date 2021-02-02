@@ -178,3 +178,26 @@ asdf.local.             0       IN      A       127.0.0.1
 ```
 
 # TODO
+
+# Running locally
+
+## Startup `nginx`
+
+```
+$ overmind s -f procfile.dev
+```
+
+*Note*: If you change a site's `.port` or add/remove a site you need to stop and restart `nginx` as it
+does not watch the file system for changes.
+
+## Startup sites you need
+
+```
+$ cd project/<domain>/site/<subdomain>
+$ ./dev
+```
+
+You may need to stop and restart, or not, depending on what stack the site uses to run in development mode.
+
+We might create some `project/<domain>/procfile.dev` files to run all of the sites for a given domain if that
+becomes more convenient.
