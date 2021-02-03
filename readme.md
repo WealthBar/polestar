@@ -215,7 +215,9 @@ This should probably be moved to its own top level pattern, something like:
 
 ```
 db/<domain>/
- setup # shell script
+ config/
+ crypt/
+ setup # shell script to setup initial DB
  up # script to apply migrations  
  migration/
   <tz>.sql

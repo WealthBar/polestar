@@ -88,7 +88,7 @@ ${hostMap}
       proxy_set_header   Connection        $connection_upgrade;
 
       if ($localport = 0) {
-        root ${cwd}/project/$domain/site/$subdomain/;
+        root ${cwd}/project/$domain/site/$subdomain/public/;
       }
 
       if ($localport != 0) {
