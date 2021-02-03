@@ -60,7 +60,8 @@ Code here should assume it is running in NodeJS as part of a cron job or a devel
 
 `nginx` is used to proxy all `*.local` requests to locally running services. The config is dynamically
 build based on scanning the `project` directory for sites. Sites with a `.port` file will be proxied to.
-Sites without a `.port` file will be served as raw files.
+Sites without a `.port` file will have their `public` directory be served as raw files and built/packaged
+as static content.
 
 ## `project/<domain>/`
 
@@ -214,32 +215,16 @@ This should probably be moved to its own top level pattern, something like:
 
 ```
 db/<domain>/
- init/
+ setup # shell script
+ up # script to apply migrations  
  migration/
-    <tz>.sql
- data/<subdomain>/(main|project|local)/
-    seed
-    once/
-        <tz>.sql
+  <tz>.sql
+ seed/<whitelabel>/(main|project|local)/
+   seed # script to seed data
+ once/<whitelabel>/ # data fixes for production
+   <tz>.sql
 ```
 
-e.g. for the existing WB database we'd have something like:
-
-```
-db/wbdb/
- init/
-    schema.sql # base schema setup
- migration/
-    <tz>.sql # schema migrations
- data/ci/(main|project|local)/
-    seed.sql # base data setup
-    once/
-        <tz>.sql # "account" fixes
- data/ac/(main|project|local)/
-    seed.sql # base data setup
-    once/
-        <tz>.sql # "account" fixes
-```
 
 ## Managing local ports
 
