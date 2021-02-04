@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "JF poking service",
   "main": "src/index.ts",
-  "repository": "git@gitlab.wealth.bar:wealthbar/iknowaguy",
+  "repository": "git@github.com:wealthbar/polestar",
   "author": "developers@wealthbar.com",
   "license": "MIT",
   "private": false,

@@ -1,7 +1,7 @@
 // istanbul ignore file
 
-import {tuidCtor} from 'lib_backend/src/tuid';
-import {bindType} from 'lib_backend/src/server.type';
+import {tuidCtor} from 'node_core/src/tuid';
+import {bindType} from 'node_core/src/server.type';
 
 const bind: bindType = (process.env.bind === undefined) ?
   {kind: 'unix'} :

@@ -1,0 +1,37 @@
+{
+  "name": "node_core",
+  "version": "0.1.0",
+  "description": "Lib functions that are used on the node backend.",
+  "repository": "git@github.com:wealthbar/polestar",
+  "author": "developers@wealthbar.com",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/lodash": "^4.14.165",
+    "@types/luxon": "^1.25.0",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.12",
+    "@types/sinon": "^9.0.9",
+    "@types/ws": "^7.4.0",
+    "axios": "^0.21.1",
+    "debug": "^4.3.1",
+    "immer": "^8.0.0",
+    "ts_agnostic": "link:../ts_agnostic",
+    "lodash": "^4.17.20",
+    "luxon": "^1.25.0",
+    "minimist": "^1.2.5",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
+    "pg-promise": "^10.8.1",
+    "sinon": "^9.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.2",
+    "ws": "^7.4.2"
+  },
+  "scripts": {
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
+    "coverage": "yarn test; open coverage/index.html",
+    "test": "NODE_ENV=test nyc mocha"
+  }
+}

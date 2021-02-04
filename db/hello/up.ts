@@ -1,5 +1,5 @@
 #!/usr/bin/env ts-node
-import {main} from '../../lib/script/src/main';
+import {main} from '../../lib/node_script/src/main';
 import * as debugCtor from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';

@@ -1,14 +1,14 @@
 // istanbul ignore file
 // -- bootstrap
 
-import {main} from 'lib_script/src/main';
+import {main} from 'node_script/src/main';
 import {settings} from './settings';
-import {server} from 'lib_backend/src/server';
-import {contentHandlerType, ctxWsType, wsHandlerType} from 'lib_backend/src/server.type';
-import {readonlyRegistryCtor} from 'lib_agnostic/src/registry';
-import {serializableType} from 'lib_agnostic/src/serialize';
-import {resolvedUndefined} from 'lib_agnostic/src/resolved';
-import {exitPromise} from 'lib_backend/src/exit';
+import {server} from 'node_core/src/server';
+import {contentHandlerType, ctxWsType, wsHandlerType} from 'node_core/src/server.type';
+import {readonlyRegistryCtor} from 'ts_agnostic/src/registry';
+import {serializableType} from 'ts_agnostic/src/serialize';
+import {resolvedUndefined} from 'ts_agnostic/src/resolved';
+import {exitPromise} from 'node_core/src/exit';
 
 async function wsEcho(ctxWs: ctxWsType, params: serializableType): Promise<serializableType> {
   console.log('server:ws:recv_echo', ctxWs.user?.name, params);
