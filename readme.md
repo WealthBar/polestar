@@ -205,7 +205,7 @@ becomes more convenient.
 
 ## Managing databases.
 
-`project/hubdb` has the start of the db setup work.
+`db/hello` has the start of the db setup work.
 
 A DB could be shared by many other projects it has to be external to any given project and managed as 
 its own _thing_. "Deployment" for a DB is either initial setup, or the incremental application of
@@ -218,12 +218,14 @@ db/<domain>/
  config/
  crypt/
  setup # shell script to setup initial DB
+ schema/
+   ... # files used by setup to initialize the schema
  up # script to apply migrations  
  migration/
   <tz>.sql
- seed/<whitelabel>/(main|project|local)/
+ seed/(main|project|local)/
    seed # script to seed data
- once/<whitelabel>/ # data fixes for production
+ once/ # data fixes for production
    <tz>.sql
 ```
 

@@ -1,5 +1,5 @@
-#!/usr/bin/env yarn ts-node
-import {main} from '../../../lib/script/src/main';
+#!/usr/bin/env ts-node
+import {main} from '../../lib/script/src/main';
 import * as debugCtor from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -23,12 +23,12 @@ const pgPromiseOptions = {
     },
 };
 const pgp = pgPromise(pgPromiseOptions);
-const databaseUrl = process.env.DB_URL;
-const testDatabaseUrl = process.env.TEST_DB_URL;
+const databaseUrl = process.env.DB_DBA_URL;
+const testDatabaseUrl = process.env.DB_DBA_URL_TEST;
 
 main(async () => {
   if (!databaseUrl) {
-    console.log('DB_URL environment variable must be set.');
+    console.log('DB_DBA_URL environment variables must be set.');
     process.exit(-1);
   } else {
     console.log('Migrating db.');
@@ -44,7 +44,7 @@ main(async () => {
 
 async function doMigrations(db, fs, path) {
   await db.tx(async (db) => {
-    const baseDataMigrationsDir = './data/migrations/';
+    const baseDataMigrationsDir = './migration/';
     const migrationsPresentInDirectory = fs.readdirSync(baseDataMigrationsDir).filter((filename) => filename.endsWith('.sql'));
     if (migrationsPresentInDirectory.length === 0) {
       return;

@@ -6,7 +6,6 @@
 -- a_n_b is a detail table (many b per a)
 -- a_x_b is an xref table (many b to many b)
 
-
 set search_path = func;
 
 CREATE OR REPLACE FUNCTION func.raise_exception(what VARCHAR)
@@ -1160,7 +1159,7 @@ CREATE INDEX session_user_id ON staff.session (login, created_at);
 
 ------------------------------------------------------------------------------------------------------
 set search_path = client, func;
-\i ./data/permission.sql
+\i ./schema/permission.sql
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.client_profile_x_permission
 (
@@ -1183,7 +1182,7 @@ CREATE TABLE client.client_profile_x_permission_group
 SELECT client.add_history_to_table('client_profile_x_permission_group');
 ------------------------------------------------------------------------------------------------------
 set search_path = staff, func;
-\i ./data/permission.sql
+\i ./schema/permission.sql
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE staff.login_x_permission
 (
@@ -1285,13 +1284,13 @@ VALUES
 ------------------------------------------------------------------------------------------------------
 -- client.workorders
 set search_path = client, func;
-\i ./data/workorder.sql
+\i ./schema/workorder.sql
 
 ------------------------------------------------------------------------------------------------------
 -- staff.workorders
 
 set search_path = staff, func;
-\i ./data/workorder.sql
+\i ./schema/workorder.sql
 
 ------------------------------------------------------------------------------------------------------
 
