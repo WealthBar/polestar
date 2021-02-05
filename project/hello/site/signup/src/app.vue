@@ -2,11 +2,11 @@
   <div
       id="app"
       class="page">
-    <div class="columns is-centered is-vcentered is-desktop is-mobile" style="height: 100vh">
+    <div class="columns is-centered is-vcentered" style="height: 100vh">
       <div class="card column" style="max-width: 512px">
         <div class="card-content">
           <h1 class="title is-1">Sign Up</h1>
-          <form @submit.prevent="onSubmit" novalidate>
+          <form ref="form" @submit.prevent="onSubmit">
             <b-field
                 label="Email Address"
             >
@@ -23,14 +23,15 @@
               <b-input
                   type="password"
                   name="password"
+                  minlength="8"
                   placeholder="super secret password"
                   password-reveal
                   v-model="password"
               />
             </b-field>
             <br/>
-            <div class="columns is-centered is-desktop is-mobile ">
-              <b-button type="is-primary" native-type="submit">Create Account</b-button>
+            <div class="columns is-centered">
+              <b-button type="is-primary" native-type="submit" :disabled="!valid">Create Account</b-button>
             </div>
           </form>
         </div>
@@ -48,16 +49,21 @@ export default Vue.extend({
     return {
       email: "",
       password: "",
-      invalid: true,
+      valid: false,
       form: {},
     };
   },
+  created() {
+    ['email','password'].forEach((field)=> {
+      this.$watch(field, this.updateIsValid);
+    });
+  },
   methods: {
-    async onSubmit() {
-      const isValid = await this.$refs.observer.validate();
-      if (!isValid) {
-        console.log('invalid');
-      }
+    onSubmit() {
+      // todo
+    },
+    updateIsValid() {
+      this.valid = this.$refs.form.checkValidity();
     }
   },
 });
