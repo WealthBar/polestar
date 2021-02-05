@@ -40,10 +40,14 @@ for (const dir of dirs) {
   const fns = dirFiles[dir];
   const fnsC = fns.map(snakeToCamel);
   const contents
-    = fns.map((f, i) => `import ${fnsC[i]}_ from "./${f}.vue";`).join("\n")
+    = ""
+    // + "import Vue from 'vue';\n"
+    + fns.map((f, i) => `import ${fnsC[i]}_ from "./${f}.vue";`).join("\n")
     + "\n\n"
     + fns.map((f, i) => `export const ${fnsC[i]} = ${fnsC[i]}_;`).join("\n")
-    + "\n"
-  ;
+    + "\n\n"
+    //+ fns.map((f,i) => `Vue.component(${fnsC[i]}.name, ${fnsC[i]});`).join("\n")
+    //+ "\n"
+    ;
   fs.writeFileSync(dfn, contents);
 }

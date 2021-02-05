@@ -1,10 +1,14 @@
 module.exports = {
   root: true,
+  plugins: [
+    '@typescript-eslint/eslint-plugin',
+  ],
   env: {
     node: true
   },
   'extends': [
     'plugin:vue/essential',
+    'plugin:@typescript-eslint/recommended',
     'eslint:recommended',
     '@vue/typescript/recommended'
   ],
@@ -15,15 +19,6 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
   },
-  overrides: [
-    {
-      files: [
-        '**/__tests__/*.{j,t}s?(x)',
-        '**/tests/unit/**/*.spec.{j,t}s?(x)'
-      ],
-      env: {
-        mocha: true
-      }
-    }
-  ]
+  ignorePatterns: ["**/*test.ts"],
+  
 }
