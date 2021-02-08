@@ -6,7 +6,8 @@
       <transition name="step">
         <div class="card column step" v-if="showSignupInfo" :disabled="!showSignupInfo">
           <div class="card-content">
-            <h1 class="title is-1">Sign Up</h1>
+            <h1 class="title is-1" v-if="mode==='signup'">Sign Up</h1>
+            <h1 class="title is-1" v-if="mode==='signin'">Sign In</h1>
             <form ref="form_ep" @submit.prevent="onSubmit">
               <b-field
                   label="Email Address"
@@ -104,7 +105,7 @@ export default Vue.extend({
     return {
       email: '',
       password: '',
-      title: 'Sign Up',
+      mode: 'signup',
       epValid: false,
       veValid: false,
       emailInUse: false,
@@ -114,11 +115,12 @@ export default Vue.extend({
     };
   },
   created() {
-    const hostname = deps.window.location.hostname;
+    const hostname = deps.window.location.hostname.toLowerCase();
+    console.log('hostname', hostname);
     if (hostname.startsWith('signup.')) {
-      this.title = 'Sign Up';
+      this.mode = 'signup';
     } else if (hostname.startsWith('signin.')) {
-      this.title = 'Sign In';
+      this.mode = 'signin';
     }
 
     ['email', 'password'].forEach((field) => {

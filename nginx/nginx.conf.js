@@ -19,8 +19,8 @@ function readdirRecursiveSync(path, cb) {
 
 readdirRecursiveSync('project', (file) => {
   if (file.endsWith('/.port')) {
-    const subdomainsFile = p.join(p.dirname(file), '.subdomains');
-    let subdomains;
+    const subdomainsFile = p.join(p.dirname(file), '.additional_subdomains');
+    let subdomains = [];
     if (fs.existsSync(subdomainsFile)) {
       subdomains = (fs.readFileSync(subdomainsFile, "utf-8")).split(/[\n\r]/).filter(x => x.trim() !== '');
     }
@@ -29,7 +29,7 @@ readdirRecursiveSync('project', (file) => {
       const port = +((fs.readFileSync(file, "utf-8")).split(/[\n\r]/)?.[0]);
       if (port) {
         const { domain, sub } = m.groups;
-        if (!subdomains) { subdomains = [sub]; }
+        subdomains.unshift(sub);
         subdomains.forEach((subdomain) => {
           console.log(`adding ${subdomain}.${domain}.local ${port};`);
           hostMappings.push(`    ${subdomain}.${domain}.local ${port};`)
