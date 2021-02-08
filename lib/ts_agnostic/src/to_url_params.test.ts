@@ -3,7 +3,7 @@ import {toUrlParam} from './to_url_param';
 
 describe('toUrlParam', () => {
   it('basics', () => {
-    const p: { in: [string, unknown][], out: string }[] = [
+    const p: { in: [string, { toString(): string }][], out: string }[] = [
       {in: [], out: ''},
       {in: [['a', 1]], out: 'a=1'},
       {in: [['a', 1], ['b', 'c']], out: 'a=1&b=c'},

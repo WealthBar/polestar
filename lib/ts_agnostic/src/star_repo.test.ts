@@ -14,8 +14,8 @@ describe('starRepo', () => {
     }
 
     function remove(eventParams: serializableType, state: Draft<serializableType>): void {
-      if (typeof eventParams.what === 'string') {
-        delete state[eventParams.what];
+      if (typeof eventParams?.['what'] === 'string' && state) {
+        delete state[eventParams['what']];
       }
     }
 

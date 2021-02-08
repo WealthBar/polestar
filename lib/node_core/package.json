@@ -4,6 +4,8 @@
   "description": "Lib functions that are used on the node backend.",
   "repository": "git@github.com:wealthbar/polestar",
   "author": "developers@wealthbar.com",
+  "main": "dist/index.ts",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "private": false,
   "dependencies": {

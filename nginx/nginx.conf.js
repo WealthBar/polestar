@@ -18,18 +18,25 @@ function readdirRecursiveSync(path, cb) {
 }
 
 readdirRecursiveSync('project', (file) => {
-  if (file.endsWith('/.port'))
-  {
-    const m = file.match(/project\/(?<domain>[^/]+)\/site\/(?<subdomain>[^/]+)/);
+  if (file.endsWith('/.port')) {
+    const subdomainsFile = p.join(p.dirname(file), '.subdomains');
+    let subdomains;
+    if (fs.existsSync(subdomainsFile)) {
+      subdomains = (fs.readFileSync(subdomainsFile, "utf-8")).split(/[\n\r]/).filter(x => x.trim() !== '');
+    }
+    const m = file.match(/project\/(?<domain>[^/]+)\/site\/(?<sub>[^/]+)/);
     if (m) {
       const port = +((fs.readFileSync(file, "utf-8")).split(/[\n\r]/)?.[0]);
       if (port) {
-        const {domain, subdomain} = m.groups;
-        console.log(`adding ${subdomain}.${domain}.local ${port};`);
-        hostMappings.push(`    ${subdomain}.${domain}.local ${port};`)
-        hostMappings.push(`    *.${subdomain}.${domain}.local ${port};`)
-        hostMappings.push(`    ${subdomain}.${domain} ${port};`)
-        hostMappings.push(`    *.${subdomain}.${domain} ${port};`)
+        const { domain, sub } = m.groups;
+        if (!subdomains) { subdomains = [sub]; }
+        subdomains.forEach((subdomain) => {
+          console.log(`adding ${subdomain}.${domain}.local ${port};`);
+          hostMappings.push(`    ${subdomain}.${domain}.local ${port};`)
+          hostMappings.push(`    *.${subdomain}.${domain}.local ${port};`)
+          hostMappings.push(`    ${subdomain}.${domain} ${port};`)
+          hostMappings.push(`    *.${subdomain}.${domain} ${port};`)
+        });
       }
     }
   }

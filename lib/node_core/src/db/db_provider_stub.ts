@@ -1,22 +1,34 @@
-import {dbType} from "./db_provider";
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars */
+import {dbType} from './db_provider';
+import * as sinon from 'sinon';
 
-export function dbProviderStub(sinon) {
-  const db = sinon.stub();
+type sinonType = typeof sinon;
 
-  ["one", "any", "none", "query", "result", "oneOrNone"].forEach((toStub) => {
+export function dbProviderStub(sinon: sinonType): {
+  dbProvider: any,
+  dbProviderAnon: any,
+  ctxDbProvider: any,
+  db: any,
+}
+ {
+  const db: any = sinon.stub();
+
+  ['one', 'any', 'none', 'query', 'result', 'oneOrNone'].forEach((toStub): void => {
     db[toStub] = sinon.stub();
   });
-  async function wrapperFull<T>(auditUser: string, q: (db: dbType) => Promise<T>, trackingTag = ""): Promise<T> {
+
+  async function wrapperFull<T>(auditUser: string, q: (db: dbType) => Promise<T>, trackingTag = ''): Promise<T> {
     return q(db);
   }
 
-  async function wrapperAnon<T>(q: (db: dbType) => Promise<T>, trackingTag = ""): Promise<T> {
+  async function wrapperAnon<T>(q: (db: dbType) => Promise<T>, trackingTag = ''): Promise<T> {
     return q(db);
   }
 
   async function wrapperCtx<T>(q: (db: dbType) => Promise<T>): Promise<T> {
     return q(db);
   }
+
   const dbProvider = sinon.spy(wrapperFull);
   const dbProviderAnon = sinon.spy(wrapperAnon);
   const ctxDbProvider = sinon.spy(wrapperCtx);

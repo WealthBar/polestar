@@ -12,6 +12,7 @@ export type ctxAuthzType = {
 
 export type authzType = (ctx: ctxAuthzType) => boolean;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const anon: authzType = function (ctx: ctxAuthzType) {
   return true;
 };

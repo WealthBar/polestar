@@ -1,4 +1,4 @@
-import {default as stringify} from 'json-stable-stringify';
+import * as stringify from 'json-stable-stringify';
 
 type serializablePrimitiveType = string | number | boolean | null | undefined;
 export type serializableType =

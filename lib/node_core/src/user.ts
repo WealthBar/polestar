@@ -1,9 +1,9 @@
 // istanbul ignore file
 // -- will be replaced with DB based user storage
 
-import {contentHandlerType, ctxReqType, gauthUserInfoType, reqHandlerType, userStoreType} from './server.type';
+import {ctxReqType, gauthUserInfoType, reqHandlerType, userStoreType} from './server.type';
 import {tuidCtor} from './tuid';
-import {resolvedVoid} from 'ts_agnostic/src/resolved';
+import {resolvedVoid} from 'ts_agnostic';
 
 const userStore: userStoreType = {};
 export type userVivifyType = (gauthUserInfo: gauthUserInfoType, rawAuthResponse: string) => Promise<string>;

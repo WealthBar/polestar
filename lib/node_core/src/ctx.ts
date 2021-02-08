@@ -2,28 +2,29 @@ import {ctxReqType, ctxType, urlType} from './server.type';
 import {IncomingMessage, ServerResponse} from 'http';
 
 function parseUrl(rawUrl: string): urlType {
-  const m = rawUrl.match(/^\/?(?<path>([^\/?]\/?)*)(\?(?<params>.*$))?/);
-  // @ts-ignore
+  const m = rawUrl.match(/^\/?(?<path>([^/?]\/?)*)(\?(?<params>.*$))?/);
+  if (!m || !m.groups) {
+    return {path: '/', params: []};
+  }
+
   const path = '/' + m.groups.path;
   let params: [string, string][] = [];
-  // @ts-ignore
   if (m.groups.params) {
-    // @ts-ignore
     params = m.groups.params.split('&').map(p => {
       const x = p.split('=');
-      return [decodeURIComponent(x[0]), decodeURIComponent(x[1]||'')];
+      return [decodeURIComponent(x[0]), decodeURIComponent(x[1] || '')];
     });
   }
   return {path, params};
 }
 
-function parseCookie(cookie: string | undefined): [string,string][] {
+function parseCookie(cookie: string | undefined): [string, string][] {
   if (!cookie) {
     return [];
   }
   return cookie.split('; ').map(p => {
     const x = p.split('=');
-    return [decodeURIComponent(x[0]), decodeURIComponent(x[1]||'')];
+    return [decodeURIComponent(x[0]), decodeURIComponent(x[1] || '')];
   });
 }
 
@@ -41,4 +42,4 @@ export function ctxReqCtor(req: IncomingMessage): ctxReqType {
 
 export type ctxCtorType = typeof ctxCtor;
 
-export const _internal_ = { parseUrl, parseCookie };
+export const _internal_ = {parseUrl, parseCookie};

@@ -2,9 +2,9 @@
 // -- will be replaced with DB based session storage
 
 import {ctxType, contentHandlerType, sessionStoreType, sessionType, ctxReqType, reqHandlerType} from './server.type';
-import {resolvedVoid} from 'ts_agnostic/src/resolved';
+import {resolvedVoid} from 'ts_agnostic';
 import {stuidCtor} from './stuid';
-import {vivify} from 'ts_agnostic/src/vivify';
+import {vivify} from 'ts_agnostic';
 
 const sessionStore: sessionStoreType = {};
 

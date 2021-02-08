@@ -1,7 +1,7 @@
 import {IncomingMessage, ServerResponse} from 'http';
 import WebSocket from 'ws';
-import {serializableType} from 'ts_agnostic/src/serialize';
-import {registryType} from 'ts_agnostic/src/registry';
+import {serializableType} from 'ts_agnostic';
+import {registryType} from 'ts_agnostic';
 
 export type urlType = {
   path: string,

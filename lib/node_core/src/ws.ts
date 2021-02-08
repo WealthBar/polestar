@@ -10,9 +10,9 @@ import {IncomingMessage, Server} from 'http';
 import * as WebSocket from 'ws';
 import {Socket} from 'net';
 import {ctxReqCtor} from './ctx';
-import {readonlyRegistryType, registryCtor} from 'ts_agnostic/src/registry';
-import {serializableType} from 'ts_agnostic/src/serialize';
-import {tuidCtor} from 'ts_agnostic/src/tuid';
+import {readonlyRegistryType, registryCtor} from 'ts_agnostic';
+import {serializableType} from 'ts_agnostic';
+import {tuidCtor} from 'ts_agnostic';
 
 export type wsType = {
   wss: WebSocket.Server,
@@ -134,6 +134,7 @@ export function wsInit(
         resolve,
         reject,
         data,
+        sent: false
       });
       if (isActive(ctxWs.ws)) {
         processPending();

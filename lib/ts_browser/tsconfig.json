@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "strictNullChecks": true,
-    "target": "es2015",
+    "target": "es2020",
     "module": "commonjs",
     "outDir": "dist",
+    "declaration": true,
     "inlineSourceMap": true,
     "inlineSources": true,
     "removeComments": false,
@@ -11,7 +12,8 @@
     "allowSyntheticDefaultImports": true,
     "lib": [
       "es2020",
-      "dom"
+      "dom",
+      "dom.iterable"
     ]
   },
   "include": [

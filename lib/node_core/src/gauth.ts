@@ -1,8 +1,8 @@
 import {ctxType, gauthUserInfoType, contentHandlerType} from './server.type';
-import {resolvedVoid} from 'ts_agnostic/src/resolved';
+import {resolvedVoid} from 'ts_agnostic';
 import {secureTokenCtorType, secureTokenVerifyType} from './stoken';
-import {toUrlParam} from 'ts_agnostic/src/to_url_param';
-import {kvpArrayToObject} from 'ts_agnostic/src/kvp_array_to_object';
+import {toUrlParam} from 'ts_agnostic';
+import {kvpArrayToObject} from 'ts_agnostic';
 import {userVivifyType} from './user';
 
 export function gauthInitCtor(

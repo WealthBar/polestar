@@ -18,4 +18,9 @@ module.exports = {
     port,
     disableHostCheck: true,
   },
+  configureWebpack: {
+    resolve: {
+      symlinks: false,
+    },
+  }
 };

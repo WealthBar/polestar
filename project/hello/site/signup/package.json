@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "NODE_PRESERVE_SYMLINKS=1 vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "eslint src --ext .ts"
@@ -16,7 +16,9 @@
     "buefy": "^0.9.4",
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
-    "vue-router": "^3.2.0"
+    "vue-router": "^3.2.0",
+    "ts_browser": "link:../../../../lib/ts_browser",
+    "ts_agnostic": "link:../../../../lib/ts_agnostic"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",

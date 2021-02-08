@@ -1,4 +1,4 @@
-import {pad} from 'ts_agnostic/src/pad';
+import {pad} from 'ts_agnostic';
 import {randomBytes} from 'crypto';
 
 let lastTime = 0;

@@ -10,8 +10,8 @@ import {sessionInfoCtor, sessionInitCtor, sessionSetCtor} from './session';
 import {secureTokenCtor, secureTokenVerify} from './stoken';
 import axios from 'axios';
 import {wsInit, wsType} from './ws';
-import {readonlyRegistryType} from 'ts_agnostic/src/registry';
-import {serializableType} from 'ts_agnostic/src/serialize';
+import {readonlyRegistryType} from 'ts_agnostic';
+import {serializableType} from 'ts_agnostic';
 
 //----------------------
 

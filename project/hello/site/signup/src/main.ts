@@ -1,7 +1,7 @@
-import Vue from 'vue';
+import Vue, {CreateElement} from 'vue';
 import app from './app.vue';
 import Buefy from 'buefy';
-import 'buefy/dist/buefy.css';
+import './theme.scss';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -28,5 +28,7 @@ Vue.use(Buefy, {
 Vue.config.productionTip = false;
 
 new Vue({
-  render: h => h(app),
+  render(h: CreateElement) {
+    return h(app);
+  },
 }).$mount('#app');

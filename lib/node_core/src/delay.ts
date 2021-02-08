@@ -1,4 +1,4 @@
-import {cancellationTokenType} from "../../ts_agnostic/src/cancellation_token";
+import {cancellationTokenType} from "ts_agnostic";
 
 export async function delay(milliseconds: number, cancellationToken?: cancellationTokenType): Promise<void> {
   return new Promise(r => {

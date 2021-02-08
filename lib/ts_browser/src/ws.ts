@@ -1,7 +1,7 @@
-import {serializableType} from 'ts_agnostic/src/serialize';
-import {readonlyRegistryType, registryCtor, registryType} from 'ts_agnostic/src/registry';
+import {serializableType} from 'ts_agnostic';
+import {readonlyRegistryType, registryCtor, registryType} from 'ts_agnostic';
 import {DateTime, Duration} from 'luxon';
-import {tuidCtor} from 'ts_agnostic/src/tuid';
+import {tuidCtor} from 'ts_agnostic';
 
 export type wsHandlerType = (params: serializableType) => Promise<serializableType>;
 
@@ -18,9 +18,9 @@ type requestType = {
 };
 
 export function wsCtor(
-  callRegistry: readonlyRegistryType<wsHandlerType>,
-  onConnectHandler: () => void,
-  onCloseHandler: () => void,
+  callRegistry?: readonlyRegistryType<wsHandlerType>,
+  onConnectHandler?: () => void,
+  onCloseHandler?: () => void,
 ): wsType {
 
   const schema = window.location.protocol === 'http:' ? 'ws:' : 'wss:';
@@ -52,7 +52,7 @@ export function wsCtor(
     const ss = i.s?.[0];
     if (i.id && i.n && ss === '?') {
       try {
-        const call = callRegistry.lookup(i.n);
+        const call = callRegistry?.lookup(i.n);
         if (call) {
           const r = await call(i.a);
           ws?.send(JSON.stringify({
@@ -106,7 +106,7 @@ export function wsCtor(
     ws = new WebSocket(wsUrl, ['rpc_v1']);
 
     ws.onopen = () => {
-      onConnectHandler();
+      onConnectHandler?.();
       processPending();
     };
 
@@ -116,7 +116,7 @@ export function wsCtor(
 
     ws.onclose = () => {
       ws = undefined;
-      onCloseHandler();
+      onCloseHandler?.();
       reconnect();
     };
 
