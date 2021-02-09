@@ -1,14 +1,10 @@
 // istanbul ignore file
 
-import {tuidCtor} from 'node_core/src/tuid';
-import {bindType} from 'node_core/src/server.type';
+import {serverSettingsType, tuidCtor} from 'node_core';
 
-const bind: bindType = (process.env.bind === undefined) ?
-  {kind: 'unix'} :
-  {kind: 'default'};
-
-export const settings = {
-  bind,
+export const settings : serverSettingsType = {
+  host: process.env.HOST || '0.0.0.0',
+  port: process.env.PORT || 8000,
   schema: 'http://', // we should be able to get the forwarder to tell us this.
   sessionSecret: process.env.SESSION_SECRET || tuidCtor(),
   google: {
@@ -19,4 +15,6 @@ export const settings = {
 };
 
 // TODO: find a way for gauth to derive this from headers and conventions.
-settings.google.redirectUri = settings.schema + 'app.hello.local' + '/gauth/continue';
+if (settings.google) {
+  settings.google.redirectUri = settings.schema + 'app.hello.local' + '/gauth/continue';
+}

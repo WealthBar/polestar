@@ -115,19 +115,7 @@ export function server(
 
   const server: Server = createServer(requestHandler);
 
-  switch (settings.bind.kind) {
-    case 'default':
-      server.listen(80, '0.0.0.0');
-      break;
-    case 'ip':
-      server.listen(+settings.bind.port, settings.bind.ip);
-      break;
-    case 'unix':
-      server.listen( 'socket');
-      break;
-    default:
-      throw new Error(`Invalid bind: ${JSON.stringify(settings.bind)}`);
-  }
+  server.listen(+settings.port, settings.host);
 
   const ws = wsInit(
     wsHandlerRegistry,

@@ -77,9 +77,10 @@ export type sessionStoreType = {
 };
 export type contentHandlerType = (ctx: ctxType) => Promise<void>;
 export type reqHandlerType = (ctx: ctxReqType) => Promise<void>;
-export type bindType = { kind: 'default' } | { port: string; ip: string; kind: 'ip' } | { kind: 'unix' };
+
 export type serverSettingsType = {
-  bind: bindType;
+  host: string;
+  port: string|number;
   schema: string;
   sessionSecret: string;
   google?: {

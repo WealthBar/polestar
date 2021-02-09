@@ -18,13 +18,13 @@ type requestType = {
 };
 
 export function wsCtor(
+  domain: string,
   callRegistry?: readonlyRegistryType<wsHandlerType>,
   onConnectHandler?: () => void,
   onCloseHandler?: () => void,
 ): wsType {
-
   const schema = window.location.protocol === 'http:' ? 'ws:' : 'wss:';
-  const wsUrl = `${schema}//${window.location.host}/ws`;
+  const wsUrl = `${schema}//${domain}/ws`;
   let ws: WebSocket | undefined;
 
   let lastConnectionAttemptAt = DateTime.utc().minus({minutes: 2});

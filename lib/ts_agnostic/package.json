@@ -4,7 +4,7 @@
   "description": "typescript functions that can be used anywhere.",
   "repository": "git@github.com:wealthbar/polestar",
   "author": "developers@wealthbar.com",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "private": false,

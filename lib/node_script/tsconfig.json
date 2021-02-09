@@ -4,6 +4,7 @@
     "target": "es2015",
     "module": "commonjs",
     "outDir": "dist",
+    "declaration": true,
     "inlineSourceMap": true,
     "inlineSources": true,
     "removeComments": false,

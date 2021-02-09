@@ -5,9 +5,9 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "test": "NODE_ENV=test nyc mocha",
+    "test": "NODE_PRESERVE_SYMLINKS=1 NODE_ENV=test nyc mocha",
     "build": "tsc",
-    "dev": "rm ./socket > /dev/null; nodemon",
+    "dev": "NODE_PRESERVE_SYMLINKS=1 nodemon",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue"
   },
   "dependencies": {

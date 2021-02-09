@@ -14,7 +14,12 @@ if (!port) {
 }
 
 // webpack is a steaming pile of shit that doesn't support linked packages
-// this is a pile of hacks to make them work.
+// this is a pile of hacks to make them "work".
+//
+// you'll have to run ./dev _twice_. The first time it'll fail (it tries to link the linked packages code).
+// the second time it'll fetch from cache and not lint.
+//
+
 const linkAliases = {};
 const linkModules = [];
 {
@@ -26,6 +31,7 @@ const linkModules = [];
     }
     if (p.isSymbolicLink()) {
       const dest = fs.readlinkSync(path.join('node_modules', p.name));
+      // TODO: this shouldn't assume 'dist'; it should read 'main' the package.json
       linkAliases[p.name] = path.resolve(path.join('node_modules', dest, 'dist'));
       linkModules.push(path.resolve(path.join('node_modules', dest, 'node_modules')));
     }

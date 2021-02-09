@@ -1,5 +1,5 @@
-import {ctxType} from 'node_core/src/server.type';
-import {resolvedVoid} from 'ts_agnostic/src/resolved';
+import {ctxType} from 'node_core';
+import {resolvedVoid} from 'ts_agnostic';
 
 export function helloHandler(ctx: ctxType): Promise<void> {
   if (ctx.url.path !== '/hello') {

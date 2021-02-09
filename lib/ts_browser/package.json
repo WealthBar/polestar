@@ -4,7 +4,7 @@
   "description": "typescript functions for use on browsers.",
   "repository": "git@github.com:wealthbar/polestar",
   "author": "developers@wealthbar.com",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "private": false,
@@ -14,7 +14,6 @@
   },
   "dev_dependencies": {
     "@types/mocha": "^8.0.4",
-    "@types/node": "^14.14.10",
     "@types/sinon": "^9.0.9",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
