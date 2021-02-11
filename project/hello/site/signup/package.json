@@ -15,12 +15,13 @@
     "axios": "^0.21.1",
     "buefy": "^0.9.4",
     "core-js": "^3.6.5",
-    "vue": "^2.6.11",
-    "vue-router": "^3.2.0",
+    "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "ts_browser": "link:../../../../lib/ts_browser",
-    "ts_agnostic": "link:../../../../lib/ts_agnostic"
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0"
   },
   "devDependencies": {
+    "@fortawesome/free-brands-svg-icons": "^5.15.2",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^5.2.4",
     "@typescript-eslint/eslint-plugin": "^2.33.0",

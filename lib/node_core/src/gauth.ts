@@ -2,8 +2,7 @@ import {ctxType, gauthUserInfoType, contentHandlerType} from './server.type';
 import {resolvedVoid} from 'ts_agnostic';
 import {secureTokenCtorType, secureTokenVerifyType} from './stoken';
 import {toUrlParam} from 'ts_agnostic';
-import {kvpArrayToObject} from 'ts_agnostic';
-import {userVivifyType} from './user';
+import {kvpArrayToObject} from 'ts_agnostic';;
 
 export function gauthInitCtor(
   settings: {
@@ -44,6 +43,7 @@ export function gauthInitCtor(
 
   return gauthInit;
 }
+export type gauthOnUserData = (gauthUserInfo: gauthUserInfoType, rawAuthResponse: string) => Promise<string|undefined>;
 
 export function gauthContinueCtor(
   settings: {
@@ -56,7 +56,7 @@ export function gauthContinueCtor(
     },
   },
   secureTokenVerify: secureTokenVerifyType,
-  userVivify: userVivifyType,
+  onUserData: gauthOnUserData,
   poster: <T>(url: string, body: string, options: { headers: Record<string, string> }) => Promise<{ data: T }>,
 ): contentHandlerType {
   function jwtTrustedDecode(data: string) {
@@ -90,7 +90,10 @@ export function gauthContinueCtor(
         {headers: {'Content-Type': 'application/x-www-form-urlencoded'}},
       );
       const userData = jwtTrustedDecode(r.data.id_token as string) as gauthUserInfoType;
-      ctx.session.userId = await userVivify(userData, JSON.stringify(r.data));
+      ctx.session.userId = await onUserData(userData, JSON.stringify(r.data));
+      if (!ctx.session.userId) {
+        ctx.res.writeHead(403, "User not found.");
+      }
       ctx.res.writeHead(303, {Location: settings.appUrl});
       ctx.res.end();
     } catch (e) {

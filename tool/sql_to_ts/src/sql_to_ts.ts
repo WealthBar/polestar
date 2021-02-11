@@ -1,7 +1,7 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 import * as fs from "fs";
-import {readdirRecursiveSync} from "lib_script/src/readdir_recursive_sync";
-import {main} from "lib_script/src/main";
+import {readdirRecursiveSync} from "node_script";
+import {main} from "node_script";
 
 main(async () => {
   for (const f of readdirRecursiveSync("src")) {

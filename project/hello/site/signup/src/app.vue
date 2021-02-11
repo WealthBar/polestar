@@ -11,13 +11,22 @@
           <form ref="form_ep" @submit.prevent="onSubmit">
             <b-field
                 label="Email Address"
+                :message="emailMessage"
+                :type="emailType"
             >
-              <b-input ref="email"
-                  type="email"
-                  name="email"
-                  placeholder="alice@example.com"
-                  v-model="email"
-              />
+              <div class="columns is-gapless">
+                <div class="column">
+                  <b-input ref="email"
+                      type="email"
+                      name="email"
+                      placeholder="alice@example.com"
+                      v-model="email"
+                  />
+                </div>
+                <div class="column is-narrow ml-1">
+                  <b-button v-if="googleEnabled" @click="googleLogin" icon-pack="fab" icon-left="google"></b-button>
+                </div>
+              </div>
             </b-field>
             <b-field
                 label="Password"
@@ -33,13 +42,13 @@
             </b-field>
             <br/>
             <div class="columns">
-              <div class="column" v-if="modeSignin">
-                <b-button :disabled="!emailValid" icon-left="question" @click="forgotPassword">Forgot Password
+              <div class="column is-narrow is-pulled-left" v-if="modeSignin">
+                <b-button :disabled="loginDisabled" icon-left="question" @click="forgotPassword">Forgot Password
                 </b-button>
               </div>
               <div class="column"></div>
               <div class="column is-pulled-right is-narrow">
-                <b-button type="is-primary" native-type="submit" :disabled="!epValid" icon-right="arrow-right">
+                <b-button type="is-primary" native-type="submit" :disabled="loginDisabled" icon-right="arrow-right">
                   <span v-if="modeSignup">Create Account</span>
                   <span v-if="modeSignin">Login</span>
                 </b-button>
@@ -101,14 +110,27 @@ function apiHostName(): string {
 
 const ws = wsCtor(apiHostName());
 
-async function apiEmailInUse(email: string): Promise<boolean> {
+async function apiEmailStatus(email: string): Promise<{ inUse: boolean; allowGoogleLogin: boolean }> {
   try {
-    const reply = (await ws.call('emailInUse', {email})) as {in_use: boolean};
-    return reply.in_use || false;
+    const rawReply = await ws.call('emailStatus', {email});
+    const reply = rawReply as { inUse: boolean; allowGoogleLogin: boolean };
+    if (!reply) {
+      return {inUse: false, allowGoogleLogin: false};
+    }
+    return reply;
   } catch (e) {
     console.error(e);
-    return false;
+    return {inUse: false, allowGoogleLogin: false};
   }
+}
+
+async function apiEmailSendVerification(email: string): Promise<{ error?: string }> {
+  const rawReply = await ws.call('emailSendVerification', {email});
+  const reply = rawReply as { error?: string };
+  if (!reply) {
+    return {error: 'NO_REPLY'};
+  }
+  return reply;
 }
 
 const mSignup = 'signup';
@@ -119,14 +141,15 @@ export default Vue.extend({
   data() {
     return {
       email: '',
+      emailMessage: '',
+      emailType: '',
       password: '',
       mode: 'signup',
       epValid: false,
       veValid: false,
       emailValid: false,
-      emailInUse: false,
-      emailInUseChecking: '',
-      emailInUseLastCheck: 0,
+      passwordValid: false,
+      emailStatus: {inUse: false, allowGoogleLogin: false, checking: false},
       current: 'signupInfo',
       code: '',
       loading: false,
@@ -150,7 +173,19 @@ export default Vue.extend({
   },
   methods: {
     async checkEmailInUse() {
-      this.emailInUse = await apiEmailInUse(this.email);
+      this.emailStatus.checking = true;
+      const r = await apiEmailStatus(this.email);
+      this.emailStatus.inUse = r.inUse;
+      this.emailStatus.allowGoogleLogin = r.allowGoogleLogin;
+
+      if (this.modeSignup && this.emailStatus.inUse) {
+        this.emailMessage = 'Email already in use';
+        this.emailType = 'is-danger';
+      } else {
+        this.emailMessage = '';
+        this.emailType = 'is-success';
+      }
+      this.emailStatus.checking = false;
     },
     rateLimitedCheckEmailInUse() {
       // replaced in create
@@ -167,20 +202,22 @@ export default Vue.extend({
       this.current = 'signupInfo';
     },
     updateEpValid() {
-      this.epValid = (this.$refs.form_ep as HTMLFormElement).checkValidity();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.emailValid = (this.$refs.email as any).checkHtml5Validity();
+      this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
+      this.passwordValid = this.password.length >= 8;
+      this.epValid = this.emailValid && this.passwordValid;
       if (this.emailValid) {
         this.rateLimitedCheckEmailInUse();
       }
     },
     updateVeValid() {
-      this.veValid = (this.$refs.form_ve as HTMLFormElement).checkValidity();
+      this.veValid = this.code.length == 8;
     },
     async forgotPassword() {
       this.loading = true;
       await this.checkEmailInUse();
+    },
+    googleLogin() {
+      // todo
     },
   },
   computed: {
@@ -196,6 +233,25 @@ export default Vue.extend({
     modeSignin(): boolean {
       return this.mode === mSignin;
     },
+    loginDisabled(): boolean {
+      if (this.emailStatus.checking) {
+        return true;
+      }
+      if (!this.emailValid) {
+        return true;
+      }
+      if (!this.emailStatus.inUse && this.modeSignin) {
+        return true;
+      }
+      if (this.emailStatus.inUse && this.modeSignup) {
+        return true;
+      }
+      return false;
+    },
+    googleEnabled(): boolean {
+      return this.emailStatus.allowGoogleLogin && this.modeSignin;
+    },
+
   },
 });
 

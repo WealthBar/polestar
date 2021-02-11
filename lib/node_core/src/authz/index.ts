@@ -1,13 +1,13 @@
-// import debugCtor = require('debug');
-// const debug = debugCtor('authz');
+import debugCtor = require('debug');
+const debug = debugCtor('authz');
 
 export type ctxAuthzType = {
-  sessionInfo?: {
-    permission?: {
-      [name: string]: boolean,
-    },
-    userId?: string,
+  permission?: {
+    [name: string]: boolean,
   },
+  user?: {
+    login: string
+  }
 };
 
 export type authzType = (ctx: ctxAuthzType) => boolean;
@@ -18,17 +18,12 @@ const anon: authzType = function (ctx: ctxAuthzType) {
 };
 
 const anyUser: authzType = function (ctx: ctxAuthzType) {
-  return !!(ctx.sessionInfo && ctx.sessionInfo.userId);
+  return !!(ctx.permission && ctx.user?.login);
 };
 
 function allOf(perm: string[]): authzType {
   return (ctx: ctxAuthzType) => {
-    const {sessionInfo} = ctx;
-    if (!sessionInfo) {
-      return false;
-    }
-
-    const {permission} = sessionInfo;
+    const {permission} = ctx;
     if (!permission) {
       return false;
     }
@@ -45,12 +40,7 @@ function allOf(perm: string[]): authzType {
 
 function anyOf(perm: string[]): authzType {
   return (ctx: ctxAuthzType) => {
-    const {sessionInfo} = ctx;
-    if (!sessionInfo) {
-      return false;
-    }
-
-    const {permission} = sessionInfo;
+    const {permission} = ctx;
     if (!permission) {
       return false;
     }

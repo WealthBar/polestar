@@ -7,6 +7,13 @@ The primary goals are to:
 - enable easier code shares across projects via global libraries by target environment
 - make running multiple services locally saner
 
+# SameSite Crap
+
+If you are using Chrome goto: chrome://flags and disable "Cookies without SameSite must be secure". For some _stupid_ 
+reason chrome enforces this on `.local` domains.
+
+FireFox is smart enough to not screw this up.
+
 # Conventions and Layout
 
 We are aiming for "if you name it right, it just works". That means you'll have to follow

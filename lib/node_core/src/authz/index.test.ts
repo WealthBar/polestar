@@ -7,13 +7,18 @@ function objSet(...entries): { [name: string]: boolean } {
   return r;
 }
 
-function mctx(permission: { [name: string]: boolean }, userId?: string): ctxAuthzType {
-  return {
-    sessionInfo: {
+function mctx(permission: { [name: string]: boolean }, login?: string): ctxAuthzType {
+  if (login) {
+    return {
       permission,
-      userId,
-    }
-  };
+      user: {
+        login
+      },
+    };
+  }
+  return {
+    permission
+  }
 }
 
 describe("authzType", () => {

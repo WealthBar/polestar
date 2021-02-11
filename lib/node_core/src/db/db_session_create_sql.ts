@@ -1,4 +1,7 @@
 export const value = `
-INSERT INTO "session" DEFAULT VALUES RETURNING encode(session_id, 'hex') AS session_id, data;
+INSERT INTO
+  "session"
+DEFAULT VALUES
+RETURNING encode(session_id, 'hex') AS session_id, data;
 
 `;

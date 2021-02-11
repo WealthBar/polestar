@@ -19,7 +19,6 @@
     "axios": "^0.21.1",
     "debug": "^4.3.1",
     "immer": "^8.0.0",
-    "ts_agnostic": "link:../ts_agnostic",
     "lodash": "^4.17.20",
     "luxon": "^1.25.0",
     "minimist": "^1.2.5",
@@ -27,13 +26,16 @@
     "nyc": "^15.1.0",
     "pg-promise": "^10.8.1",
     "sinon": "^9.2.1",
+    "sql_to_ts": "link:../../tool/sql_to_ts",
     "ts-node": "^9.1.1",
+    "ts_agnostic": "link:../ts_agnostic",
     "typescript": "^4.1.2",
-    "ws": "^7.4.2"
+    "ws": "^7.4.3"
   },
   "scripts": {
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
     "coverage": "yarn test; open coverage/index.html",
-    "test": "NODE_ENV=test nyc mocha"
+    "test": "NODE_ENV=test nyc mocha",
+    "sql_to_ts": "node node_modules/sql_to_ts/bin/sql_to_ts.js"
   }
 }

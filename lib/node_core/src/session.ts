@@ -1,29 +1,23 @@
 // istanbul ignore file
 // -- will be replaced with DB based session storage
 
-import {ctxType, contentHandlerType, sessionStoreType, sessionType, ctxReqType, reqHandlerType} from './server.type';
+import {ctxType, contentHandlerType, ctxReqType, reqHandlerType} from './server.type';
 import {resolvedVoid} from 'ts_agnostic';
-import {stuidCtor} from './stuid';
-import {vivify} from 'ts_agnostic';
-
-const sessionStore: sessionStoreType = {};
+import {toDbProvideCtx} from './db_util';
+import {sessionVerify} from './db';
 
 export type sessionInitCtorType = (settings: Record<string,unknown>) => reqHandlerType;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function sessionInitCtor(settings: Record<string,unknown>): reqHandlerType {
-  function sessionInit(ctx: ctxReqType): Promise<void> {
+  async function sessionInit(ctx: ctxReqType): Promise<void> {
     const sessionIdFromCookie = ctx.cookie.find(e => e[0] === 'SessionId');
     if (sessionIdFromCookie) {
       ctx.sessionId = sessionIdFromCookie[1];
     }
 
-    ctx.sessionId ||= stuidCtor();
-    ctx.session = vivify(sessionStore, ctx.sessionId, {} as sessionType);
-
-    return resolvedVoid;
+    await sessionVerify(ctx);
   }
-
   return sessionInit;
 }
 
@@ -47,13 +41,16 @@ export function sessionSetCtor(
 
     if (host) {
       // SameSite=Lax is required for the redirect from GoogleAuth back to our server to send cookies in Chrome.
-      ctx.res.setHeader('Set-Cookie', `SessionId=${ctx.sessionId}; HttpOnly; Path=/; SameSite=Lax; Domain=${host}; Max-Age=3600${settings.schema === 'https' ? '; Secure' : ''}`);
+      ctx.res.setHeader('Set-Cookie', `SessionId=${ctx.sessionId}; HttpOnly; Path=/; SameSite=None; Domain=${host}; Max-Age=3600${settings.schema === 'https' ? '; Secure' : ''}`);
     }
+    // update ctx.db to use the sessionId as the tracking tag.
+    ctx.db = toDbProvideCtx(ctx.user?.login||'-', ctx.sessionId, ctx.dbProvider);
     return resolvedVoid;
   }
   return sessionSet;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function sessionInfoCtor(settings: Record<string,unknown>): contentHandlerType {
   function sessionInfo(ctx: ctxType): Promise<void> {
     if (ctx.url.path !== '/session') {

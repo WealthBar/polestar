@@ -14,7 +14,7 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
-    "lib_script": "link:../../lib/script",
+    "node_script": "link:../../lib/node_script",
     "eslint": "^7.17.0",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",

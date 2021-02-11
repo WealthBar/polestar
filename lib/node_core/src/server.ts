@@ -4,23 +4,24 @@
 import {createServer, IncomingMessage, Server, ServerResponse} from 'http';
 import {contentHandlerType, ctxType, wsHandlerType, serverSettingsType, ctxWsType} from './server.type';
 import {ctxCtor} from './ctx';
-import {gauthContinueCtor, gauthInitCtor} from './gauth';
-import {userSetCtor, userVivifyCtor} from './user';
+import {gauthContinueCtor, gauthInitCtor, gauthOnUserData} from './gauth';
 import {sessionInfoCtor, sessionInitCtor, sessionSetCtor} from './session';
 import {secureTokenCtor, secureTokenVerify} from './stoken';
 import axios from 'axios';
 import {wsInit, wsType} from './ws';
 import {readonlyRegistryType} from 'ts_agnostic';
 import {serializableType} from 'ts_agnostic';
+import {dbProviderCtor, sessionExpire} from './db';
 
 //----------------------
 
 export function server(
   settings: serverSettingsType,
-  contentHandlerArray: contentHandlerType[],
+  handlerArray: contentHandlerType[],
   wsHandlerRegistry: readonlyRegistryType<wsHandlerType>,
   wsOnConnectHandler: (ctxWs: ctxWsType) => Promise<serializableType>,
   wsOnCloseHandler: (ctxWs: ctxWsType) => Promise<serializableType>,
+  onUserData?: gauthOnUserData,
 ): { server: Server, ws: wsType } {
   function handleNotFound(res: ServerResponse) {
     res.statusCode = 404;
@@ -28,8 +29,10 @@ export function server(
     res.end('404 No route found');
   }
 
-  async function handleContent(ctx: ctxType) {
-    for (const handler of contentHandlerArray) {
+  let ha: contentHandlerType[] = [];
+
+  async function runHandlerArray(ctx: ctxType) {
+    for (const handler of ha) {
       await handler(ctx);
       if (ctx.res.writableEnded) {
         return;
@@ -46,14 +49,11 @@ export function server(
   const sessionInit = sessionInitCtor(settings);
   const sessionSet = sessionSetCtor(settings);
   const sessionInfo = sessionInfoCtor(settings);
-  contentHandlerArray.unshift(sessionInfo);
 
-  const userVivify = userVivifyCtor();
-  const userSet = userSetCtor(settings);
   let gauthInit: (ctx: ctxType) => Promise<void>;
   let gauthContinue: (ctx: ctxType) => Promise<void>;
 
-  if (settings.google) {
+  if (settings.google && onUserData) {
     gauthInit = gauthInitCtor({
         sessionSecret: settings.sessionSecret,
         google: settings.google,
@@ -67,40 +67,21 @@ export function server(
         google: settings.google,
       },
       secureTokenVerify,
-      userVivify,
+      onUserData,
       axios.post,
     );
+    ha = [sessionInit, sessionSet, gauthInit, gauthContinue, sessionInfo, ...handlerArray];
+  } else {
+    ha = [sessionInit, sessionSet, sessionInfo, ...handlerArray];
   }
+
+  const dbProvider = dbProviderCtor(settings.dbConnectionString);
 
   async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
     try {
-      const ctx = ctxCtor(req, res);
+      const ctx = ctxCtor(req, res, dbProvider);
 
-      // every request gets a sessionId
-      await sessionInit(ctx);
-
-
-      if (settings.google) {
-        // check for auth
-        await gauthInit(ctx);
-        if (ctx.res.writableEnded) {
-          return;
-        }
-
-        await gauthContinue(ctx);
-        if (res.writableEnded) {
-          return;
-        }
-      }
-
-      // set session cookie in response header
-      await sessionSet(ctx);
-
-      // set user data in ctx from session
-      await userSet(ctx);
-
-      // handle first content request
-      await handleContent(ctx);
+      await runHandlerArray(ctx);
 
       if (!res.writableEnded) {
         handleNotFound(res);
@@ -115,17 +96,16 @@ export function server(
 
   const server: Server = createServer(requestHandler);
 
+  setInterval(() => {
+    // noinspection JSIgnoredPromiseFromCall
+    sessionExpire(dbProvider).catch((e) => {
+      console.error(e);
+    });
+  }, 60000);
+
   server.listen(+settings.port, settings.host);
 
-  const ws = wsInit(
-    wsHandlerRegistry,
-    wsOnConnectHandler,
-    wsOnCloseHandler,
-    server,
-    settings,
-    sessionInit,
-    userSet,
-  );
+  const ws = wsInit(wsHandlerRegistry, wsOnConnectHandler, wsOnCloseHandler, server, settings, sessionInit, dbProvider);
 
   return {server, ws};
 }

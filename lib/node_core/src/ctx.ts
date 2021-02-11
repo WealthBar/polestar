@@ -1,5 +1,7 @@
 import {ctxReqType, ctxType, urlType} from './server.type';
 import {IncomingMessage, ServerResponse} from 'http';
+import {dbProviderType} from './db';
+import {dbProviderCtx, toDbProvideCtx} from './db_util';
 
 function parseUrl(rawUrl: string): urlType {
   const m = rawUrl.match(/^\/?(?<path>([^/?]\/?)*)(\?(?<params>.*$))?/);
@@ -18,7 +20,7 @@ function parseUrl(rawUrl: string): urlType {
   return {path, params};
 }
 
-function parseCookie(cookie: string | undefined): [string, string][] {
+export function parseCookie(cookie: string | undefined): [string, string][] {
   if (!cookie) {
     return [];
   }
@@ -28,18 +30,24 @@ function parseCookie(cookie: string | undefined): [string, string][] {
   });
 }
 
-export function ctxCtor(req: IncomingMessage, res: ServerResponse): ctxType {
+
+export function ctxReqCtor(req: IncomingMessage, dbProvider: dbProviderType): ctxReqType {
   const url = parseUrl(req.url?.toString() || '/');
   const cookie = parseCookie(req.headers.cookie);
-  return {req, res, url, session: {}, user: undefined, sessionId: '', cookie};
+  const db = toDbProvideCtx('-', '-', dbProvider);
+  return {req, url, session: {}, sessionId: '', cookie, dbProvider, db};
 }
 
-export function ctxReqCtor(req: IncomingMessage): ctxReqType {
-  const url = parseUrl(req.url?.toString() || '/');
-  const cookie = parseCookie(req.headers.cookie);
-  return {req, url, session: {}, user: undefined, sessionId: '', cookie};
+export function ctxCtor(req: IncomingMessage, res: ServerResponse, dbProvider: dbProviderType): ctxType {
+  const ctx = ctxReqCtor(req, dbProvider) as ctxType;
+  ctx.res = res;
+  return ctx;
 }
 
 export type ctxCtorType = typeof ctxCtor;
+
+export function ctxSetDb(ctx: { user?: { login?: string }, sessionId: string, dbProvider: dbProviderType, db?: dbProviderCtx }): void {
+  ctx.db = toDbProvideCtx(ctx?.user?.login || '-', ctx.sessionId, ctx.dbProvider);
+}
 
 export const _internal_ = {parseUrl, parseCookie};

@@ -1,5 +1,6 @@
 import * as pgPromise from 'pg-promise';
 import debugCtor = require('debug');
+import {IConnectionParameters} from 'pg-promise/typescript/pg-subset';
 
 const debug = debugCtor(
   'db',
@@ -13,9 +14,7 @@ export type dbProviderType = <T>(
   trackingTag?: string,
 ) => Promise<T|undefined>;
 
-type settingProviderType = ()=>Promise<{databaseUrl, databaseUrlTest}>;
-
-export function dbProviderCtor(getSettings:settingProviderType, test = false): dbProviderType {
+export function dbProviderCtor(connectionString: string): dbProviderType {
   let db: dbType;
 
   async function dbProvider<T>(
@@ -24,9 +23,6 @@ export function dbProviderCtor(getSettings:settingProviderType, test = false): d
     trackingTag = '',
   ): Promise<T|undefined> {
     if (!db) {
-      const settings = await getSettings();
-      const {databaseUrl, databaseUrlTest} = settings;
-
       const pgPromiseOptions = {
         query:
           (e) => {
@@ -42,7 +38,28 @@ export function dbProviderCtor(getSettings:settingProviderType, test = false): d
             }
           },
       };
-      db = pgPromise<Ext>(pgPromiseOptions)(test ? databaseUrlTest : databaseUrl);
+      const m = connectionString.match(/^postgres:\/\/((?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
+      if(!m) {
+        throw new Error('Invalid connection string: ' + connectionString);
+      }
+      const user = m.groups?.user;
+      const host = m.groups?.host;
+      const port = +(m.groups?.port || '');
+      const database = m.groups?.database;
+
+      debug("DB: %s@%s:%s/%s", user, host, port, database);
+
+      const password = m.groups?.password;
+      const connectionParameters: IConnectionParameters = {
+        application_name: 'ems',
+        database,
+        host,
+        port,
+        user,
+        password,
+        ssl: host === 'localhost' ? false : {rejectUnauthorized: false},
+      };
+      db = pgPromise<Ext>(pgPromiseOptions)(connectionParameters);
     }
 
     return db.tx(async (db) => {

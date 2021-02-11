@@ -953,11 +953,19 @@ CREATE TABLE client.system
 );
 SELECT client.add_history_to_table('system');
 ------------------------------------------------------------------------------------------------------
+CREATE TABLE client.region
+(
+  region_name varchar not NULL PRIMARY KEY
+  -- e.g. ca_bc, ca_ab, ...
+);
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.client_profile
 (
   client_profile_id uuid DEFAULT func.tuid_generate() primary key,
   entity_type varchar not null check (entity_type IN ('person', 'company')),
-  partner_channel_name varchar not null references client.partner_channel ON DELETE RESTRICT
+  partner_channel_name varchar not null references client.partner_channel ON DELETE RESTRICT,
+  locale varchar not null DEFAULT 'en' CHECK ( locale in ('en','fr' )),
+  region varchar REFERENCES client.region
 );
 
 CREATE FUNCTION func.prevent_changing_entity_type()
@@ -995,16 +1003,51 @@ CREATE TABLE client.federated_login_x_system
 );
 SELECT client.add_history_to_table('federated_login_x_system');
 ------------------------------------------------------------------------------------------------------
-CREATE TABLE client.login_n_federated_login
+CREATE TABLE client.login
 (
   login varchar not null primary key,
-  federated_login_id uuid not null references client.federated_login ON DELETE cascade,
-  pwcrypted varchar not null, -- crypt compatible format, e.g. $2a$06$...
+  display_name varchar not null,
+  pwcrypted varchar, -- backwards compatible crypt format, e.g. $2a$06$...
+  n varchar, -- n,r,q: for use in newer secure password exchange system
+  r varchar,
+  q varchar,
   mfa varchar not null default 'none' check (mfa in ('none', 'sms', 'app')),
   mfa_key varchar,
-  mfa_sms_number varchar
+  mfa_sms_number varchar,
+  allow_google_login BOOLEAN not null default false
 );
-SELECT client.add_history_to_table('login_n_federated_login');
+SELECT client.add_history_to_table('login');
+------------------------------------------------------------------------------------------------------
+CREATE TABLE client.login_1_federated_login
+(
+  login varchar not null primary key REFERENCES client.login ON DELETE CASCADE,
+  federated_login_id uuid not null references client.federated_login ON DELETE cascade
+);
+SELECT client.add_history_to_table('login_1_federated_login');
+
+-- Secure Password Exchange Algorithm (SPEA)
+-- This algorithm avoids ever placing the password on the wire and guards against replay attacks
+--
+-- Setup:
+-- 1. Client provides server with Username and P = password
+-- 2. Server generates N = large Nonce (128bits+), R = 0
+-- 3. Server computes Q = H(H(P,N)) and stores (Username, N, Q, R)
+-- 4. Server send N to client
+--
+-- Login:
+-- 1. Client sends login request to server with Username
+-- 2. Server generates R = HMAC(large Nonce (128bits) + timestamp, ServerSecret)
+-- 3. Server sends R and N (looked up from Username) to the client
+-- 4. Server updates R assoicated with Username
+-- 5. Client computes T_c = H(P,N)
+-- 6. Client computes C_c = HMAC(H(T_c), R)
+-- 7. Client computes F = XOR(T_c, C_c)
+-- 8. Client sends F, R and Username to the server
+-- 9. Server validates R and atomically updates Username.R to 0 against the R provided, on failure aborts. (i.e. only allow the R to be used once to login.)
+-- 10. Server computes C_s = HMAC(Q, R)
+-- 11. Server computes T_s = F ^ C_s
+-- 12. Server computes H(T_s) and compares it with Q (looked up from Username)
+
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.client_profile_x_federated_login
 (
@@ -1016,7 +1059,7 @@ SELECT client.add_history_to_table('client_profile_x_federated_login');
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.login_log
 (
-  login varchar not null references client.login_n_federated_login,
+  login varchar not null references client.login,
   at timestamptz default clock_timestamp() PRIMARY KEY,
   result varchar not null check (result in ('-pw', '+pw', '-oauth', '+oauth', '-mfa', '+mfa')),
   remote_address varchar not null
@@ -1061,14 +1104,16 @@ CREATE TABLE client.client_profile_1_person
   client_profile_id uuid primary key references client.client_profile ON DELETE cascade,
   first_name varchar not null,
   middle_name varchar not null default '',
-  last_name varchar not null
+  last_name varchar not null,
+  date_of_birth date
 );
 SELECT client.add_history_to_table('client_profile_1_person');
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.client_profile_1_company
 (
   client_profile_id uuid primary key references client.client_profile ON DELETE cascade,
-  company_name varchar not null
+  company_name varchar not null,
+  company_number varchar
 );
 SELECT client.add_history_to_table('client_profile_1_company');
 ------------------------------------------------------------------------------------------------------
@@ -1115,8 +1160,16 @@ CREATE INDEX client_profile_n_phone_phone ON staff.client_profile_n_phone (phone
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE staff.login
 (
-  login_id UUID NOT NULL DEFAULT tuid_generate(),
-  login varchar primary key
+  login varchar not null primary key,
+  display_name varchar not null,
+  pwcrypted varchar, -- backwards compatible crypt format, e.g. $2a$06$...
+  n varchar, -- n,r,q: for use in newer secure password exchange system
+  r varchar,
+  q varchar,
+  mfa varchar not null default 'none' check (mfa in ('none', 'sms', 'app')),
+  mfa_key varchar,
+  mfa_sms_number varchar,
+  allow_google_login BOOLEAN not null default false
 );
 SELECT staff.add_history_to_table('login');
 ------------------------------------------------------------------------------------------------------
@@ -1137,6 +1190,7 @@ execute function func.prevent_change();
 CREATE UNLOGGED TABLE client.session
 (
   session_id bytea DEFAULT stuid_generate() PRIMARY KEY,
+  login varchar REFERENCES client.login,
   federated_login_id UUID references client.federated_login ON DELETE cascade, -- can be back filled after creation, so can be NULL
   client_profile_id UUID references client.client_profile ON DELETE cascade,   -- can be back filled after creation, so can be NULL
   data JSONB DEFAULT '{}'::JSONB NOT NULL,

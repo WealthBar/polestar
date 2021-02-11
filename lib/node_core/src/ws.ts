@@ -9,10 +9,11 @@ import {
 import {IncomingMessage, Server} from 'http';
 import * as WebSocket from 'ws';
 import {Socket} from 'net';
-import {ctxReqCtor} from './ctx';
+import {ctxReqCtor, parseCookie} from './ctx';
 import {readonlyRegistryType, registryCtor} from 'ts_agnostic';
 import {serializableType} from 'ts_agnostic';
 import {tuidCtor} from 'ts_agnostic';
+import {dbProviderType, sessionCreate} from './db';
 
 export type wsType = {
   wss: WebSocket.Server,
@@ -26,8 +27,7 @@ export function wsInit(
   server: Server,
   settings: serverSettingsType,
   sessionInit: reqHandlerType,
-  userSet: reqHandlerType,
-): wsType {
+  dbProvider: dbProviderType): wsType {
   const wss = new WebSocket.Server({
     noServer: true,
     backlog: 32,
@@ -134,7 +134,7 @@ export function wsInit(
         resolve,
         reject,
         data,
-        sent: false
+        sent: false,
       });
       if (isActive(ctxWs.ws)) {
         processPending();
@@ -142,8 +142,26 @@ export function wsInit(
     });
   }
 
+  wss.on('headers',function (headers: string[], req: IncomingMessage) {
+    console.log('WS headers', headers);
+    const hostHdr = req.headers.host;
+    const m = hostHdr?.match(/([^.]+\.)*(?<tld>[^.:]+\.[^.:]+)(:\d+)?$/)
+    const host = m?.groups?.tld;
+
+    console.log('WS Session Host:', host);
+
+    if (host) {
+      const sessionId = (req as any)._.sessionId;
+      // SameSite=Lax is required for the redirect from GoogleAuth back to our server to send cookies in Chrome.
+      const header = `Set-Cookie: SessionId=${sessionId}; HttpOnly; Path=/; SameSite=None; Domain=${host}; Max-Age=3600${settings.schema === 'https' ? '; Secure' : ''}`;
+      headers.push(header);
+      console.log('WS headers', headers);
+    }
+  });
+
   server.on('upgrade', async function upgrade(req: IncomingMessage, socket: Socket, head: Buffer) {
-    const ctx = ctxReqCtor(req);
+    console.log('WS upgrade');
+    const ctx = ctxReqCtor(req, dbProvider);
     const pathname = ctx.url.path;
     if (pathname !== '/ws') {
       socket.destroy();
@@ -151,7 +169,9 @@ export function wsInit(
     }
 
     await sessionInit(ctx);
-    await userSet(ctx);
+    (req as any)._ ||= {};
+    (req as any)._.sessionId = ctx.sessionId;
+
 
     wss.handleUpgrade(req, socket, head, function done(ws) {
       const wsX: webSocketExtendedType = ws as webSocketExtendedType;
@@ -162,6 +182,9 @@ export function wsInit(
         sessionId: ctx.sessionId,
         session: ctx.session,
         user: ctx.user,
+        db: ctx.db,
+        dbProvider: ctx.dbProvider,
+        permission: ctx.permission,
         requests: registryCtor<requestType>(),
         call(name: string, params: serializableType): Promise<serializableType> {
           return call(ctxWs, name, params);

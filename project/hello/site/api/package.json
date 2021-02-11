@@ -8,7 +8,8 @@
     "test": "NODE_PRESERVE_SYMLINKS=1 NODE_ENV=test nyc mocha",
     "build": "tsc",
     "dev": "NODE_PRESERVE_SYMLINKS=1 nodemon",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue"
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
+    "sql_to_ts": "node node_modules/sql_to_ts/bin/sql_to_ts"
   },
   "dependencies": {
     "@types/debug": "^4.1.5",
@@ -32,6 +33,7 @@
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3",
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
+    "sql_to_ts": "link:../../../../tool/sql_to_ts",
     "node_core": "link:../../../../lib/node_core",
     "node_script": "link:../../../../lib/node_script"
   }

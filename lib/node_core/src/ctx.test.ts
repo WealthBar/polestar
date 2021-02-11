@@ -1,6 +1,8 @@
 import {_internal_, ctxCtor} from './ctx';
 import * as assert from 'assert';
 import {ctxType} from './server.type';
+import {dbProviderStub} from './db';
+import * as sinon from 'sinon';
 
 function commonChecks(ctx: ctxType, res: any, req: any) {
   assert.strictEqual(ctx.sessionId, '');
@@ -19,7 +21,8 @@ describe('ctxCtor', () => {
       },
     };
     const res: any = {};
-    const ctx = ctxCtor(req, res);
+    const db = dbProviderStub(sinon);
+    const ctx = ctxCtor(req, res, db.dbProvider);
     commonChecks(ctx, res, req);
     assert.deepStrictEqual(ctx.url, {path: '/hello', params: [['a', '1'], ['b', '2']]});
     assert.deepStrictEqual(ctx.cookie, [['c', '3'], ['d', '4']]);
@@ -34,7 +37,8 @@ describe('ctxCtor', () => {
       },
     };
     const res: any = {};
-    const ctx = ctxCtor(req, res);
+    const db = dbProviderStub(sinon);
+    const ctx = ctxCtor(req, res, db.dbProvider);
 
     commonChecks(ctx, res, req);
     assert.deepStrictEqual(ctx.url, {path: '/', params: []});

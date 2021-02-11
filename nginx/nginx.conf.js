@@ -88,6 +88,7 @@ ${hostMap}
       proxy_connect_timeout 300;
       proxy_http_version 1.1;
       proxy_intercept_errors on;
+      proxy_pass_header  Set-Cookie;
       proxy_set_header   X-Forwarded-Proto $scheme;
       proxy_set_header   Host              $http_host;
       proxy_set_header   X-Forwarded-For   $remote_addr;
