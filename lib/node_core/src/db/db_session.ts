@@ -7,6 +7,7 @@ import {value as verifySql} from './db_session_verify_sql';
 import debugCtor = require('debug');
 import {ctxSetDb} from '../ctx';
 import {dbProviderCtx} from '../db_util';
+import {serializableType} from 'ts_agnostic';
 
 const debug = debugCtor('db:session');
 
@@ -49,7 +50,7 @@ export async function sessionVerify(ctx: { sessionId: string, dbProvider: dbProv
   }, ctx.sessionId);
 }
 
-export async function sessionUpdate(ctx: { sessionId: string, dbProvider: dbProviderType, user?: { login?: string } }): Promise<void> {
+export async function sessionUpdate(ctx: { sessionId: string, session: Record<string, serializableType>, dbProvider: dbProviderType, user?: { login?: string } }): Promise<void> {
   if (ctx.sessionId === '') {
     return;
   }
@@ -59,6 +60,7 @@ export async function sessionUpdate(ctx: { sessionId: string, dbProvider: dbProv
       updateSql,
       {
         sessionId: ctx.sessionId,
+        data: ctx.session,
         login: ctx?.user?.login,
       },
     );

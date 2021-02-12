@@ -96,11 +96,15 @@ export function server(
 
   const server: Server = createServer(requestHandler);
 
-  setInterval(() => {
-    // noinspection JSIgnoredPromiseFromCall
-    sessionExpire(dbProvider).catch((e) => {
-      console.error(e);
-    });
+  setInterval(async () => {
+    console.log('expiring sessions');
+    try {
+      // noinspection JSIgnoredPromiseFromCall
+      await sessionExpire(dbProvider);
+
+    } catch (e) {
+      console.log(e);
+    }
   }, 60000);
 
   server.listen(+settings.port, settings.host);

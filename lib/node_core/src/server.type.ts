@@ -14,7 +14,7 @@ export type ctxReqType = {
   sessionId: string;
   req: IncomingMessage,
   url: urlType,
-  session: Record<string, unknown>,
+  session: Record<string, serializableType>,
   db: dbProviderCtx,
   dbProvider: dbProviderType,
   cookie: [string, string][],
@@ -41,7 +41,7 @@ export type ctxWsType = {
   ws: webSocketExtendedType,
   call(name: string, params: serializableType): Promise<serializableType>,
   sessionId: string,
-  session: Record<string, unknown>,
+  session: Record<string, serializableType>,
   requests: registryType<requestType>,
   permission?: { [name: string]: boolean },
   user?: { login: string },

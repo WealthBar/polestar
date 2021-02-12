@@ -3,6 +3,7 @@ import {readonlyRegistryType, registryCtor, registryType} from 'ts_agnostic';
 import {DateTime, Duration} from 'luxon';
 import {tuidCtor} from 'ts_agnostic';
 
+export const deps = {window};
 export type wsHandlerType = (params: serializableType) => Promise<serializableType>;
 
 export type wsType = {
@@ -15,6 +16,7 @@ type requestType = {
   resolve: (r: serializableType) => void,
   reject: (r: serializableType) => void,
   data: string,
+  timeoutHandle: number,
 };
 
 export function wsCtor(
@@ -76,19 +78,25 @@ export function wsCtor(
     } else if (i.id && (ss === '-' || ss === '+')) {
       const req = sent.remove(i.id);
       if (req) {
+        deps.window.clearTimeout(req.timeoutHandle);
         if (ss === '+') {
           req.resolve(i.r);
         } else {
-          req.reject(i.e);
+          if (i.s === '-EX') {
+            req.reject(i.e);
+          } else {
+            req.reject('NOT_FOUND');
+          }
         }
       }
     }
   }
 
   function reconnect(): void {
-    if (waiting) {
+    if (waiting || isActive()) {
       return;
     }
+
     const utc = DateTime.utc();
     const timeSinceLastConnectionAttemptAt = utc.diff(lastConnectionAttemptAt);
     if (timeSinceLastConnectionAttemptAt < Duration.fromObject({seconds: 30})) {
@@ -128,7 +136,14 @@ export function wsCtor(
 
   reconnect();
 
-  async function call(callName: string, params: serializableType): Promise<serializableType> {
+  const defaultTimeout = Duration.fromObject({minute: 1});
+
+  function timeoutRequest(id: string): void {
+    const req = pending.remove(id) || sent.remove(id);
+    req?.reject('TIMEOUT');
+  }
+
+  async function call(callName: string, params: serializableType, timeout: Duration = defaultTimeout): Promise<serializableType> {
     return new Promise<serializableType>((resolve, reject) => {
       const id = tuidCtor();
       const data = JSON.stringify({id, n: callName, a: params, s: '?'});
@@ -137,7 +152,11 @@ export function wsCtor(
         resolve,
         reject,
         data,
+        timeoutHandle: deps.window.setTimeout(() => {
+          timeoutRequest(id);
+        }, timeout.as('milliseconds')),
       });
+
       if (isActive()) {
         processPending();
       }

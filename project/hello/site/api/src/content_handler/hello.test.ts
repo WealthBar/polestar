@@ -5,15 +5,11 @@ import * as assert from 'assert';
 describe('hello', () => {
   it('path is /hello', async () => {
     const ctx: any = {
-      sessionId: '',
-      req: {},
       res: {
         setHeader: sinon.stub(),
         end: sinon.stub(),
       },
-      url: {path: '/hello', params: []},
-      session: {},
-      cookie: [],
+      url: {path: '/hello'},
     };
 
     await helloHandler(ctx);
@@ -24,15 +20,11 @@ describe('hello', () => {
 
   it('path is not /hello', async () => {
     const ctx: any = {
-      sessionId: '',
-      req: {},
       res: {
         setHeader: sinon.stub(),
         end: sinon.stub(),
       },
       url: {path: '/helo', params: []},
-      session: {},
-      cookie: [],
     };
 
     await helloHandler(ctx);

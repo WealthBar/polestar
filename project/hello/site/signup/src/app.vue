@@ -3,24 +3,36 @@
       id="app"
       class="container">
     <b-loading :is-full-page="true" v-model="loading" :can-cancel="false"></b-loading>
-    <div class="columns is-centered is-vcentered" style="height: 100vh">
+    <div class="columns is-centered mx-4" style="margin-top: 5vh">
       <div class="card column step" v-if="showSignupInfo" :disabled="!showSignupInfo">
-        <div class="card-content">
-          <h1 class="title is-1" v-if="modeSignup">Sign Up</h1>
-          <h1 class="title is-1" v-if="modeSignin">Sign In</h1>
-          <form ref="form_ep" @submit.prevent="onSubmit">
+        <div class="card-content" style="padding: .5rem">
+          <div class="columns is-gapless is-mobile is-vcentered">
+            <div class="column">
+              <h1 class="title is-1" v-if="modeSignup">Sign Up</h1>
+              <h1 class="title is-1" v-if="modeSignin">Sign In</h1>
+            </div>
+            <div class="column is-narrow is-pulled-right  is-vcentered">
+              <b-button v-if="modeSignup" size="is-small" icon-left="arrow-right" @click="switchModeToSignin"
+                  style="min-width: 6rem">Sign In
+              </b-button>
+              <b-button v-if="modeSignin" size="is-small" icon-left="arrow-right" @click="switchModeToSignup"
+                  style="min-width: 6rem">Sign Up
+              </b-button>
+            </div>
+          </div>
+          <form ref="form_ep" @submit.prevent="submitLogin">
             <b-field
                 label="Email Address"
-                :message="emailMessage"
-                :type="emailType"
             >
-              <div class="columns is-gapless">
+              <div class="columns is-gapless is-mobile mb-0">
                 <div class="column">
                   <b-input ref="email"
                       type="email"
                       name="email"
                       placeholder="alice@example.com"
                       v-model="email"
+                      @focus="emailFocus"
+                      @blur="emailBlur"
                   />
                 </div>
                 <div class="column is-narrow ml-1">
@@ -41,12 +53,12 @@
               />
             </b-field>
             <br/>
-            <div class="columns">
-              <div class="column is-narrow is-pulled-left" v-if="modeSignin">
+            <div class="columns is-mobile">
+              <div class="column is-narrow" v-if="modeSignin">
                 <b-button :disabled="loginDisabled" icon-left="question" @click="forgotPassword">Forgot Password
                 </b-button>
               </div>
-              <div class="column"></div>
+              <div class="column p-0"></div>
               <div class="column is-pulled-right is-narrow">
                 <b-button type="is-primary" native-type="submit" :disabled="loginDisabled" icon-right="arrow-right">
                   <span v-if="modeSignup">Create Account</span>
@@ -54,6 +66,10 @@
                 </b-button>
               </div>
             </div>
+            <b-notification v-if="showEmailMessage" :closable="false" type="is-danger is-light">{{
+                emailMessage
+              }}
+            </b-notification>
           </form>
         </div>
       </div>
@@ -62,15 +78,18 @@
         <div class="card-content">
           <h1 class="title is-1">Verify Email</h1>
           <h3 class="subtitle is-3">{{ email }}</h3>
-          <form ref="form_ve" @submit.prevent="onSubmit">
+          <form ref="form_ve" @submit.prevent="submitCode">
             <b-field
                 label="Code"
             >
               <b-input
                   type="text"
                   minlength="8"
+                  maxlength="8"
                   name="code"
-                  placeholder=""
+                  @focus="codeFocus"
+                  @blur="codeBlur"
+                  placeholder="00000000"
                   v-model="code"
               />
             </b-field>
@@ -89,11 +108,16 @@
                 </b-button>
               </div>
             </div>
+            <b-notification v-if="showCodeMessage" :closable="false" type="is-danger is-light">{{
+                codeMessage
+              }}
+            </b-notification>
           </form>
         </div>
       </div>
     </div>
   </div>
+
 </template>
 
 <script lang="ts">
@@ -112,7 +136,7 @@ const ws = wsCtor(apiHostName());
 
 async function apiEmailStatus(email: string): Promise<{ inUse: boolean; allowGoogleLogin: boolean }> {
   try {
-    const rawReply = await ws.call('emailStatus', {email});
+    const rawReply = await ws.call('signup/emailStatus', {email});
     const reply = rawReply as { inUse: boolean; allowGoogleLogin: boolean };
     if (!reply) {
       return {inUse: false, allowGoogleLogin: false};
@@ -125,7 +149,16 @@ async function apiEmailStatus(email: string): Promise<{ inUse: boolean; allowGoo
 }
 
 async function apiEmailSendVerification(email: string): Promise<{ error?: string }> {
-  const rawReply = await ws.call('emailSendVerification', {email});
+  const rawReply = await ws.call('signup/emailSendVerification', {email});
+  const reply = rawReply as { error?: string };
+  if (!reply) {
+    return {error: 'NO_REPLY'};
+  }
+  return reply;
+}
+
+async function apiCreateAccount(email: string, code: string): Promise<{ error?: string }> {
+  const rawReply = await ws.call('signup/emailCreateAccount', {email, code});
   const reply = rawReply as { error?: string };
   if (!reply) {
     return {error: 'NO_REPLY'};
@@ -141,17 +174,18 @@ export default Vue.extend({
   data() {
     return {
       email: '',
-      emailMessage: '',
-      emailType: '',
+      inEmail: true,
       password: '',
       mode: 'signup',
       epValid: false,
       veValid: false,
       emailValid: false,
       passwordValid: false,
-      emailStatus: {inUse: false, allowGoogleLogin: false, checking: false},
+      emailStatus: {inUse: false, allowGoogleLogin: false, checking: false, email: ''},
       current: 'signupInfo',
       code: '',
+      inCode: false,
+      codeInvalid: false,
       loading: false,
       form: {},
     };
@@ -173,29 +207,50 @@ export default Vue.extend({
   },
   methods: {
     async checkEmailInUse() {
+      if (this.emailStatus.email === this.email) {
+        return;
+      }
       this.emailStatus.checking = true;
-      const r = await apiEmailStatus(this.email);
-      this.emailStatus.inUse = r.inUse;
-      this.emailStatus.allowGoogleLogin = r.allowGoogleLogin;
-
-      if (this.modeSignup && this.emailStatus.inUse) {
-        this.emailMessage = 'Email already in use';
-        this.emailType = 'is-danger';
-      } else {
-        this.emailMessage = '';
-        this.emailType = 'is-success';
+      const email = this.email;
+      const r = await apiEmailStatus(email);
+      if (this.email === email) {
+        this.emailStatus.email = email;
+        this.emailStatus.inUse = r.inUse;
+        this.emailStatus.allowGoogleLogin = r.allowGoogleLogin;
       }
       this.emailStatus.checking = false;
+    },
+    emailFocus() {
+      this.inEmail = true;
+    },
+    emailBlur() {
+      this.inEmail = false;
+    },
+    codeFocus() {
+      this.inCode = true;
+    },
+    codeBlur() {
+      this.inCode = false;
     },
     rateLimitedCheckEmailInUse() {
       // replaced in create
     },
-    async onSubmit() {
+    async submitLogin() {
       await this.checkEmailInUse();
       this.loading = true;
       if (this.modeSignup) {
         this.current = 'accountCreation';
+        await apiEmailSendVerification(this.email);
         this.loading = false;
+      }
+    },
+    async submitCode() {
+      this.loading = true;
+      const r = await apiCreateAccount(this.email, this.code);
+      if (r.error) {
+        deps.window.location.replace(deps.window.location.toString().replace(this.mode,'app'));
+      } else {
+        this.codeInvalid = true;
       }
     },
     back() {
@@ -210,7 +265,7 @@ export default Vue.extend({
       }
     },
     updateVeValid() {
-      this.veValid = this.code.length == 8;
+      this.veValid = this.code.length === 8;
     },
     async forgotPassword() {
       this.loading = true;
@@ -219,12 +274,20 @@ export default Vue.extend({
     googleLogin() {
       // todo
     },
+    switchModeToSignin() {
+      this.mode = 'signin';
+      this.rateLimitedCheckEmailInUse();
+    },
+    switchModeToSignup() {
+      this.mode = 'signup';
+      this.rateLimitedCheckEmailInUse();
+    },
   },
   computed: {
-    showSignupInfo(this: { current: string }) {
+    showSignupInfo(this: { current: string }): boolean {
       return this.current === 'signupInfo';
     },
-    showAccountCreation(this: { current: string }) {
+    showAccountCreation(this: { current: string }): boolean {
       return this.current === 'accountCreation';
     },
     modeSignup(): boolean {
@@ -240,6 +303,9 @@ export default Vue.extend({
       if (!this.emailValid) {
         return true;
       }
+      if (!this.passwordValid) {
+        return true;
+      }
       if (!this.emailStatus.inUse && this.modeSignin) {
         return true;
       }
@@ -251,7 +317,27 @@ export default Vue.extend({
     googleEnabled(): boolean {
       return this.emailStatus.allowGoogleLogin && this.modeSignin;
     },
-
+    showEmailMessage(): boolean {
+      return (!this.inEmail && !!this.emailMessage);
+    },
+    emailMessage(): string {
+      if (this.modeSignup && this.emailStatus.inUse) {
+        return 'Email already in use'; // TODO: move text into template!
+      }
+      if (this.modeSignin && !this.emailStatus.inUse) {
+        return 'Email not found'; // TODO: move text into template!
+      }
+      return '';
+    },
+    codeMessage(): string {
+      if (this.modeSignup && this.codeInvalid) {
+        return 'Invalid Code'; // TODO: move text into template!
+      }
+      return '';
+    },
+    showCodeMessage(): boolean {
+      return !this.inCode && !this.codeInvalid;
+    },
   },
 });
 
@@ -262,7 +348,7 @@ export default Vue.extend({
 .step {
   backface-visibility: hidden;
   z-index: 1;
-  min-width: 512px;
+  min-width: 256px;
   max-width: 768px;
 }
 

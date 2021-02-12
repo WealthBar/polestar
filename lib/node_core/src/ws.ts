@@ -1,4 +1,5 @@
 import {
+  ctxReqType,
   ctxWsType,
   reqHandlerType,
   requestType,
@@ -9,15 +10,16 @@ import {
 import {IncomingMessage, Server} from 'http';
 import * as WebSocket from 'ws';
 import {Socket} from 'net';
-import {ctxReqCtor, parseCookie} from './ctx';
+import {ctxReqCtor} from './ctx';
 import {readonlyRegistryType, registryCtor} from 'ts_agnostic';
 import {serializableType} from 'ts_agnostic';
 import {tuidCtor} from 'ts_agnostic';
-import {dbProviderType, sessionCreate} from './db';
+import {dbProviderType} from './db';
+import {sessionUpdate} from '../dist';
 
 export type wsType = {
   wss: WebSocket.Server,
-  call(ctxWs: ctxWsType, callName: string, params: serializableType): Promise<serializableType>;
+  call(ctxWs: ctxWsType, callName: string, params: serializableType): Promise<serializableType>,
 };
 
 export function wsInit(
@@ -33,9 +35,9 @@ export function wsInit(
     backlog: 32,
   });
 
-  function heartbeat() {
-    console.log('heartbeat');
-    this.isAlive = true;
+  function heartbeat(ctxWs: ctxWsType) {
+    console.log('heartbeat', ctxWs.sessionId);
+    ctxWs.ws.isAlive = true;
   }
 
   async function fromRemote(ctxWs: ctxWsType, data: string): Promise<void> {
@@ -45,6 +47,8 @@ export function wsInit(
       if (i.id && i.n && ss === '?') {
         try {
           const call = wsHandlerRegistry.lookup(i.n);
+          await sessionUpdate(ctxWs);
+
           if (call) {
             const r = await call(ctxWs, i.a);
             ctxWs.ws.send(JSON.stringify({
@@ -99,14 +103,20 @@ export function wsInit(
   setInterval(ping, 30000);
 
   async function onClose(ctxWs: ctxWsType) {
-    await wsOnCloseHandler(ctxWs);
-    for (const id of ctxWs.requests.names) {
-      if (ctxWs.requests.lookup(id)?.ctxWs === ctxWs) {
-        const p = ctxWs.requests.remove(id);
-        p?.reject({id: p.id, s: '-CC'});
+    if (ctxWsRegistry.remove(ctxWs.sessionId)) {
+      try {
+        await wsOnCloseHandler(ctxWs);
+      } catch (e) {
+        console.error('onClose exception:', e);
+      }
+
+      for (const id of ctxWs.requests.names) {
+        if (ctxWs.requests.lookup(id)?.ctxWs === ctxWs) {
+          const p = ctxWs.requests.remove(id);
+          p?.reject({id: p.id, s: '-CC'});
+        }
       }
     }
-    ctxWsRegistry.remove(ctxWs.sessionId);
   }
 
   wss.on('connection', async (ctxWs: ctxWsType) => {
@@ -117,8 +127,12 @@ export function wsInit(
     }
     ctxWs.ws.isAlive = true;
     ctxWs.ws.on('close', () => onClose(ctxWs));
-    ctxWs.ws.on('pong', heartbeat);
-    await wsOnConnectHandler(ctxWs);
+    ctxWs.ws.on('pong', () => heartbeat(ctxWs));
+    try {
+      await wsOnConnectHandler(ctxWs);
+    } catch (e) {
+      console.error('onConnect exception:', e);
+    }
     ctxWs.ws.on('message', data => fromRemote(ctxWs, data as string));
   });
 
@@ -142,59 +156,72 @@ export function wsInit(
     });
   }
 
-  wss.on('headers',function (headers: string[], req: IncomingMessage) {
-    console.log('WS headers', headers);
+  type IncomingMessageEx = IncomingMessage & { _: { ctx: ctxReqType } };
+
+  wss.on('headers', function (headers: string[], req: IncomingMessage) {
     const hostHdr = req.headers.host;
-    const m = hostHdr?.match(/([^.]+\.)*(?<tld>[^.:]+\.[^.:]+)(:\d+)?$/)
+    const m = hostHdr?.match(/([^.]+\.)*(?<tld>[^.:]+\.[^.:]+)(:\d+)?$/);
     const host = m?.groups?.tld;
 
-    console.log('WS Session Host:', host);
-
     if (host) {
-      const sessionId = (req as any)._.sessionId;
+      const ctx = (req as IncomingMessageEx)._.ctx;
+      const sessionId = ctx.sessionId;
       // SameSite=Lax is required for the redirect from GoogleAuth back to our server to send cookies in Chrome.
       const header = `Set-Cookie: SessionId=${sessionId}; HttpOnly; Path=/; SameSite=None; Domain=${host}; Max-Age=3600${settings.schema === 'https' ? '; Secure' : ''}`;
       headers.push(header);
-      console.log('WS headers', headers);
     }
   });
 
   server.on('upgrade', async function upgrade(req: IncomingMessage, socket: Socket, head: Buffer) {
-    console.log('WS upgrade');
-    const ctx = ctxReqCtor(req, dbProvider);
-    const pathname = ctx.url.path;
-    if (pathname !== '/ws') {
-      socket.destroy();
-      return;
+    try {
+      const ctx = ctxReqCtor(req, dbProvider);
+      const pathname = ctx.url.path;
+      if (pathname !== '/ws') {
+        socket.destroy();
+        return;
+      }
+
+      await sessionInit(ctx);
+      const reqEx = req as IncomingMessageEx;
+
+      // this is a hack to get the ctx to the headers event where we need the sessionId
+      reqEx._ = {ctx};
+
+      wss.handleUpgrade(req, socket, head, function done(ws) {
+        try {
+          const wsX: webSocketExtendedType = ws as webSocketExtendedType;
+          wsX.isAlive = true;
+
+          const ctxWs: ctxWsType = {
+            ws: wsX,
+            sessionId: ctx.sessionId,
+            session: ctx.session,
+            user: ctx.user,
+            db: ctx.db,
+            dbProvider: ctx.dbProvider,
+            permission: ctx.permission,
+            requests: registryCtor<requestType>(),
+            call(name: string, params: serializableType): Promise<serializableType> {
+              return call(ctxWs, name, params);
+            },
+          };
+
+          // sessions can't be shared
+          const existingConnection = ctxWsRegistry.remove(ctxWs.sessionId);
+          if (existingConnection) {
+            onClose(existingConnection);
+          }
+
+          ctxWsRegistry.register(ctxWs.sessionId, ctxWs);
+
+          wss.emit('connection', ctxWs);
+        } catch (e) {
+          console.error('handleUpdate exception', e);
+        }
+      });
+    } catch (e) {
+      console.error('update exception', e);
     }
-
-    await sessionInit(ctx);
-    (req as any)._ ||= {};
-    (req as any)._.sessionId = ctx.sessionId;
-
-
-    wss.handleUpgrade(req, socket, head, function done(ws) {
-      const wsX: webSocketExtendedType = ws as webSocketExtendedType;
-      wsX.isAlive = true;
-
-      const ctxWs: ctxWsType = {
-        ws: wsX,
-        sessionId: ctx.sessionId,
-        session: ctx.session,
-        user: ctx.user,
-        db: ctx.db,
-        dbProvider: ctx.dbProvider,
-        permission: ctx.permission,
-        requests: registryCtor<requestType>(),
-        call(name: string, params: serializableType): Promise<serializableType> {
-          return call(ctxWs, name, params);
-        },
-      };
-
-      ctxWsRegistry.register(ctxWs.sessionId, ctxWs);
-
-      wss.emit('connection', ctxWs);
-    });
   });
 
   function isActive(ws: WebSocket | undefined): boolean {

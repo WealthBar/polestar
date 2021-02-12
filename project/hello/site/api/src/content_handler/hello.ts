@@ -1,14 +1,14 @@
-import {ctxType} from 'node_core';
 import {resolvedVoid} from 'ts_agnostic';
+import {ctxType} from 'node_core';
 
-export function helloHandler(ctx: ctxType): Promise<void> {
+// subset ctx to the fields we use to make testing easier.
+export function helloHandler(ctx: Pick<ctxType, 'url' | 'res'>): Promise<void> {
   if (ctx.url.path !== '/hello') {
     return resolvedVoid;
   }
 
   ctx.res.statusCode = 200;
   ctx.res.setHeader('Content-Type', 'text/plain');
-  console.log(ctx.user);
-  ctx.res.end("Hello");
+  ctx.res.end('Hello');
   return resolvedVoid;
 }

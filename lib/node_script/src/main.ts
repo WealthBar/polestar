@@ -7,7 +7,7 @@ export const main = ((function mainCtor() {
     (error: Error) => {
       /* istanbul ignore next */
       console.error(
-        `unhandledRejection: ${error}`,
+        `unhandledRejection: ${error.message}\n${error.stack}`,
         error.stack,
       );
     },

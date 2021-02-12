@@ -1037,12 +1037,14 @@ SELECT client.add_history_to_table('login_1_federated_login');
 -- Login:
 -- 1. Client sends login request to server with Username
 -- 2. Server generates R = HMAC(large Nonce (128bits) + timestamp, ServerSecret)
--- 3. Server sends R and N (looked up from Username) to the client
--- 4. Server updates R assoicated with Username
+-- 3. Server updates R associated with Username
+-- 4. Server sends R and N (looked up from Username) to the client
+  ------------
 -- 5. Client computes T_c = H(P,N)
 -- 6. Client computes C_c = HMAC(H(T_c), R)
 -- 7. Client computes F = XOR(T_c, C_c)
 -- 8. Client sends F, R and Username to the server
+  ------------
 -- 9. Server validates R and atomically updates Username.R to 0 against the R provided, on failure aborts. (i.e. only allow the R to be used once to login.)
 -- 10. Server computes C_s = HMAC(Q, R)
 -- 11. Server computes T_s = F ^ C_s

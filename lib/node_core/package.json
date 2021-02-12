@@ -17,6 +17,7 @@
     "@types/sinon": "^9.0.9",
     "@types/ws": "^7.4.0",
     "axios": "^0.21.1",
+    "bcryptjs": "^2.4.3",
     "debug": "^4.3.1",
     "immer": "^8.0.0",
     "lodash": "^4.17.20",

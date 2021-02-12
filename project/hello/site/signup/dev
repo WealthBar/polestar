@@ -1,2 +1,8 @@
 #!/usr/bin/env bash
+pushd ../../../../lib/ts_agnostic
+./build
+popd
+pushd ../../../../lib/ts_browser
+./build
+popd
 yarn serve
