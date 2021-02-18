@@ -1,5 +1,7 @@
 import {createHash, createHmac, randomBytes} from 'crypto';
 import * as bcrypt from 'bcryptjs';
+import {secureTokenCtor, secureTokenVerify} from './stoken';
+import {stuidEpochMicro} from './stuid';
 
 function buffer_xor(a, b) {
   const length = Math.max(a.length, b.length);
@@ -14,71 +16,93 @@ function buffer_xor(a, b) {
 
 /*
 -- Setup:
--- 1. Client provides server with Username and P = password
--- 2. Server generates N = large Nonce (256bits), R = ''
--- 3. Server computes HPN = sha512(P,N)
--- 4. Server computes Q = bcrypt(HPN, salt) and stores (Username, N, Q, R)
+-- 1. Client starts account step
+-- 2. Server generated N = large Nonce (256bits), sends to client
+-- 3. Client computes HPN = sha512(password,N), sends to server
+-- 4. Server computes Q = bcrypt(HPN, salt) and stores (Username => N, Q, R='')
 
 note: Q contains the salt as a prefix.
 
-Storing bcrypt(H(P,N)) instead of bcrypt(password) makes cracking attempts a bit harder.
-N is bigger than the standard bcrypt salt, making the total salt size effectively 384 bits.
+The client computing H(P,N) avoids sending the password in plain text to us so we can
+never know the original password. However, knowing HPN is enough for an attacker to
+login as the client, so this must still be done on a secure connection and is the weakest
+point in the protocol.
+
+Storing bcrypt(H(P,N)) instead of bcrypt(password) makes cracking attempts a bit harder if
+an attacker dumps the DB as it's not a common practice so cracking software doesn't
+support it by default.
+
+N is bigger than the standard bcrypt salt, making the total salt size much larger
+than normal.
 
 */
 
-export function crSetup(password: string): { nb64: string, q: string } {
+export function crServerSetupInit(): { nb64: string } {
   const n = randomBytes(32);
-  const hpn64 = createHash('sha512').update(password).update(n).digest('base64');
   const nb64 = n.toString('base64');
+  return {nb64};
+}
+
+export function crClientSetupInitEg(password: string, nb64: string): { hpnb64: string } {
+  const n = Buffer.from(nb64, 'base64');
+  const hpnb64 = createHash('sha512').update(password).update(n).digest('base64');
+  return {hpnb64: hpnb64};
+}
+
+export function crServerSetup(hpnb64: string): { q: string } {
+  if (hpnb64.length !== 88) {
+    throw new Error('INVALID_PARAMETERS');
+  }
+  const hpn = Buffer.from(hpnb64, 'base64');
   const salt = bcrypt.genSaltSync();
-  const q = bcrypt.hashSync(hpn64, salt);
-  return {nb64, q};
+  const hpns = hpn.toString();
+  const q = bcrypt.hashSync(hpns, salt);
+  return {q};
 }
 
 /*
--- 1. Client sends login request to server with Username
--- 2. Server generates R = HMAC_sha512(large Nonce (128bits) + timestamp, ServerSecret)
--- 3. Server updates R associated with Username
--- 4. Server sends R, salt, and N (looked up from Username) to the client
+-- 11. Client sends login request to server with Username
+-- 12. Server generates R = secureToken
+-- 13. Server updates R associated with Username
+-- 14. Server sends R, salt, and N (looked up from Username) to the client
 
 R here is basically a once-time-use session key.
+Note: Since R is signed you could skip storing it and rely on only the signature. This would allow multiple
+attempts using the same R up to the time limit given.
 */
 
-export function crInitChallenge(secret: string): { rb64: string } {
-  const n = randomBytes(32);
-  const ts = Date.now().toString(16);
-  const r = createHmac('sha512', secret).update(n).update(ts).digest();
-  const rb64 = r.toString('base64');
-  return {rb64};
+export function crServerInitChallenge(secret: string): { r: string } {
+  const r = secureTokenCtor(secret);
+  return {r};
 }
 
 /*
--- 5. Client computes HPN = sha512(P,N)
--- 6. Client computes Q = bcrypt(HPN, salt)
--- 7. Client computes Cc = HMAC_sha512(Q, R)
--- 8. Client computes F = XOR(HPN, Cc)
--- 9. Client sends F, R and Username to the server
+-- 15. Client computes HPN = sha512(P,N) // originally sent to the server back in setup step 3
+-- 16. Client computes Q = bcrypt(HPN, salt) // never sent on the wire
+-- 17. Client computes Cc = HMAC_sha512(Q, R) // sign Q using R to generated a key
+-- 18. Client computes F = XOR(HPN, Cc) // xor encrypt HPN with key
+-- 19. Client sends F, R and Username to the server
 
 R, N and the salt are provided by the server.
 HPN here depends on the client knowing the password.
+If an attacker captured HPN in step 3 they'd use it directly, so known HPN is enough to login.
 Q is derived directly from HPN and the salt
 Cc is the symmetric key to xor encrypt HPN against, derived using Q and R (the one time use session key)
-Since cc's derivation includes the password cc is as hard to guess as the password is.
+Since cc's derivation includes the password, cc is as hard to guess as the password is.
 F is the xor encrypted HPN using Cc as the key
 
 F and R are returned to the server.
 */
 
 export function crGetSalt(q: string): string {
-  return q.substr(0,29);
+  return q.substr(0, 29);
 }
 
-export function crResponse(rb64: string, nb64: string, salt: string, password: string): { fb64: string } {
+export function crClientResponseEg(r: string, nb64: string, salt: string, password: string): { fb64: string } {
   const n = Buffer.from(nb64, 'base64');
-  const r = Buffer.from(rb64, 'base64');
   const hpn = createHash('sha512').update(password).update(n).digest();
-  const hpn64 = hpn.toString('base64');
-  const q = bcrypt.hashSync(hpn64, salt);
+  const hpns = hpn.toString();
+  const q = bcrypt.hashSync(hpns, salt);
   const cc = createHmac('sha512', r).update(q).digest();
   const f = buffer_xor(hpn, cc);
   const fb64 = f.toString('base64');
@@ -86,10 +110,11 @@ export function crResponse(rb64: string, nb64: string, salt: string, password: s
 }
 
 /*
--- 9. Server validates R and atomically updates Username.R to '' against the R provided, on failure aborts. (i.e. only allow the R to be used once to login.)
--- 10. Server computes C_s = HMAC(Q, R)
--- 11. Server computes T_s = XOR(F, C_s)
--- 12. Server computes H(T_s) and compares it with Q (looked up from Username)
+-- 20. Server validates R, and atomically updates Username.R to '' against the R provided, on failure aborts.
+       (i.e. only allow the R to be used once to login.)
+-- 21. Server computes C_s = HMAC(Q, R) // sign Q using R to generate a key
+-- 22. Server computes T_s = XOR(F, C_s) //
+-- 23. Server computes H(T_s) and compares it with Q (looked up from Username)
 
 R is validated against the user before calling verify
 
@@ -99,13 +124,22 @@ HPN is decrypted from F using Cs
 if bcrypt(HPN, salt) matches Q the password the client had must be a match.
 */
 
-export function crVerify(fb64: string, rb64: string, q: string): boolean {
+export function crServerVerify(fb64: string, r: string, q: string, secret: string): boolean {
+  const s = secureTokenVerify(r, secret);
+  if (!s) {
+    return false;
+  }
+  const ts = stuidEpochMicro(s);
+  const tenMinutesAgoEpochMicro = (Date.now() - 10 * 60 * 60) * 1000;
+  if (!ts || ts < tenMinutesAgoEpochMicro) {
+    return false;
+  }
+
   const f = Buffer.from(fb64, 'base64');
-  const r = Buffer.from(rb64, 'base64');
   const cs = createHmac('sha512', r).update(q).digest();
   const hpn = buffer_xor(f, cs);
-  const hpn64 = hpn.toString('base64');
+  const hpns = hpn.toString();
   const salt = crGetSalt(q);
-  const v = bcrypt.hashSync(hpn64, salt);
+  const v = bcrypt.hashSync(hpns, salt);
   return q === v;
 }

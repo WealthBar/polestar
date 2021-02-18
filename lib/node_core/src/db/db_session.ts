@@ -8,6 +8,7 @@ import debugCtor = require('debug');
 import {ctxSetDb} from '../ctx';
 import {dbProviderCtx} from '../db_util';
 import {serializableType} from 'ts_agnostic';
+import {ctxBaseType} from '../server.type';
 
 const debug = debugCtor('db:session');
 
@@ -50,7 +51,7 @@ export async function sessionVerify(ctx: { sessionId: string, dbProvider: dbProv
   }, ctx.sessionId);
 }
 
-export async function sessionUpdate(ctx: { sessionId: string, session: Record<string, serializableType>, dbProvider: dbProviderType, user?: { login?: string } }): Promise<void> {
+export async function sessionUpdate(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'user'>): Promise<void> {
   if (ctx.sessionId === '') {
     return;
   }
@@ -62,6 +63,8 @@ export async function sessionUpdate(ctx: { sessionId: string, session: Record<st
         sessionId: ctx.sessionId,
         data: ctx.session,
         login: ctx?.user?.login,
+        clientProfileId: ctx?.user?.clientProfileId,
+        federatedLoginId: ctx?.user?.federatedLoginId
       },
     );
     debug(`update result: ${JSON.stringify(result)}`);

@@ -1,4 +1,4 @@
-import {crInitChallenge, crResponse, crSetup, crVerify, crGetSalt} from './cr';
+import {crGetSalt, crServerInitChallenge, crClientResponseEg, crServerSetup, crClientSetupInitEg, crServerSetupInit, crServerVerify} from './cr';
 import * as assert from 'assert';
 
 describe('cr', () => {
@@ -6,34 +6,83 @@ describe('cr', () => {
     const secret = 'asdf';
     const password = 'testing123';
 
-    // the only time the password is sent is on setup
-    const {nb64, q} = crSetup(password);
+    // -- ACCOUNT CREATION
+    // server
+    const {nb64} = crServerSetupInit();
+    // -- record username initiated login in login_log w/ remote IP & user agent info
+    // -- send nb64 to client
 
-    // client initiates login
-    const {rb64} = crInitChallenge(secret);
-    // store rb64
+    // client
+    const {hpnb64} = crClientSetupInitEg(password, nb64);
+    // -- send hpn64 to server
 
-    // send nb64, rb64, salt to client
-    // client provides password
+    // server
+    const {q} = crServerSetup(hpnb64);
+    // -- stores n, q, r='' against username.
+
+
+    // -- LOGIN
+
+    // server
+    const {r} = crServerInitChallenge(secret);
+    // -- store r against username
+    // -- send nb64, r, salt to client
+
+    // client
     const salt = crGetSalt(q);
-    const {fb64} = crResponse(rb64, nb64, salt, password);
+    const {fb64} = crClientResponseEg(r, nb64, salt, password);
 
-    // client sends back fb64
-    // server verifies rb64 matches for login, swaps to '', fails if rb64 doesn't match.
+    // -- send fb64 to server
 
-    // verify fb64 against rb64 and q
-    const verified = crVerify(fb64, rb64, q);
+    // server
+
+    // -- verifies rb64 matches for username, token is valid, token is <10 minutes old
+    // -- swaps r to '' (one use only)
+
+    const verified = crServerVerify(fb64, r, q, secret);
+    // -- record username success/failure of login in login_log  w/ remote IP & user agent info
 
     assert(verified);
   });
   it('invalid password', () => {
     const secret = 'asdf';
     const password = 'testing123';
-    const {nb64, q} = crSetup(password);
-    const {rb64} = crInitChallenge(secret);
+
+    // -- ACCOUNT CREATION
+    // server
+    const {nb64} = crServerSetupInit();
+    // -- record username initiated login in login_log w/ remote IP & user agent info
+    // -- send nb64 to client
+
+    // client
+    const {hpnb64} = crClientSetupInitEg(password, nb64);
+    // -- send hpn64 to server
+
+    // server
+    const {q} = crServerSetup(hpnb64);
+    // -- stores n, q, r='' against username.
+
+
+    // -- LOGIN
+
+    // server
+    const {r} = crServerInitChallenge(secret);
+    // -- store r against username
+    // -- send nb64, r, salt to client
+
+    // client
     const salt = crGetSalt(q);
-    const {fb64} = crResponse(rb64, nb64, salt, 'attacker');
-    const verified = crVerify(fb64, rb64, q);
+    const {fb64} = crClientResponseEg(r, nb64, salt, 'testing124');
+
+    // -- send fb64 to server
+
+    // server
+
+    // -- verifies rb64 matches for username, token is valid, token is <10 minutes old
+    // -- swaps r to '' (one use only)
+
+    const verified = crServerVerify(fb64, r, q, secret);
+    // -- record username success/failure of login in login_log  w/ remote IP & user agent info
 
     assert(!verified);
   });

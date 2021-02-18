@@ -11,11 +11,8 @@ import {IncomingMessage, Server} from 'http';
 import * as WebSocket from 'ws';
 import {Socket} from 'net';
 import {ctxReqCtor} from './ctx';
-import {readonlyRegistryType, registryCtor} from 'ts_agnostic';
-import {serializableType} from 'ts_agnostic';
-import {tuidCtor} from 'ts_agnostic';
-import {dbProviderType} from './db';
-import {sessionUpdate} from '../dist';
+import {readonlyRegistryType, registryCtor, serializableType, tuidCtor} from 'ts_agnostic';
+import {dbProviderType, sessionUpdate} from './db';
 
 export type wsType = {
   wss: WebSocket.Server,
@@ -47,8 +44,6 @@ export function wsInit(
       if (i.id && i.n && ss === '?') {
         try {
           const call = wsHandlerRegistry.lookup(i.n);
-          await sessionUpdate(ctxWs);
-
           if (call) {
             const r = await call(ctxWs, i.a);
             ctxWs.ws.send(JSON.stringify({
@@ -62,6 +57,7 @@ export function wsInit(
               s: '-NF',
             }));
           }
+          await sessionUpdate(ctxWs);
         } catch (e) {
           ctxWs.ws.send(JSON.stringify({
             id: i.id,
@@ -194,6 +190,7 @@ export function wsInit(
 
           const ctxWs: ctxWsType = {
             ws: wsX,
+            remoteAddress: req.connection.remoteAddress || '-',
             sessionId: ctx.sessionId,
             session: ctx.session,
             user: ctx.user,
@@ -207,9 +204,11 @@ export function wsInit(
           };
 
           // sessions can't be shared
-          const existingConnection = ctxWsRegistry.remove(ctxWs.sessionId);
+          const existingConnection = ctxWsRegistry.lookup(ctxWs.sessionId);
           if (existingConnection) {
             onClose(existingConnection);
+            ctxWs.ws.close();
+            ctxWsRegistry.remove(ctxWs.sessionId);
           }
 
           ctxWsRegistry.register(ctxWs.sessionId, ctxWs);

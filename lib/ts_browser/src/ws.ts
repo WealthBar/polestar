@@ -30,7 +30,6 @@ export function wsCtor(
   let ws: WebSocket | undefined;
 
   let lastConnectionAttemptAt = DateTime.utc().minus({minutes: 2});
-  let waiting = false;
 
   const pending: registryType<requestType> = registryCtor<requestType>();
   const sent: registryType<requestType> = registryCtor<requestType>();
@@ -92,8 +91,10 @@ export function wsCtor(
     }
   }
 
+  let timeoutHandle: number | undefined;
+
   function reconnect(): void {
-    if (waiting || isActive()) {
+    if (timeoutHandle || isActive()) {
       return;
     }
 
@@ -101,9 +102,8 @@ export function wsCtor(
     const timeSinceLastConnectionAttemptAt = utc.diff(lastConnectionAttemptAt);
     if (timeSinceLastConnectionAttemptAt < Duration.fromObject({seconds: 30})) {
       const delay = timeSinceLastConnectionAttemptAt.as('milliseconds');
-      waiting = true;
-      setTimeout(() => {
-        waiting = false;
+      timeoutHandle = deps.window.setTimeout(() => {
+        timeoutHandle = undefined;
         reconnect();
       }, delay);
       return;
@@ -111,7 +111,14 @@ export function wsCtor(
 
     lastConnectionAttemptAt = utc;
 
-    ws = new WebSocket(wsUrl, ['rpc_v1']);
+    console.log('reconnecting. ws.readyState is', ws?.readyState);
+    try {
+      ws = new WebSocket(wsUrl, ['rpc_v1']);
+    } catch (e) {
+      console.error(e);
+      reconnect();
+      return;
+    }
 
     ws.onopen = () => {
       onConnectHandler?.();
@@ -123,6 +130,7 @@ export function wsCtor(
     };
 
     ws.onclose = () => {
+      console.log('ws closed', ws?.readyState);
       ws = undefined;
       onCloseHandler?.();
       reconnect();

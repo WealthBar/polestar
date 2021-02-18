@@ -10,16 +10,25 @@ export type urlType = {
   params: [string, string][],
 }
 
-export type ctxReqType = {
+export type userInfoType = {
+  login: string;
+  clientProfileId?: string;
+  federatedLoginId?: string;
+};
+
+export type ctxBaseType = {
   sessionId: string;
-  req: IncomingMessage,
-  url: urlType,
   session: Record<string, serializableType>,
+  permission?: { [name: string]: boolean },
+  user?: userInfoType,
   db: dbProviderCtx,
   dbProvider: dbProviderType,
+};
+
+export type ctxReqType = ctxBaseType & {
+  req: IncomingMessage,
+  url: urlType,
   cookie: [string, string][],
-  permission?: { [name: string]: boolean },
-  user?: { login: string },
 }
 
 export type webSocketExtendedType =
@@ -37,16 +46,11 @@ export type requestType = {
   sent: boolean,
 };
 
-export type ctxWsType = {
+export type ctxWsType = ctxBaseType & {
   ws: webSocketExtendedType,
+  remoteAddress: string,
   call(name: string, params: serializableType): Promise<serializableType>,
-  sessionId: string,
-  session: Record<string, serializableType>,
   requests: registryType<requestType>,
-  permission?: { [name: string]: boolean },
-  user?: { login: string },
-  db: dbProviderCtx,
-  dbProvider: dbProviderType,
 }
 
 export type ctxType = ctxReqType & {

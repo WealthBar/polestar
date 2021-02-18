@@ -66,9 +66,11 @@
                 </b-button>
               </div>
             </div>
-            <b-notification v-if="showEmailMessage" :closable="false" type="is-danger is-light">{{
-                emailMessage
-              }}
+            <b-notification v-if="showEmailNotFound" :closable="false" type="is-danger is-light">
+              Email not found.
+            </b-notification>
+            <b-notification v-if="showEmailAlreadyInUse" :closable="false" type="is-danger is-light">
+              Email already in use.
             </b-notification>
           </form>
         </div>
@@ -108,9 +110,11 @@
                 </b-button>
               </div>
             </div>
-            <b-notification v-if="showCodeMessage" :closable="false" type="is-danger is-light">{{
-                codeMessage
-              }}
+            <b-notification v-if="showCodeInvalid" :closable="false" type="is-danger is-light">
+              Code Invalid.
+            </b-notification>
+            <b-notification v-if="showUnknownError" :closable="false" type="is-danger">
+              Something went wrong. Please try again later.
             </b-notification>
           </form>
         </div>
@@ -123,7 +127,7 @@
 <script lang="ts">
 
 import Vue from 'vue';
-import {rateLimit, wsCtor} from 'ts_browser';
+import {crClientSetupInit, rateLimit, wsCtor} from 'ts_browser';
 
 const deps = {window};
 
@@ -148,17 +152,17 @@ async function apiEmailStatus(email: string): Promise<{ inUse: boolean; allowGoo
   }
 }
 
-async function apiEmailSendVerification(email: string): Promise<{ error?: string }> {
+async function apiEmailSendVerification(email: string): Promise<{ error?: string; nb64?: string }> {
   const rawReply = await ws.call('signup/emailSendVerification', {email});
-  const reply = rawReply as { error?: string };
+  const reply = rawReply as { error?: string; nb64?: string };
   if (!reply) {
     return {error: 'NO_REPLY'};
   }
   return reply;
 }
 
-async function apiCreateAccount(email: string, code: string): Promise<{ error?: string }> {
-  const rawReply = await ws.call('signup/emailCreateAccount', {email, code});
+async function apiCreateAccount(email: string, code: string, nb64: string, hpnb64: string): Promise<{ error?: string }> {
+  const rawReply = await ws.call('signup/emailCreateAccount', {email, code, nb64, hpnb64});
   const reply = rawReply as { error?: string };
   if (!reply) {
     return {error: 'NO_REPLY'};
@@ -187,7 +191,8 @@ export default Vue.extend({
       inCode: false,
       codeInvalid: false,
       loading: false,
-      form: {},
+      unknownError: false,
+      nb64: '' as string | undefined,
     };
   },
   created() {
@@ -240,17 +245,24 @@ export default Vue.extend({
       this.loading = true;
       if (this.modeSignup) {
         this.current = 'accountCreation';
-        await apiEmailSendVerification(this.email);
+        const {nb64} = await apiEmailSendVerification(this.email);
+        this.nb64 = nb64;
         this.loading = false;
       }
     },
     async submitCode() {
+      if (!this.nb64) {
+        this.unknownError = true;
+        return;
+      }
+      this.unknownError = false;
       this.loading = true;
-      const r = await apiCreateAccount(this.email, this.code);
+      const {hpnb64} = crClientSetupInit(this.password, this.nb64);
+      const r = await apiCreateAccount(this.email, this.code, this.nb64, hpnb64);
       if (r.error) {
-        deps.window.location.replace(deps.window.location.toString().replace(this.mode,'app'));
-      } else {
         this.codeInvalid = true;
+      } else {
+        console.log('redirect', deps.window.location.toString().replace(this.mode, 'app'));
       }
     },
     back() {
@@ -317,26 +329,17 @@ export default Vue.extend({
     googleEnabled(): boolean {
       return this.emailStatus.allowGoogleLogin && this.modeSignin;
     },
-    showEmailMessage(): boolean {
-      return (!this.inEmail && !!this.emailMessage);
+    showEmailNotFound(): boolean {
+      return !this.inEmail && this.modeSignin && !this.emailStatus.inUse;
     },
-    emailMessage(): string {
-      if (this.modeSignup && this.emailStatus.inUse) {
-        return 'Email already in use'; // TODO: move text into template!
-      }
-      if (this.modeSignin && !this.emailStatus.inUse) {
-        return 'Email not found'; // TODO: move text into template!
-      }
-      return '';
+    showEmailAlreadyInUse(): boolean {
+      return !this.inEmail && this.modeSignup && this.emailStatus.inUse;
     },
-    codeMessage(): string {
-      if (this.modeSignup && this.codeInvalid) {
-        return 'Invalid Code'; // TODO: move text into template!
-      }
-      return '';
+    showCodeInvalid(): boolean {
+      return this.modeSignup && !this.inCode && this.codeInvalid;
     },
-    showCodeMessage(): boolean {
-      return !this.inCode && !this.codeInvalid;
+    showUnknownError(): boolean {
+      return this.modeSignup && !this.inCode && this.unknownError;
     },
   },
 });
