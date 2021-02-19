@@ -127,48 +127,10 @@
 <script lang="ts">
 
 import Vue from 'vue';
-import {crClientSetupInit, rateLimit, wsCtor} from 'ts_browser';
+import {crClientResponse, crClientSetupInit, rateLimit} from 'ts_browser';
+import {apiCreateAccount, apiLoginStatus, apiSendVerification, apiInitChallenge, apiVerifyLogin} from '@/ws';
 
-const deps = {window};
-
-function apiHostName(): string {
-  const m = deps.window.location.hostname.toLowerCase().match(/(?<domain>[^.]+\.[^.]+$)/);
-  return 'api.' + m?.groups?.domain;
-}
-
-const ws = wsCtor(apiHostName());
-
-async function apiEmailStatus(email: string): Promise<{ inUse: boolean; allowGoogleLogin: boolean }> {
-  try {
-    const rawReply = await ws.call('signup/emailStatus', {email});
-    const reply = rawReply as { inUse: boolean; allowGoogleLogin: boolean };
-    if (!reply) {
-      return {inUse: false, allowGoogleLogin: false};
-    }
-    return reply;
-  } catch (e) {
-    console.error(e);
-    return {inUse: false, allowGoogleLogin: false};
-  }
-}
-
-async function apiEmailSendVerification(email: string): Promise<{ error?: string; nb64?: string }> {
-  const rawReply = await ws.call('signup/emailSendVerification', {email});
-  const reply = rawReply as { error?: string; nb64?: string };
-  if (!reply) {
-    return {error: 'NO_REPLY'};
-  }
-  return reply;
-}
-
-async function apiCreateAccount(email: string, code: string, nb64: string, hpnb64: string): Promise<{ error?: string }> {
-  const rawReply = await ws.call('signup/emailCreateAccount', {email, code, nb64, hpnb64});
-  const reply = rawReply as { error?: string };
-  if (!reply) {
-    return {error: 'NO_REPLY'};
-  }
-  return reply;
-}
+export const deps = {window};
 
 const mSignup = 'signup';
 const mSignin = 'signin';
@@ -185,7 +147,8 @@ export default Vue.extend({
       veValid: false,
       emailValid: false,
       passwordValid: false,
-      emailStatus: {inUse: false, allowGoogleLogin: false, checking: false, email: ''},
+      loginStatus: {inUse: false, allowGoogleLogin: false, checking: false, email: ''},
+      loginFailed: false,
       current: 'signupInfo',
       code: '',
       inCode: false,
@@ -212,18 +175,18 @@ export default Vue.extend({
   },
   methods: {
     async checkEmailInUse() {
-      if (this.emailStatus.email === this.email) {
+      if (this.loginStatus.email === this.email) {
         return;
       }
-      this.emailStatus.checking = true;
-      const email = this.email;
-      const r = await apiEmailStatus(email);
-      if (this.email === email) {
-        this.emailStatus.email = email;
-        this.emailStatus.inUse = r.inUse;
-        this.emailStatus.allowGoogleLogin = r.allowGoogleLogin;
+      this.loginStatus.checking = true;
+      const login = this.email;
+      const r = await apiLoginStatus({login});
+      if (this.email === login) {
+        this.loginStatus.email = login;
+        this.loginStatus.inUse = r.inUse || false;
+        this.loginStatus.allowGoogleLogin = r.allowGoogleLogin || false;
       }
-      this.emailStatus.checking = false;
+      this.loginStatus.checking = false;
     },
     emailFocus() {
       this.inEmail = true;
@@ -245,9 +208,26 @@ export default Vue.extend({
       this.loading = true;
       if (this.modeSignup) {
         this.current = 'accountCreation';
-        const {nb64} = await apiEmailSendVerification(this.email);
-        this.nb64 = nb64;
+        const {error, nb64} = await apiSendVerification({login: this.email});
+        if (error) {
+          this.unknownError = true;
+          this.nb64 = '';
+        } else {
+          this.nb64 = nb64;
+        }
         this.loading = false;
+      }
+      if (this.modeSignin) {
+        const {nb64, r, salt, error} = await apiInitChallenge({login: this.email});
+        if (nb64 && r && salt && !error) {
+          const {fb64} = crClientResponse(r, nb64, salt, this.password);
+          const {error} = await apiVerifyLogin({login: this.email, fb64});
+          if (error) {
+            this.loginFailed = true;
+          } else {
+            console.log('redirect', deps.window.location.toString().replace(/sign(up|in)\./, 'app.'));
+          }
+        }
       }
     },
     async submitCode() {
@@ -258,11 +238,11 @@ export default Vue.extend({
       this.unknownError = false;
       this.loading = true;
       const {hpnb64} = crClientSetupInit(this.password, this.nb64);
-      const r = await apiCreateAccount(this.email, this.code, this.nb64, hpnb64);
+      const r = await apiCreateAccount({login: this.email, code: this.code, nb64: this.nb64, hpnb64});
       if (r.error) {
         this.codeInvalid = true;
       } else {
-        console.log('redirect', deps.window.location.toString().replace(this.mode, 'app'));
+        console.log('redirect', deps.window.location.toString().replace(/sign(up|in)\./, 'app.'));
       }
     },
     back() {
@@ -309,7 +289,7 @@ export default Vue.extend({
       return this.mode === mSignin;
     },
     loginDisabled(): boolean {
-      if (this.emailStatus.checking) {
+      if (this.loginStatus.checking) {
         return true;
       }
       if (!this.emailValid) {
@@ -318,22 +298,22 @@ export default Vue.extend({
       if (!this.passwordValid) {
         return true;
       }
-      if (!this.emailStatus.inUse && this.modeSignin) {
+      if (!this.loginStatus.inUse && this.modeSignin) {
         return true;
       }
-      if (this.emailStatus.inUse && this.modeSignup) {
+      if (this.loginStatus.inUse && this.modeSignup) {
         return true;
       }
       return false;
     },
     googleEnabled(): boolean {
-      return this.emailStatus.allowGoogleLogin && this.modeSignin;
+      return this.loginStatus.allowGoogleLogin && this.modeSignin;
     },
     showEmailNotFound(): boolean {
-      return !this.inEmail && this.modeSignin && !this.emailStatus.inUse;
+      return !this.inEmail && this.modeSignin && !this.loginStatus.inUse;
     },
     showEmailAlreadyInUse(): boolean {
-      return !this.inEmail && this.modeSignup && this.emailStatus.inUse;
+      return !this.inEmail && this.modeSignup && this.loginStatus.inUse;
     },
     showCodeInvalid(): boolean {
       return this.modeSignup && !this.inCode && this.codeInvalid;

@@ -2,6 +2,7 @@ import {createHash, createHmac, randomBytes} from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import {secureTokenCtor, secureTokenVerify} from './stoken';
 import {stuidEpochMicro} from './stuid';
+import {pad} from 'ts_agnostic';
 
 function buffer_xor(a, b) {
   const length = Math.max(a.length, b.length);
@@ -55,7 +56,7 @@ export function crServerSetup(hpnb64: string): { q: string } {
   }
   const hpn = Buffer.from(hpnb64, 'base64');
   const salt = bcrypt.genSaltSync();
-  const hpns = hpn.toString();
+  const hpns = String.fromCharCode(...hpn);
   const q = bcrypt.hashSync(hpns, salt);
   return {q};
 }
@@ -101,7 +102,7 @@ export function crGetSalt(q: string): string {
 export function crClientResponseEg(r: string, nb64: string, salt: string, password: string): { fb64: string } {
   const n = Buffer.from(nb64, 'base64');
   const hpn = createHash('sha512').update(password).update(n).digest();
-  const hpns = hpn.toString();
+  const hpns = String.fromCharCode(...hpn);
   const q = bcrypt.hashSync(hpns, salt);
   const cc = createHmac('sha512', r).update(q).digest();
   const f = buffer_xor(hpn, cc);
@@ -137,9 +138,13 @@ export function crServerVerify(fb64: string, r: string, q: string, secret: strin
 
   const f = Buffer.from(fb64, 'base64');
   const cs = createHmac('sha512', r).update(q).digest();
+  //console.log('cs', [...cs].map(n => pad('00', n.toString(16))).join(''));
   const hpn = buffer_xor(f, cs);
-  const hpns = hpn.toString();
+  //console.log('hpn', [...hpn].map(n => pad('00', n.toString(16))).join(''));
+  const hpns = String.fromCharCode(...hpn);
   const salt = crGetSalt(q);
   const v = bcrypt.hashSync(hpns, salt);
+  //console.log(v);
+  //console.log(q);
   return q === v;
 }

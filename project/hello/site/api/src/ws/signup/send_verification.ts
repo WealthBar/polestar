@@ -1,20 +1,20 @@
 import {crServerSetupInit, ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 
-export async function wsEmailSendVerification(ctxWs: Pick<ctxWsType, 'session'>, params: serializableType): Promise<serializableType> {
-  console.log('wsEmailStatus', params);
+export async function wsSendVerification(ctxWs: Pick<ctxWsType, 'session'>, params: serializableType): Promise<serializableType> {
+  console.log('wsSendVerification', params);
   try {
-    const p = params as { email: string };
-    if (!p || !p.email) {
+    const p = params as { login: string };
+    if (!p || !p.login) {
       return {error: 'INVALID_PARAMETERS'};
     }
-    const {email} = p;
+    const {login} = p;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const code = [1, 2, 3, 4, 5, 6, 7, 8].map(_ => Math.trunc(Math.random() * 10).toString()).join('');
     const {nb64} = crServerSetupInit();
-    ctxWs.session.signup = {verify: {email, code, nb64}};
-    console.log('todo: send code to email', email, code);
+    ctxWs.session.signup = {verify: {login, code, nb64}};
+    console.log('todo: send code to login', login, code);
     return {nb64};
   } catch (e) {
     console.error(e);

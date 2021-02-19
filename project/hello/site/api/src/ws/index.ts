@@ -1,15 +1,19 @@
 import {ctxWsType, wsHandlerType} from 'node_core';
 import {readonlyRegistryCtor, resolvedUndefined, serializableType} from 'ts_agnostic';
 import {wsEcho} from './echo';
-import {wsEmailStatus} from './signup/email_status';
-import {wsEmailSendVerification} from './signup/email_send_verification';
-import {wsEmailCreateAccount} from './signup/email_create_account';
+import {wsLoginStatus} from './signup/login_status';
+import {wsSendVerification} from './signup/send_verification';
+import {wsCreateAccount} from './signup/create_account';
+import {wsInitChallenge} from './signup/init_challenge';
+import {wsVerifyLogin} from './signup/verify_login';
 
 export const wsHandlerRegistry = readonlyRegistryCtor<wsHandlerType>([
   ['echo', wsEcho],
-  ['signup/emailStatus', wsEmailStatus],
-  ['signup/emailSendVerification', wsEmailSendVerification],
-  ['signup/emailCreateAccount', wsEmailCreateAccount],
+  ['signup/loginStatus', wsLoginStatus],
+  ['signup/sendVerification', wsSendVerification],
+  ['signup/createAccount', wsCreateAccount],
+  ['signup/initChallenge', wsInitChallenge],
+  ['signup/verifyLogin', wsVerifyLogin],
 ]);
 
 export async function wsOnConnectHandler(ctxWs: ctxWsType): Promise<serializableType> {

@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import JsSha from 'jssha';
+import {pad} from 'ts_agnostic';
 
 function stringToUint8Array(s: string): Uint8Array {
   const rs = new Uint8Array(s.length);
@@ -51,11 +52,14 @@ export function crClientResponse(r: string, nb64: string, salt: string, password
   sha512.update(n);
 
   const hpn = sha512.getHash('UINT8ARRAY');
+  //console.log('hpn', [...hpn].map(n => pad('00', n.toString(16))).join(''));
   const hpns = Uint8ArrayToString(hpn);
   const q = bcrypt.hashSync(hpns, salt);
-  const hmac512 = new JsSha('SHA-512', 'UINT8ARRAY', {hmacKey: {value: r, format: 'TEXT'}});
+  //console.log(q);
+  const hmac512 = new JsSha('SHA-512', 'TEXT', {hmacKey: {value: r, format: 'TEXT'}});
   hmac512.update(q);
   const cc = hmac512.getHash('UINT8ARRAY');
+  //console.log('cc', [...cc].map(n => pad('00', n.toString(16))).join(''));
   const f = xor(hpn, cc);
   const fb64 = encodeUint8ArrayToBase64(f);
   return {fb64};

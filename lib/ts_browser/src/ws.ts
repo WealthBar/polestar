@@ -9,6 +9,10 @@ export type wsHandlerType = (params: serializableType) => Promise<serializableTy
 export type wsType = {
   call(callName: string, params: serializableType): Promise<serializableType>;
   isActive(): boolean;
+  callCtor<TP extends serializableType, TR extends serializableType>(
+    callName: string,
+    defaultReturn?: Partial<TR & { error: string }>,
+  ): (params: TP) => Promise<Partial<TR & { error: string }>>;
 };
 
 type requestType = {
@@ -171,5 +175,27 @@ export function wsCtor(
     });
   }
 
-  return {call, isActive};
+
+  function callCtor<TP extends serializableType, TR extends serializableType>(
+    callName: string,
+    defaultReturn?: Partial<TR & { error: string }>,
+  ): (params: TP) => Promise<Partial<TR & { error: string }>> {
+    const def = defaultReturn || {error: 'NO_REPLY'} as Partial<TR & { error: string }>;
+
+    return async function (params: TP): Promise<Partial<TR & { error: string }>> {
+      try {
+        const rawReply = await call(callName, params);
+        const reply = rawReply as Partial<TR & { error: string }>;
+        if (!reply) {
+          return def;
+        }
+        return reply;
+      } catch (e) {
+        console.error(e);
+        return def;
+      }
+    };
+  }
+
+  return {call, callCtor, isActive};
 }
