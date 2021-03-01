@@ -1,18 +1,16 @@
 import {ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {crServerSetup} from 'node_core';
-import {value as createAccountSql} from './create_account_sql';
 import {normalizeEmail} from './normalize_email';
+import {value as changePasswordSql} from './change_password_sql';
 
-export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'remoteAddress' | 'user'>, params: serializableType): Promise<serializableType> {
-  console.log('wsCreateAccountSetupInit', params);
-  const p = params as { login?: string, code?: string, hpnb64?: string, nb64?: string, locale?: string, partnerChannel?: string };
+export async function wsChangePassword(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'remoteAddress' | 'user'>, params: serializableType): Promise<serializableType> {
+  console.log('wsChangePassword', params);
+  const p = params as { login?: string, code?: string, hpnb64?: string, nb64?: string};
   if (!p || !p.login || !p.code || !p.hpnb64 || !p.nb64) {
     return {error: 'INVALID_PARAMETERS'};
   }
   const {login, code, hpnb64, nb64} = p;
-  const locale = p.locale || 'en';
-  const partnerChannel = p.partnerChannel || '';
   const normalizedLogin = normalizeEmail(login);
 
   const signup = ctxWs.session.signup as { verify?: { login?: string, code?: string, nb64?: string } };
@@ -25,13 +23,10 @@ export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 
         federated_login_id: federatedLoginId,
       } = await ctxWs.db(
         async db => {
-          return db.one(createAccountSql, {
-            login,
+          return db.one(changePasswordSql, {
             normalizedLogin,
             q,
             n: verify.nb64,
-            locale,
-            partnerChannel,
             remoteAddress: ctxWs.remoteAddress,
           });
         }) as { client_profile_id: string, federated_login_id: string };

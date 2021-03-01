@@ -103,14 +103,14 @@ export default mixins(wsMixin).extend({
     },
     async submit() {
       this.loading = true;
-      await this.$wsUpdateLoginStatusImmediate({login: this.email});
+      await this.$wsSignupUpdateLoginStatusImmediate({login: this.email});
       if (!this.formValid) {
         return;
       }
-      const {nb64, r, salt, error} = await this.$wsInitChallenge({login: this.email});
+      const {nb64, r, salt, error} = await this.$wsSignupInitChallenge({login: this.email});
       if (nb64 && r && salt && !error) {
         const {fb64} = crClientResponse(r, nb64, salt, this.password);
-        const {error} = await this.$wsVerifyLogin({login: this.email, fb64});
+        const {error} = await this.$wsSignupVerifyLogin({login: this.email, fb64});
         if (error) {
           this.loginFailed = true;
           this.loading = false;
@@ -124,7 +124,7 @@ export default mixins(wsMixin).extend({
       this.loginFailed = false;
       this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
       this.passwordValid = this.password.length >= 8;
-      this.formValid = this.emailValid && this.passwordValid;
+      this.formValid = this.emailValid && this.passwordValid && this.$wsLoginStatus.inUse;
       this.$wsUpdateLoginStatus({login: this.email});
     },
     googleLogin() {

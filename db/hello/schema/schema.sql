@@ -1113,7 +1113,7 @@ CREATE TABLE client.login_log
 (
   login VARCHAR NOT NULL, -- NOT referenced as we want to retain deleted logins in the log.
   at TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP(),
-  result VARCHAR NOT NULL CHECK (result IN ('+ac', '-pw', '+pw', '-oauth', '+oauth', '-mfa', '+mfa', '-?')),
+  result VARCHAR NOT NULL CHECK (result IN ('+ac', '+pwc', '-pw', '+pw', '-oauth', '+oauth', '-mfa', '+mfa', '-?')),
   remote_address VARCHAR NOT NULL,
   PRIMARY KEY (login, at)
 );

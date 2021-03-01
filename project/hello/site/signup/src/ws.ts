@@ -16,7 +16,7 @@ const ws = wsCtor(wsHostName());
 
 export type loginStatusType = { login: string; inUse: boolean; allowGoogleLogin: boolean };
 
-const wsLoginStatus = ws.callCtor<{ login: string }, loginStatusType>(
+const wsSignupLoginStatus = ws.callCtor<{ login: string }, loginStatusType>(
   'signup/loginStatus',
   {
     login: '',
@@ -26,13 +26,14 @@ const wsLoginStatus = ws.callCtor<{ login: string }, loginStatusType>(
 );
 
 
-const wsLimitedMemoLoginStatus = limitedMemoFCtor(15000, wsLoginStatus, (p) => p.login);
+const wsLimitedMemoLoginStatus = limitedMemoFCtor(15000, wsSignupLoginStatus, (p) => p.login);
 
-const wsSendVerification = ws.callCtor<{ login: string }, { nb64: string }>('signup/sendVerification');
-const wsForgotPassword = ws.callCtor<{ login: string }, { nb64: string }>('signup/forgotPassword');
-const wsCreateAccount = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/createAccount');
-const wsInitChallenge = ws.callCtor<{ login: string }, { nb64: string; r: string; salt: string }>('signup/initChallenge');
-const wsVerifyLogin = ws.callCtor<{ login: string; fb64: string }, {}>('signup/verifyLogin');
+const wsSignupSendVerification = ws.callCtor<{ login: string }, { nb64: string }>('signup/sendVerification');
+const wsSingupForgotPassword = ws.callCtor<{ login: string }, { nb64: string }>('signup/forgotPassword');
+const wsSignupChangePassword = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/changePassword');
+const wsSignupCreateAccount = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/createAccount');
+const wsSignupInitChallenge = ws.callCtor<{ login: string }, { nb64: string; r: string; salt: string }>('signup/initChallenge');
+const wsSignupVerifyLogin = ws.callCtor<{ login: string; fb64: string }, {}>('signup/verifyLogin');
 
 function liftLoginStatusResult(to: loginStatusType, from: Partial<loginStatusType>) {
   to.login = from.login || '';
@@ -56,26 +57,29 @@ export const wsMixin = Vue.extend({
       setTimeout(() => --this.$data.$_wsCallsOutstanding, delayTimeMilliseconds);
       return r;
     },
-    $wsSendVerification(params: Parameters<typeof wsSendVerification>[0]) {
-      return this.$wsTrackCall(() => wsSendVerification(params));
+    $wsSignupSendVerification(params: Parameters<typeof wsSignupSendVerification>[0]) {
+      return this.$wsTrackCall(() => wsSignupSendVerification(params));
     },
-    $wsForgotPassword(params: Parameters<typeof wsForgotPassword>[0]) {
-      return this.$wsTrackCall(() => wsForgotPassword(params));
+    $wsSignupForgotPassword(params: Parameters<typeof wsSingupForgotPassword>[0]) {
+      return this.$wsTrackCall(() => wsSingupForgotPassword(params));
     },
-    $wsCreateAccount(params: Parameters<typeof wsCreateAccount>[0]) {
-      return this.$wsTrackCall(() => wsCreateAccount(params));
+    $wsSignupChangePassword(params: Parameters<typeof wsSignupChangePassword>[0]) {
+      return this.$wsTrackCall(() => wsSignupChangePassword(params));
     },
-    $wsInitChallenge(params: Parameters<typeof wsInitChallenge>[0]) {
-      return this.$wsTrackCall(() => wsInitChallenge(params));
+    $wsSignupCreateAccount(params: Parameters<typeof wsSignupCreateAccount>[0]) {
+      return this.$wsTrackCall(() => wsSignupCreateAccount(params));
     },
-    $wsVerifyLogin(params: Parameters<typeof wsVerifyLogin>[0]) {
-      return this.$wsTrackCall(() => wsVerifyLogin(params));
+    $wsSignupInitChallenge(params: Parameters<typeof wsSignupInitChallenge>[0]) {
+      return this.$wsTrackCall(() => wsSignupInitChallenge(params));
     },
-    async $wsUpdateLoginStatusImmediate(params: Parameters<typeof wsLoginStatus>[0]) {
-      liftLoginStatusResult(this.$data.$_wsLoginStatus, await this.$wsTrackCall(() => wsLoginStatus(params)));
+    $wsSignupVerifyLogin(params: Parameters<typeof wsSignupVerifyLogin>[0]) {
+      return this.$wsTrackCall(() => wsSignupVerifyLogin(params));
+    },
+    async $wsSignupUpdateLoginStatusImmediate(params: Parameters<typeof wsSignupLoginStatus>[0]) {
+      liftLoginStatusResult(this.$data.$_wsLoginStatus, await this.$wsTrackCall(() => wsSignupLoginStatus(params)));
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    $wsUpdateLoginStatus(params: { login: string }): void {
+    $wsSignupUpdateLoginStatus(params: { login: string }): void {
       // replace with rate limited version on first call.
       // this insures 'this' is bound correctly.
       const f = rateLimitEmitLast(
@@ -83,7 +87,7 @@ export const wsMixin = Vue.extend({
         wsLimitedMemoLoginStatus,
         (result) => liftLoginStatusResult(this.$data.$_wsLoginStatus, result),
       );
-      this.$wsUpdateLoginStatus = (params: { login: string }) => {
+      this.$wsSignupUpdateLoginStatus = (params: { login: string }) => {
         const login = params.login;
         if (!login.match(/[^@]+@[^@]+\.[^@]+/)) { // && this.$data.$_wsLoginStatus.login === login) {
           return;
@@ -91,7 +95,7 @@ export const wsMixin = Vue.extend({
         f(params);
       };
 
-      this.$wsUpdateLoginStatus(params);
+      this.$wsSignupUpdateLoginStatus(params);
     },
   },
   computed: {

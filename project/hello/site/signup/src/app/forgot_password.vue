@@ -24,6 +24,7 @@
             password-reveal
             v-model="password"
             @focus="passwordFocus"
+            @blur="passwordBlur"
         />
       </b-field>
       <b-field
@@ -38,26 +39,25 @@
             @blur="codeBlur"
             placeholder="00000000"
             v-model="code"
+            :disabled="disableSendCode"
         />
       </b-field>
       <div class="columns is-mobile">
         <div class="column is-narrow ml-1">
-          <b-button type="is-primary is-light">
-            <!--           @click="sendForgotCode" :disabled="getForgotCodeDisabled">-->
+          <b-button type="is-primary is-light" @click="sendCode" :disabled="disableSendCode">
             Send Code
           </b-button>
         </div>
         <div class="column p-0"></div>
         <div class="column is-pulled-right is-narrow">
-          <!--          :disabled="loginDisabled"-->
-          <b-button :loading="$wsOutstanding" type="is-primary" native-type="submit"
+          <b-button :disabled="loginDisabled" :loading="$wsOutstanding" type="is-primary" native-type="submit"
               icon-right="arrow-right">
-            Login
+            Sign Up
           </b-button>
         </div>
       </div>
-      <b-notification :closable="false" type="is-success">
-        tbd
+      <b-notification :closable="false" :type="notificationType">
+        {{ notificationMessage }}
       </b-notification>
     </form>
   </div>
@@ -68,6 +68,8 @@
 
 import {wsMixin} from '@/ws';
 import mixins from 'vue-typed-mixins';
+import {crClientSetupInit} from 'ts_browser';
+import {getMessage, getMessageType} from '@/app/messages';
 
 export const deps = {window};
 
@@ -78,77 +80,59 @@ export default mixins(wsMixin).extend({
       email: '',
       inEmail: true,
       password: '',
-      mode: 'signup',
+      inPassword: false,
       formValid: false,
-      veValid: false,
       emailValid: false,
       passwordValid: false,
-      loginStatus: {
-        inUse: false,
-        allowGoogleLogin: false,
-        email: '',
-      },
-      showForgot: false,
-      forgotCodeSent: false,
       loginFailed: false,
-      current: 'signupInfo',
       code: '',
       inCode: false,
-      codeInvalid: false,
+      codeValid: false,
       loading: false,
       unknownError: false,
       nb64: '',
-      pendingCallCount: 0,
-      getForgotCodeBlocked: false,
+      codeSent: false,
+      locale: 'en',
     };
   },
   created() {
-    // ['email', 'code', 'password'].forEach((field) => {
-    //   this.$watch(field, this.updateEpValid);
-    // });
+    ['email', 'code', 'password'].forEach((field) => {
+      this.$watch(field, this.updateFormValid);
+    });
   },
   methods: {
-
-    // async checkEmailInUse() {
-    //   if (this.loginStatus.email === this.email) {
-    //     return;
-    //   }
-    //   const login = this.email;
-    //   const r = await this.np(() => apiLoginStatus({login}));
-    //   if (this.email === login) {
-    //     this.loginStatus.email = login;
-    //     this.loginStatus.inUse = r.inUse || false;
-    //     this.loginStatus.allowGoogleLogin = r.allowGoogleLogin || false;
-    //   }
-    // },
-    // async sendForgotCode() {
-    //   this.loading = true;
-    //   this.getForgotCodeBlocked = false;
-    //   const {error, nb64} = await this.np(() => apiForgotPassword({login: this.email}));
-    //   if (error) {
-    //     this.unknownError = true;
-    //     this.nb64 = '';
-    //   } else {
-    //     this.nb64 = nb64;
-    //     setTimeout(() => {
-    //       this.getForgotCodeBlocked = true;
-    //     }, 30000);
-    //   }
-    //   this.forgotCodeSent = true;
-    //   setTimeout(() => {
-    //     this.forgotCodeSent = false;
-    //   }, 1000);
-    //   this.loading = false;
-    // },
+    async sendCode() {
+      if (this.codeSent) {
+        return;
+      }
+      const {error, nb64} = await this.$wsSignupForgotPassword({login: this.email});
+      if (error || !nb64) {
+        this.unknownError = true;
+        this.nb64 = '';
+      } else {
+        this.nb64 = nb64;
+      }
+      this.codeSent = true;
+      // block sending again for 10s
+      setTimeout(
+          () => {
+            this.codeSent = false;
+          }, 10000,
+      );
+    },
     emailFocus() {
       this.loginFailed = false;
       this.inEmail = true;
     },
     passwordFocus() {
+      this.inPassword = true;
       this.loginFailed = false;
     },
     emailBlur() {
       this.inEmail = false;
+    },
+    passwordBlur() {
+      this.inPassword = false;
     },
     codeFocus() {
       this.inCode = true;
@@ -157,137 +141,94 @@ export default mixins(wsMixin).extend({
       this.inCode = false;
     },
     async submit() {
-      //
+      if (!this.nb64) {
+        this.unknownError = true;
+        return;
+      }
+      this.unknownError = false;
+      this.loading = true;
+      await this.$wsSignupUpdateLoginStatusImmediate({login: this.email});
+      if (!this.formValid) {
+        return;
+      }
+      const {hpnb64} = crClientSetupInit(this.password, this.nb64);
+      const r = await this.$wsSignupChangePassword({
+        login: this.email,
+        code: this.code,
+        nb64: this.nb64 || '',
+        hpnb64,
+      });
+      if (r.error) {
+        this.codeInvalid = true;
+        this.loading = false;
+      } else {
+        const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
+        deps.window.location.assign(url);
+      }
     },
-    // async submitLogin() {
-    //   await this.checkEmailInUse();
-    //   this.loading = true;
-    //   if (this.modeSignup) {
-    //     this.current = 'accountCreation';
-    //     const {error, nb64} = await this.np(() => apiSendVerification({login: this.email}));
-    //     if (error) {
-    //       this.unknownError = true;
-    //       this.nb64 = '';
-    //     } else {
-    //       this.nb64 = nb64;
-    //     }
-    //     this.loading = false;
-    //   }
-    //   if (this.modeSignin) {
-    //     const {nb64, r, salt, error} = await this.np(() => apiInitChallenge({login: this.email}));
-    //     if (nb64 && r && salt && !error) {
-    //       const {fb64} = crClientResponse(r, nb64, salt, this.password);
-    //       const {error} = await this.np(() => apiVerifyLogin({login: this.email, fb64}));
-    //       if (error) {
-    //         this.loginFailed = true;
-    //         this.loading = false;
-    //       } else {
-    //         const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
-    //         console.log('redirect', url);
-    //         deps.window.location.replace(url);
-    //       }
-    //     }
-    //   }
-    // },
-    // async submitCode() {
-    //   if (!this.nb64) {
-    //     this.unknownError = true;
-    //     return;
-    //   }
-    //   this.unknownError = false;
-    //   this.loading = true;
-    //   const {hpnb64} = crClientSetupInit(this.password, this.nb64);
-    //   const r = await this.np(() => apiCreateAccount({
-    //     login: this.email,
-    //     code: this.code,
-    //     nb64: this.nb64 || '',
-    //     hpnb64,
-    //   }));
-    //   if (r.error) {
-    //     this.codeInvalid = true;
-    //   } else {
-    //     console.log('redirect', deps.window.location.toString().replace(/sign(up|in)\./, 'app.'));
-    //   }
-    // },
-    // back() {
-    //   this.current = 'signupInfo';
-    // },
-    // updateEpValid() {
-    //   this.loginFailed = false;
-    //   this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
-    //   this.passwordValid = this.password.length >= 8;
-    //   this.epValid = this.emailValid && this.passwordValid;
-    //   if (this.emailValid) {
-    //     this.rateLimitedCheckEmailInUse();
-    //   }
-    // },
-    // updateVeValid() {
-    //   this.veValid = this.code.length === 8;
-    // },
-    // googleLogin() {
-    //   // todo
-    // },
-    // switchModeToSignin() {
-    //   this.mode = 'signin';
-    //   this.rateLimitedCheckEmailInUse();
-    // },
-    // switchModeToSignup() {
-    //   this.mode = 'signup';
-    //   this.rateLimitedCheckEmailInUse();
-    // },
+    updateFormValid() {
+      this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
+      this.passwordValid = this.password.length >= 8;
+      this.codeValid = this.code.length === 8;
+      this.formValid = this.emailValid && this.passwordValid && this.codeValid && this.$wsLoginStatus.inUse;
+      this.$wsSignupUpdateLoginStatus({login: this.email});
+    },
   },
   computed: {
-    // getForgotCodeDisabled(): boolean {
-    //   return this.getForgotCodeBlocked || !this.emailValid;
-    // },
-    // showSignupInfo(this: { current: string }): boolean {
-    //   return this.current === 'signupInfo';
-    // },
-    // showAccountCreation(this: { current: string }): boolean {
-    //   return this.current === 'accountCreation';
-    // },
-    // loginDisabled(): boolean {
-    //   if (this.waitingOnCall) {
-    //     return true;
-    //   }
-    //   if (!this.emailValid) {
-    //     return true;
-    //   }
-    //   if (!this.passwordValid) {
-    //     return true;
-    //   }
-    //   if (!this.loginStatus.inUse && this.modeSignin) {
-    //     return true;
-    //   }
-    //   if (this.loginStatus.inUse && this.modeSignup) {
-    //     return true;
-    //   }
-    //   return false;
-    // },
-    // googleEnabled(): boolean {
-    //   return this.loginStatus.allowGoogleLogin && this.modeSignin;
-    // },
-    // waitingOnCall(): boolean {
-    //   return this.pendingCallCount > 0;
-    // },
-    // showEmailNotFound(): boolean {
-    //   return !this.waitingOnCall && !this.inEmail && this.modeSignin && !this.loginStatus.inUse;
-    // },
-    // showEmailAlreadyInUse(): boolean {
-    //   return !this.waitingOnCall && !this.inEmail && this.modeSignup && this.loginStatus.inUse;
-    // },
-    // showCodeInvalid(): boolean {
-    //   return !this.waitingOnCall && this.modeSignup && !this.inCode && this.codeInvalid;
-    // },
-    // showUnknownError(): boolean {
-    //   return !this.waitingOnCall && this.modeSignup && !this.inCode && this.unknownError;
-    // },
-    // notificationType(): string {
-    //   return 'is-success';
-    // },
-    // notificationMessage(): string {
-    //   return 'tbd';
-    // },
+    loginDisabled(): boolean {
+      if (this.$wsOutstanding) {
+        return true;
+      }
+      if (!this.formValid) {
+        return true;
+      }
+      if (this.$wsLoginStatus.inUse) {
+        return true;
+      }
+      return false;
+    },
+    disableSendCode(): boolean {
+      return !(this.emailValid && this.passwordValid);
+    },
+    notificationTag(): string {
+      if (this.$wsOutstanding) {
+        return 'W_STANDBY';
+      }
+      if (this.inEmail) {
+        return 'S_ENTER_EMAIL';
+      }
+      if (!this.emailValid) {
+        return 'E_EMAIL_INVALID';
+      }
+      if (!this.$wsLoginStatus.inUse) {
+        return 'E_LOGIN_NOT_KNOWN';
+      }
+      if (this.inPassword) {
+        return 'S_ENTER_PASSWORD_NEW';
+      }
+      if (!this.passwordValid) {
+        return 'E_PASSWORD_INVALID';
+      }
+      if (this.inCode && !this.nb64) {
+        return 'S_SEND_CODE';
+      }
+      if (this.nb64) {
+        return 'S_ENTER_CODE_SENT';
+      }
+      if (this.codeInvalid) {
+        return 'E_CODE_INVALID';
+      }
+      if (this.loginFailed) {
+        return 'E_LOGIN_FAILED';
+      }
+      return 'S_LOGIN';
+    },
+    notificationType(): string {
+      return getMessageType(this.notificationTag);
+    },
+    notificationMessage(): string {
+      return getMessage(this.locale, this.notificationTag, {email: this.email});
+    },
   },
 });
 

@@ -87,7 +87,7 @@ export default mixins(wsMixin).extend({
       loginFailed: false,
       code: '',
       inCode: false,
-      codeInvalid: false,
+      codeValid: false,
       loading: false,
       unknownError: false,
       nb64: '',
@@ -105,7 +105,7 @@ export default mixins(wsMixin).extend({
       if (this.codeSent) {
         return;
       }
-      const {error, nb64} = await this.$wsSendVerification({login: this.email});
+      const {error, nb64} = await this.$wsSignupSendVerification({login: this.email});
       if (error || !nb64) {
         this.unknownError = true;
         this.nb64 = '';
@@ -147,19 +147,19 @@ export default mixins(wsMixin).extend({
       }
       this.unknownError = false;
       this.loading = true;
-      await this.$wsUpdateLoginStatusImmediate({login: this.email});
+      await this.$wsSignupUpdateLoginStatusImmediate({login: this.email});
       if (!this.formValid) {
         return;
       }
       const {hpnb64} = crClientSetupInit(this.password, this.nb64);
-      const r = await this.$wsCreateAccount({
+      const r = await this.$wsSignupCreateAccount({
         login: this.email,
         code: this.code,
         nb64: this.nb64 || '',
         hpnb64,
       });
       if (r.error) {
-        this.codeInvalid = true;
+        this.codeValid = false;
         this.loading = false;
       } else {
         const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
@@ -169,8 +169,9 @@ export default mixins(wsMixin).extend({
     updateFormValid() {
       this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
       this.passwordValid = this.password.length >= 8;
-      this.formValid = this.code.length === 8;
-      this.$wsUpdateLoginStatus({login: this.email});
+      this.codeValid = this.code.length === 8;
+      this.formValid = this.emailValid && this.passwordValid && this.codeValid && !this.$wsLoginStatus.inUse;
+      this.$wsSignupUpdateLoginStatus({login: this.email});
     },
   },
   computed: {
@@ -214,7 +215,7 @@ export default mixins(wsMixin).extend({
       if (this.nb64) {
         return 'S_ENTER_CODE_SENT';
       }
-      if (this.codeInvalid) {
+      if (!this.codeValid) {
         return 'E_CODE_INVALID';
       }
       if (this.loginFailed) {

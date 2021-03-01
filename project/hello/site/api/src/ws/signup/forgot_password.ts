@@ -1,5 +1,6 @@
 import {crServerSetupInit, ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
+import {sendMail} from '../../send_mail';
 
 export async function wsForgotPassword(ctxWs: Pick<ctxWsType, 'session' | 'user'>, params: serializableType): Promise<serializableType> {
   console.log('wsForgotPassword', params);
@@ -15,7 +16,7 @@ export async function wsForgotPassword(ctxWs: Pick<ctxWsType, 'session' | 'user'
     const {nb64} = crServerSetupInit();
     ctxWs.session.signup = {verify: {login, code, nb64}};
     ctxWs.user = undefined; // clear user info to prevent new signup from associating with the user currently logged in.
-    console.log('todo: send code to login', login, code);
+    await sendMail(login, 'signup/forgot_password', {code});
     return {nb64};
   } catch (e) {
     console.error(e);
