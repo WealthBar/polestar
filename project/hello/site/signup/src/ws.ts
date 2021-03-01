@@ -29,7 +29,7 @@ const wsSignupLoginStatus = ws.callCtor<{ login: string }, loginStatusType>(
 const wsLimitedMemoLoginStatus = limitedMemoFCtor(15000, wsSignupLoginStatus, (p) => p.login);
 
 const wsSignupSendVerification = ws.callCtor<{ login: string }, { nb64: string }>('signup/sendVerification');
-const wsSingupForgotPassword = ws.callCtor<{ login: string }, { nb64: string }>('signup/forgotPassword');
+const wsSignupForgotPassword = ws.callCtor<{ login: string }, { nb64: string }>('signup/forgotPassword');
 const wsSignupChangePassword = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/changePassword');
 const wsSignupCreateAccount = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/createAccount');
 const wsSignupInitChallenge = ws.callCtor<{ login: string }, { nb64: string; r: string; salt: string }>('signup/initChallenge');
@@ -54,14 +54,18 @@ export const wsMixin = Vue.extend({
       const r = await f();
       // delay the decrement to help smooth out 1->0->1->0->1->0 flicker caused
       // by updates that are watching $wsOutstanding and updating UI elements
-      setTimeout(() => --this.$data.$_wsCallsOutstanding, delayTimeMilliseconds);
+      if (this.$data.$_wsCallsOutstanding === 1) {
+        setTimeout(() => --this.$data.$_wsCallsOutstanding, delayTimeMilliseconds * 2);
+      } else {
+        --this.$data.$_wsCallsOutstanding;
+      }
       return r;
     },
     $wsSignupSendVerification(params: Parameters<typeof wsSignupSendVerification>[0]) {
       return this.$wsTrackCall(() => wsSignupSendVerification(params));
     },
-    $wsSignupForgotPassword(params: Parameters<typeof wsSingupForgotPassword>[0]) {
-      return this.$wsTrackCall(() => wsSingupForgotPassword(params));
+    $wsSignupForgotPassword(params: Parameters<typeof wsSignupForgotPassword>[0]) {
+      return this.$wsTrackCall(() => wsSignupForgotPassword(params));
     },
     $wsSignupChangePassword(params: Parameters<typeof wsSignupChangePassword>[0]) {
       return this.$wsTrackCall(() => wsSignupChangePassword(params));

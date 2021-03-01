@@ -12,6 +12,7 @@ const port = +((fs.readFileSync('.port', "utf-8")).split(/[\n\r]/)?.[0]);
 if (!port) {
   throw new Error(`invalid .port file`);
 }
+console.log(`port: ${port}`);
 
 // webpack is a steaming pile of shit that doesn't support linked packages
 // this is a pile of hacks to make them "work".

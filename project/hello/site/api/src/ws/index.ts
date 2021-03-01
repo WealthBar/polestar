@@ -6,6 +6,8 @@ import {wsSendVerification} from './signup/send_verification';
 import {wsCreateAccount} from './signup/create_account';
 import {wsInitChallenge} from './signup/init_challenge';
 import {wsVerifyLogin} from './signup/verify_login';
+import {wsForgotPassword} from './signup/forgot_password';
+import {wsChangePassword} from './signup/change_password';
 
 export const wsHandlerRegistry = readonlyRegistryCtor<wsHandlerType>([
   ['echo', wsEcho],
@@ -14,6 +16,8 @@ export const wsHandlerRegistry = readonlyRegistryCtor<wsHandlerType>([
   ['signup/createAccount', wsCreateAccount],
   ['signup/initChallenge', wsInitChallenge],
   ['signup/verifyLogin', wsVerifyLogin],
+  ['signup/forgotPassword', wsForgotPassword],
+  ['signup/changePassword', wsChangePassword],
 ]);
 
 export async function wsOnConnectHandler(ctxWs: ctxWsType): Promise<serializableType> {

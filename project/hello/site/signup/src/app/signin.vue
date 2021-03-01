@@ -125,7 +125,7 @@ export default mixins(wsMixin).extend({
       this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
       this.passwordValid = this.password.length >= 8;
       this.formValid = this.emailValid && this.passwordValid && this.$wsLoginStatus.inUse;
-      this.$wsUpdateLoginStatus({login: this.email});
+      this.$wsSignupUpdateLoginStatus({login: this.email});
     },
     googleLogin() {
       // todo

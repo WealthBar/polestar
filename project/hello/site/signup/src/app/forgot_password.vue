@@ -52,7 +52,7 @@
         <div class="column is-pulled-right is-narrow">
           <b-button :disabled="loginDisabled" :loading="$wsOutstanding" type="is-primary" native-type="submit"
               icon-right="arrow-right">
-            Sign Up
+            Sign In
           </b-button>
         </div>
       </div>
@@ -149,8 +149,10 @@ export default mixins(wsMixin).extend({
       this.loading = true;
       await this.$wsSignupUpdateLoginStatusImmediate({login: this.email});
       if (!this.formValid) {
+      this.loading = false;
         return;
       }
+
       const {hpnb64} = crClientSetupInit(this.password, this.nb64);
       const r = await this.$wsSignupChangePassword({
         login: this.email,
@@ -158,8 +160,9 @@ export default mixins(wsMixin).extend({
         nb64: this.nb64 || '',
         hpnb64,
       });
+
       if (r.error) {
-        this.codeInvalid = true;
+        this.codeValid = false;
         this.loading = false;
       } else {
         const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
@@ -182,7 +185,7 @@ export default mixins(wsMixin).extend({
       if (!this.formValid) {
         return true;
       }
-      if (this.$wsLoginStatus.inUse) {
+      if (!this.$wsLoginStatus.inUse) {
         return true;
       }
       return false;
@@ -215,7 +218,7 @@ export default mixins(wsMixin).extend({
       if (this.nb64) {
         return 'S_ENTER_CODE_SENT';
       }
-      if (this.codeInvalid) {
+      if (!this.codeValid) {
         return 'E_CODE_INVALID';
       }
       if (this.loginFailed) {
