@@ -1,8 +1,7 @@
 import {ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
-import {crServerSetup} from 'node_core';
+import {crServerSetup, normalizeEmail} from 'node_core';
 import {value as createAccountSql} from './create_account_sql';
-import {normalizeEmail} from './normalize_email';
 
 export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'remoteAddress' | 'user'>, params: serializableType): Promise<serializableType> {
   console.log('wsCreateAccountSetupInit', params);

@@ -6,13 +6,12 @@ import {value as updateSql} from './db_session_update_sql';
 import {value as verifySql} from './db_session_verify_sql';
 import debugCtor = require('debug');
 import {ctxSetDb} from '../ctx';
-import {dbProviderCtx} from '../db_util';
 import {serializableType} from 'ts_agnostic';
 import {ctxBaseType} from '../server.type';
 
 const debug = debugCtor('db:session');
 
-export async function sessionCreate(ctx: { sessionId: string, dbProvider: dbProviderType, db?: dbProviderCtx, session: Record<string, unknown> }): Promise<void> {
+export async function sessionCreate(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'db'>): Promise<void> {
   return ctx.dbProvider('-SESSION-', async (db) => {
     const result: { session_id?: string } = await db.one(createSql);
     debug(`create result: ${JSON.stringify(result)}`);
@@ -25,12 +24,17 @@ export async function sessionCreate(ctx: { sessionId: string, dbProvider: dbProv
   }, '-');
 }
 
-export async function sessionVerify(ctx: { sessionId: string, dbProvider: dbProviderType, db: dbProviderCtx, user?: { login?: string }, session: Record<string, unknown> }): Promise<void> {
+export async function sessionVerify(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'user' | 'db'>): Promise<void> {
   if (ctx.sessionId === '') {
     await sessionCreate(ctx);
   }
   return ctx.dbProvider('-SESSION-', async (db) => {
-    const result: { login: string, data: Record<string, unknown> } | null = await db.oneOrNone(
+    const result: {
+      login: string,
+      data: Record<string, serializableType>,
+      client_profile_id?: string,
+      federated_login_id?: string
+    } | null = await db.oneOrNone(
       verifySql,
       {
         sessionId: ctx.sessionId,
@@ -44,7 +48,7 @@ export async function sessionVerify(ctx: { sessionId: string, dbProvider: dbProv
       if (ctx.user) {
         ctx.user.login = result.login;
       } else {
-        ctx.user = {login: result.login};
+        ctx.user = {login: result.login, clientProfileId: result.client_profile_id, federatedLoginId: result.federated_login_id};
       }
       ctx.session = result.data;
     }
@@ -64,7 +68,7 @@ export async function sessionUpdate(ctx: Pick<ctxBaseType, 'sessionId' | 'sessio
         data: ctx.session,
         login: ctx?.user?.login,
         clientProfileId: ctx?.user?.clientProfileId,
-        federatedLoginId: ctx?.user?.federatedLoginId
+        federatedLoginId: ctx?.user?.federatedLoginId,
       },
     );
     debug(`update result: ${JSON.stringify(result)}`);

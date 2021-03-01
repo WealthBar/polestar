@@ -1,7 +1,6 @@
-import {ctxWsType} from 'node_core';
+import {ctxWsType, normalizeEmail} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {value as loginStatusSql} from './login_status_sql';
-import {normalizeEmail} from './normalize_email';
 
 export async function wsLoginStatus(ctxWs: Pick<ctxWsType, 'db'>, params: serializableType): Promise<serializableType> {
   console.log('wsLoginStatus', params);

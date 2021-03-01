@@ -14,3 +14,4 @@ export * from './tuid';
 export * from './ws';
 export * from './permission_resolve';
 export * from './cr';
+export * from './normalize_email';

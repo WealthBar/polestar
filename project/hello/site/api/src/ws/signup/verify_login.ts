@@ -1,8 +1,7 @@
-import {crServerVerify, ctxWsType} from 'node_core';
+import {crServerVerify, ctxWsType, normalizeEmail} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {value as recordLoginAttemptSql} from './record_login_attempt_sql';
 import {value as loginSuccessSql} from './login_success_sql';
-import {normalizeEmail} from './normalize_email';
 
 export async function wsVerifyLogin(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'user' | 'remoteAddress'>, params: serializableType): Promise<serializableType> {
   console.log('wsVerifyLogin', params);

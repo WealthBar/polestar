@@ -1,4 +1,6 @@
 SELECT login
+     , client_profile_id
+     , federated_login_id
      , data
 FROM
   "session"

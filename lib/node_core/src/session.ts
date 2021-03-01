@@ -59,7 +59,7 @@ export function sessionInfoCtor(settings: Record<string,unknown>): contentHandle
     const { res } = ctx;
     res.setHeader('content-type','application/json');
     res.statusCode = 200;
-    res.write(JSON.stringify(ctx.session));
+    res.write(JSON.stringify(ctx.user));
     res.end();
     return resolvedVoid;
   }

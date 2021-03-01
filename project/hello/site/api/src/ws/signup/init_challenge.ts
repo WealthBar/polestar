@@ -1,8 +1,7 @@
-import {crGetSalt, crServerInitChallenge, ctxWsType} from 'node_core';
+import {crGetSalt, crServerInitChallenge, ctxWsType, normalizeEmail} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {value as nqByLoginSql} from './nq_by_login_sql';
 import {randomBytes} from 'crypto';
-import {normalizeEmail} from './normalize_email';
 
 export async function wsInitChallenge(ctxWs: Pick<ctxWsType, 'session' | 'db'>, params: serializableType): Promise<serializableType> {
   console.log('wsInitChallenge', params);

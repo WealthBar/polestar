@@ -1,7 +1,6 @@
 import {ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
-import {crServerSetup} from 'node_core';
-import {normalizeEmail} from './normalize_email';
+import {crServerSetup, normalizeEmail} from 'node_core';
 import {value as changePasswordSql} from './change_password_sql';
 
 export async function wsChangePassword(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'remoteAddress' | 'user'>, params: serializableType): Promise<serializableType> {
