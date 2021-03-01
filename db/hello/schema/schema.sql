@@ -991,8 +991,8 @@ CREATE TABLE client.partner_channel
 );
 
 CREATE TRIGGER client_partner_channel_append_only
-BEFORE UPDATE OR DELETE OR TRUNCATE
-ON client.partner_channel
+  BEFORE UPDATE OR DELETE OR TRUNCATE
+  ON client.partner_channel
 EXECUTE FUNCTION func.prevent_change();
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.system
@@ -1049,7 +1049,7 @@ CREATE TABLE client.federated_login_x_system
 (
   federated_login_x_system_id UUID DEFAULT func.tuid_generate() PRIMARY KEY,
   federated_login_id UUID REFERENCES client.federated_login ON DELETE CASCADE,
-  system_name VARCHAR NOT NULL REFERENCES client.system(system_name) ON DELETE RESTRICT,
+  system_name VARCHAR NOT NULL REFERENCES client.system (system_name) ON DELETE RESTRICT,
   identifier VARCHAR NOT NULL,
   UNIQUE (federated_login_id, system_name),
   UNIQUE (system_name, identifier)
@@ -1061,7 +1061,7 @@ CREATE TABLE client.client_profile_x_system
 (
   client_profile_x_system_id UUID DEFAULT func.tuid_generate() PRIMARY KEY,
   client_profile_id UUID REFERENCES client.client_profile ON DELETE CASCADE,
-  system_name VARCHAR NOT NULL REFERENCES client.system(system_name) ON DELETE RESTRICT,
+  system_name VARCHAR NOT NULL REFERENCES client.system (system_name) ON DELETE RESTRICT,
   identifier VARCHAR NOT NULL,
   UNIQUE (client_profile_id, system_name)
 );
@@ -1071,7 +1071,7 @@ SELECT client.add_history_to_table('client_profile_x_system');
 
 CREATE TABLE client.login
 (
-  login_id UUID DEFAULT func.tuid_generate() PRIMARY KEY ,
+  login_id UUID DEFAULT func.tuid_generate() PRIMARY KEY,
   login VARCHAR NOT NULL UNIQUE,
   display_name VARCHAR NOT NULL,
   n VARCHAR, -- n: for use in newer secure password exchange system, if NULL q is pwcrypted
@@ -1083,7 +1083,7 @@ SELECT client.add_history_to_table('login');
 CREATE TABLE client.login_1_mfa
 (
   login_1_mfa_id UUID DEFAULT func.tuid_generate() PRIMARY KEY,
-  login VARCHAR NOT NULL UNIQUE REFERENCES client.login(login) ON DELETE CASCADE,
+  login VARCHAR NOT NULL UNIQUE REFERENCES client.login (login) ON DELETE CASCADE,
   mfa VARCHAR NOT NULL DEFAULT 'none' CHECK (mfa IN ('none', 'sms', 'app')),
   mfa_key VARCHAR,
   mfa_sms_number VARCHAR
@@ -1093,11 +1093,12 @@ SELECT client.add_history_to_table('login_1_mfa');
 CREATE TABLE client.login_1_federated_login
 (
   login_1_federated_login_id UUID DEFAULT func.tuid_generate() PRIMARY KEY,
-  login VARCHAR NOT NULL UNIQUE REFERENCES client.login(login) ON DELETE CASCADE,
+  login VARCHAR NOT NULL UNIQUE REFERENCES client.login (login) ON DELETE CASCADE,
   federated_login_id UUID NOT NULL REFERENCES client.federated_login ON DELETE CASCADE
 );
 SELECT client.add_history_to_table('login_1_federated_login');
-
+ALTER TABLE client.login
+  ADD CONSTRAINT l1l1fed_fk FOREIGN KEY (login) REFERENCES client.login_1_federated_login (login);
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.client_profile_x_federated_login
 (
@@ -1125,7 +1126,7 @@ EXECUTE FUNCTION func.prevent_change();
 CREATE TABLE client.login_1_signup_data
 (
   login_1_signup_data_id UUID DEFAULT func.tuid_generate() PRIMARY KEY,
-  login VARCHAR UNIQUE REFERENCES client.login(login) ON DELETE CASCADE,
+  login VARCHAR UNIQUE REFERENCES client.login (login) ON DELETE CASCADE,
   -- encrypted
   signup_data BYTEA NOT NULL -- varchar
 );
@@ -1245,7 +1246,7 @@ EXECUTE FUNCTION func.prevent_change();
 CREATE UNLOGGED TABLE client.session
 (
   session_id BYTEA DEFAULT stuid_generate() PRIMARY KEY,
-  login VARCHAR REFERENCES client.login(login) ON DELETE CASCADE,
+  login VARCHAR REFERENCES client.login (login) ON DELETE CASCADE,
   federated_login_id UUID REFERENCES client.federated_login ON DELETE CASCADE, -- can be back filled after creation, so can be NULL
   client_profile_id UUID REFERENCES client.client_profile ON DELETE CASCADE,   -- can be back filled after creation, so can be NULL
   data JSONB DEFAULT '{}'::JSONB NOT NULL,
@@ -1259,7 +1260,7 @@ CREATE INDEX session_user_id ON client.session (federated_login_id, created_at);
 CREATE UNLOGGED TABLE staff.session
 (
   session_id BYTEA DEFAULT stuid_generate() PRIMARY KEY,
-  login VARCHAR REFERENCES staff.login(login) ON DELETE CASCADE, -- can be back filled after creation, so can be NULL
+  login VARCHAR REFERENCES staff.login (login) ON DELETE CASCADE, -- can be back filled after creation, so can be NULL
   data JSONB DEFAULT '{}'::JSONB NOT NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   expire_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP + '1 hour'::INTERVAL NOT NULL
@@ -1296,7 +1297,7 @@ SET search_path = staff, func;
 CREATE TABLE staff.login_x_permission
 (
   login_x_permission_id UUID NOT NULL DEFAULT func.tuid_generate(),
-  login VARCHAR NOT NULL REFERENCES staff.login(login) ON DELETE CASCADE ,
+  login VARCHAR NOT NULL REFERENCES staff.login (login) ON DELETE CASCADE,
   permission_name VARCHAR NOT NULL REFERENCES staff.permission,
   relation_type VARCHAR NOT NULL DEFAULT 'add' CHECK (relation_type::TEXT = ANY
                                                       (ARRAY ['add'::TEXT, 'remove'::TEXT, 'add_grant'::TEXT])),
@@ -1307,7 +1308,7 @@ SELECT staff.add_history_to_table('login_x_permission');
 CREATE TABLE staff.login_x_permission_group
 (
   login_x_permission_group_id UUID NOT NULL DEFAULT func.tuid_generate(),
-  login VARCHAR NOT NULL REFERENCES staff.login(login) ON DELETE CASCADE,
+  login VARCHAR NOT NULL REFERENCES staff.login (login) ON DELETE CASCADE,
   permission_group_name VARCHAR NOT NULL REFERENCES staff.permission_group,
   PRIMARY KEY (login, permission_group_name)
 );

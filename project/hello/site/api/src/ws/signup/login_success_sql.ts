@@ -3,7 +3,7 @@ WITH i_ll AS (
   INSERT INTO
     login_log (login, result, remote_address)
     VALUES
-      ($(login), $(result), $(remoteAddress))
+      ($(normalizedLogin), $(result), $(remoteAddress))
     RETURNING TRUE
   )
 SELECT federated_login_id
@@ -13,6 +13,6 @@ FROM
   JOIN federated_login
   USING (federated_login_id),
   i_ll
-WHERE login = $(login);
+WHERE login = $(normalizedLogin);
 
 `;

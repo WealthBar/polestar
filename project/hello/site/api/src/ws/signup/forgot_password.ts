@@ -1,8 +1,8 @@
 import {crServerSetupInit, ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 
-export async function wsSendVerification(ctxWs: Pick<ctxWsType, 'session' | 'user'>, params: serializableType): Promise<serializableType> {
-  console.log('wsSendVerification', params);
+export async function wsForgotPassword(ctxWs: Pick<ctxWsType, 'session' | 'user'>, params: serializableType): Promise<serializableType> {
+  console.log('wsForgotPassword', params);
   try {
     const p = params as { login: string };
     if (!p || !p.login) {

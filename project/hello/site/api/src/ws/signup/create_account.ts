@@ -2,6 +2,7 @@ import {ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {crServerSetup} from 'node_core';
 import {value as createAccountSql} from './create_account_sql';
+import {normalizeEmail} from './normalize_email';
 
 export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'remoteAddress' | 'user'>, params: serializableType): Promise<serializableType> {
   console.log('wsCreateAccountSetupInit', params);
@@ -12,6 +13,7 @@ export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 
   const {login, code, hpnb64} = p;
   const locale = p.locale || 'en';
   const partnerChannel = p.partnerChannel || '';
+  const normalizedLogin = normalizeEmail(login);
 
   const signup = ctxWs.session.signup as { verify?: { login?: string, code?: string, nb64?: string } };
   if (signup && signup.verify) {
@@ -25,6 +27,7 @@ export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 
         async db => {
           return db.one(createAccountSql, {
             login,
+            normalizedLogin,
             q,
             n: verify.nb64,
             locale,

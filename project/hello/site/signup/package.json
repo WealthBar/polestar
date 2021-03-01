@@ -18,7 +18,8 @@
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "ts_browser": "link:../../../../lib/ts_browser",
     "vue": "^2.6.11",
-    "vue-router": "^3.2.0"
+    "vue-router": "^3.2.0",
+    "vue-typed-mixins": "^0.2.0"
   },
   "devDependencies": {
     "@fortawesome/free-brands-svg-icons": "^5.15.2",

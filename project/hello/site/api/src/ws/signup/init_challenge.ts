@@ -2,6 +2,7 @@ import {crGetSalt, crServerInitChallenge, ctxWsType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {value as nqByLoginSql} from './nq_by_login_sql';
 import {randomBytes} from 'crypto';
+import {normalizeEmail} from './normalize_email';
 
 export async function wsInitChallenge(ctxWs: Pick<ctxWsType, 'session' | 'db'>, params: serializableType): Promise<serializableType> {
   console.log('wsInitChallenge', params);
@@ -11,9 +12,10 @@ export async function wsInitChallenge(ctxWs: Pick<ctxWsType, 'session' | 'db'>, 
       return {error: 'INVALID_PARAMETERS'};
     }
     const {login} = p;
+    const normalizedLogin = normalizeEmail(login);
 
     const rnq = await ctxWs.db(async db => {
-      return db.oneOrNone<{ n?: string, q?: string }>(nqByLoginSql, {login});
+      return db.oneOrNone<{ n?: string, q?: string }>(nqByLoginSql, {normalizedLogin});
     });
     if (!rnq || !rnq.n || !rnq.q) {
       return {error: 'INVALID_PARAMETERS'};

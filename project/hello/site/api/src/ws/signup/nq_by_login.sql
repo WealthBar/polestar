@@ -1,1 +1,1 @@
-SELECT n, q FROM login WHERE login.login=$(login);
+SELECT n, q FROM login WHERE login.login=$(normalizedLogin);

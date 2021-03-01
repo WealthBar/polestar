@@ -1,6 +1,6 @@
 WITH i_login AS (
   INSERT INTO login (login, display_name, n, q)
-    VALUES ($(login), $(login), $(n), $(q))
+    VALUES ($(normalizedLogin), $(login), $(n), $(q))
     RETURNING TRUE
   ),
   cp AS (
@@ -15,7 +15,7 @@ WITH i_login AS (
     ),
   i_l_1_fl AS (
     INSERT INTO login_1_federated_login (login, federated_login_id)
-      SELECT $(login), federated_login_id FROM fed
+      SELECT $(normalizedLogin), federated_login_id FROM fed
       RETURNING TRUE
     ),
   i_cp_n_e AS (
@@ -43,7 +43,7 @@ WITH i_login AS (
     ),
   i_login_log AS (
     INSERT INTO login_log (login, result, remote_address)
-      VALUES ($(login), '+ac', $(remoteAddress))
+      VALUES ($(normalizedLogin), '+ac', $(remoteAddress))
       RETURNING TRUE
     )
 SELECT client_profile_id, federated_login_id

@@ -208,6 +208,14 @@ You may need to stop and restart, or not, depending on what stack the site uses 
 We might create some `project/<domain>/procfile.dev` files to run all of the sites for a given domain if that
 becomes more convenient.
 
+## SMTP for development
+
+```
+docker run --name=papercut -p 25:25 -p 37408:37408 jijiechen/papercut:latest
+```
+
+Access via: `http://127.0.0.1:37408`
+
 # TODO
 
 ## Managing databases.

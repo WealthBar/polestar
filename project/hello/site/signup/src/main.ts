@@ -2,38 +2,39 @@ import Vue, {CreateElement} from 'vue';
 import app from './app.vue';
 import Buefy from 'buefy';
 import './theme.scss';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from "@fortawesome/free-solid-svg-icons";
-import { fab } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {library} from '@fortawesome/fontawesome-svg-core';
+import {fas} from '@fortawesome/free-solid-svg-icons';
+import {fab} from '@fortawesome/free-brands-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 library.add(fas);
 library.add(fab);
 Vue.component('vue-fontawesome', FontAwesomeIcon);
 
 Vue.use(Buefy, {
-  defaultIconComponent: "vue-fontawesome",
-  defaultIconPack: "fas",
+  defaultIconComponent: 'vue-fontawesome',
+  defaultFieldLabelPosition: 'on-border',
+  defaultIconPack: 'fas',
   customIconPacks: {
     fas: {
       sizes: {
-        default: "lg",
-        "is-small": "1x",
-        "is-medium": "2x",
-        "is-large": "3x"
+        default: 'lg',
+        'is-small': '1x',
+        'is-medium': '2x',
+        'is-large': '3x',
       },
-      iconPrefix: ""
+      iconPrefix: '',
     },
     fab: {
       sizes: {
-        default: "lg",
-        "is-small": "1x",
-        "is-medium": "2x",
-        "is-large": "3x"
+        default: 'lg',
+        'is-small': '1x',
+        'is-medium': '2x',
+        'is-large': '3x',
       },
-      iconPrefix: ""
-    }
-  }
+      iconPrefix: '',
+    },
+  },
 });
 
 Vue.config.productionTip = false;
