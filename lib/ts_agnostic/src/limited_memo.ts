@@ -5,8 +5,8 @@ export type limitedMemoFCtorType = <TP, TR>(
 ) => (
   (params: TP) => Promise<TR> // returning the wrapped function
   ) & {
-  invalidate();
-  clear();
+  invalidate(): void;
+  clear(): void;
 };
 
 // dep wrapper, return a limitedMemoFCtor
@@ -17,7 +17,7 @@ export function limitedMemoFCtorCtor(
     maxTimeToHoldResultForMs: number,
     f: (params: TP) => Promise<TR>,
     toKey: (params: TP) => string,
-  ): ((params: TP) => Promise<TR>) & { invalidate(); clear(); } {
+  ): ((params: TP) => Promise<TR>) & { invalidate(): void; clear():void; } {
     // using let allows clear to wholesale replace the memos
     let memos: { [key: string]: { at: number; r: TR } } = {};
 

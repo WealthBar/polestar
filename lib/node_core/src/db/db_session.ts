@@ -3,7 +3,8 @@ import {value as createSql} from './db_session_create_sql';
 import {value as deleteSql} from './db_session_delete_sql';
 import {value as expireSql} from './db_session_expire_sql';
 import {value as updateSql} from './db_session_update_sql';
-import {value as verifySql} from './db_session_verify_sql';
+import {value as verifyClientSql} from './db_session_verify_client_sql';
+import {value as verifyStaffSql} from './db_session_verify_staff_sql';
 import debugCtor = require('debug');
 import {ctxSetDb} from '../ctx';
 import {serializableType} from 'ts_agnostic';
@@ -24,7 +25,7 @@ export async function sessionCreate(ctx: Pick<ctxBaseType, 'sessionId' | 'sessio
   }, '-');
 }
 
-export async function sessionVerify(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'user' | 'db'>): Promise<void> {
+export async function sessionVerify(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'user' | 'db' | 'settings'>): Promise<void> {
   if (ctx.sessionId === '') {
     await sessionCreate(ctx);
   }
@@ -35,7 +36,7 @@ export async function sessionVerify(ctx: Pick<ctxBaseType, 'sessionId' | 'sessio
       client_profile_id?: string,
       federated_login_id?: string
     } | null = await db.oneOrNone(
-      verifySql,
+      ctx.settings.mode === 'client' ? verifyClientSql : verifyStaffSql,
       {
         sessionId: ctx.sessionId,
       },

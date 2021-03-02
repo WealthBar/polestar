@@ -1,4 +1,4 @@
-import {ctxReqType, ctxType, urlType} from './server.type';
+import {ctxReqType, ctxType, serverSettingsType, urlType} from './server.type';
 import {IncomingMessage, ServerResponse} from 'http';
 import {dbProviderType} from './db';
 import {dbProviderCtx, toDbProvideCtx} from './db_util';
@@ -31,15 +31,15 @@ export function parseCookie(cookie: string | undefined): [string, string][] {
 }
 
 
-export function ctxReqCtor(req: IncomingMessage, dbProvider: dbProviderType): ctxReqType {
+export function ctxReqCtor(req: IncomingMessage, dbProvider: dbProviderType, settings: serverSettingsType): ctxReqType {
   const url = parseUrl(req.url?.toString() || '/');
   const cookie = parseCookie(req.headers.cookie);
   const db = toDbProvideCtx('-', '-', dbProvider);
-  return {req, url, session: {}, sessionId: '', cookie, dbProvider, db};
+  return {req, url, session: {}, sessionId: '', cookie, dbProvider, db, settings};
 }
 
-export function ctxCtor(req: IncomingMessage, res: ServerResponse, dbProvider: dbProviderType): ctxType {
-  const ctx = ctxReqCtor(req, dbProvider) as ctxType;
+export function ctxCtor(req: IncomingMessage, res: ServerResponse, dbProvider: dbProviderType, settings: serverSettingsType): ctxType {
+  const ctx = ctxReqCtor(req, dbProvider, settings) as ctxType;
   ctx.res = res;
   return ctx;
 }

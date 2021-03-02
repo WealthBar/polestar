@@ -29,11 +29,11 @@
 
 <script lang="ts">
 
-import {wsMixin} from '@/ws';
 import mixins from 'vue-typed-mixins';
 import {signin, signup, forgotPassword} from '@/app/index';
+import {wsSignupMixin} from '@/signup/ws';
 
-export default mixins(wsMixin).extend({
+export default mixins(wsSignupMixin).extend({
   components: {signin, signup, forgotPassword},
   name: 'app',
   data() {

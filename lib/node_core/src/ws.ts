@@ -170,7 +170,7 @@ export function wsInit(
 
   server.on('upgrade', async function upgrade(req: IncomingMessage, socket: Socket, head: Buffer) {
     try {
-      const ctx = ctxReqCtor(req, dbProvider);
+      const ctx = ctxReqCtor(req, dbProvider, settings);
       const pathname = ctx.url.path;
       if (pathname !== '/ws') {
         socket.destroy();
@@ -201,6 +201,7 @@ export function wsInit(
             call(name: string, params: serializableType): Promise<serializableType> {
               return call(ctxWs, name, params);
             },
+            settings,
           };
 
           // sessions can't be shared

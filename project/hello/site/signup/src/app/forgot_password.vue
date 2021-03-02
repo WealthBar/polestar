@@ -66,14 +66,14 @@
 
 <script lang="ts">
 
-import {wsMixin} from '@/ws';
 import mixins from 'vue-typed-mixins';
 import {crClientSetupInit} from 'ts_browser';
 import {getMessage, getMessageType} from '@/app/messages';
+import {wsSignupMixin} from '@/signup/ws';
 
 export const deps = {window};
 
-export default mixins(wsMixin).extend({
+export default mixins(wsSignupMixin).extend({
   name: 'forgotPassword',
   data() {
     return {

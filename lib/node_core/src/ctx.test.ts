@@ -1,6 +1,6 @@
 import {_internal_, ctxCtor} from './ctx';
 import * as assert from 'assert';
-import {ctxType} from './server.type';
+import {ctxType, serverSettingsType} from './server.type';
 import {dbProviderStub} from './db';
 import * as sinon from 'sinon';
 
@@ -22,7 +22,7 @@ describe('ctxCtor', () => {
     };
     const res: any = {};
     const db = dbProviderStub(sinon);
-    const ctx = ctxCtor(req, res, db.dbProvider);
+    const ctx = ctxCtor(req, res, db.dbProvider, {} as any);
     commonChecks(ctx, res, req);
     assert.deepStrictEqual(ctx.url, {path: '/hello', params: [['a', '1'], ['b', '2']]});
     assert.deepStrictEqual(ctx.cookie, [['c', '3'], ['d', '4']]);
@@ -38,7 +38,7 @@ describe('ctxCtor', () => {
     };
     const res: any = {};
     const db = dbProviderStub(sinon);
-    const ctx = ctxCtor(req, res, db.dbProvider);
+    const ctx = ctxCtor(req, res, db.dbProvider, {} as any);
 
     commonChecks(ctx, res, req);
     assert.deepStrictEqual(ctx.url, {path: '/', params: []});

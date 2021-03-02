@@ -79,7 +79,7 @@ export function server(
 
   async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
     try {
-      const ctx = ctxCtor(req, res, dbProvider);
+      const ctx = ctxCtor(req, res, dbProvider, settings);
 
       await runHandlerArray(ctx);
 
