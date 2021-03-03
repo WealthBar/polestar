@@ -55,14 +55,12 @@ export function server(
 
   if (settings.google && onUserData) {
     gauthInit = gauthInitCtor({
-        sessionSecret: settings.sessionSecret,
         google: settings.google,
       },
       secureTokenCtor,
     );
 
     gauthContinue = gauthContinueCtor({
-        sessionSecret: settings.sessionSecret,
         appUrl: '/app',
         google: settings.google,
       },

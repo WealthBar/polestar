@@ -84,7 +84,6 @@ export type serverSettingsType = {
   host: string;
   port: string | number;
   schema: string;
-  sessionSecret: string;
   mode: 'client' | 'staff',
   google?: {
     secret: string;

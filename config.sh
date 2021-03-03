@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIRECT_RUN=
-(return 0 2>/dev/null) && DIRECT_RUN=1
+(return 0 2>/dev/null) && DIRECT_RUN=1 # don't ask, it works, I ^C^V'd it from stack overflow.
 if [[ -z $DIRECT_RUN ]]
 then
   echo "Script must be 'sourced', use: . ./config.sh"
@@ -28,7 +28,7 @@ fi
 echo "CONFIG_ENV=${CONFIG_ENV}"
 export CONFIG_ENV
 
-IFS=$'\n'
+IFS=$'\n' # tho really none of the shell scripts should have spaces in their names anyways...
 
 # shellcheck disable=SC2044
 for config_file in $(find -s ./crypt -maxdepth 1 -name '*.sh' -type f)

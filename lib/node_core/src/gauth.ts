@@ -1,12 +1,16 @@
-import {ctxType, gauthUserInfoType, contentHandlerType} from './server.type';
+import {ctxType, gauthUserInfoType, contentHandlerType, userInfoType, ctxBaseType} from './server.type';
 import {resolvedVoid} from 'ts_agnostic';
 import {secureTokenCtorType, secureTokenVerifyType} from './stoken';
 import {toUrlParam} from 'ts_agnostic';
-import {kvpArrayToObject} from 'ts_agnostic';;
+import {kvpArrayToObject} from 'ts_agnostic';
+import {tuidCtor} from './tuid';
+
+// server restarts invalidate all tokens
+// since the google login process is fast this should rarely be an issue.
+const sessionSecret = tuidCtor();
 
 export function gauthInitCtor(
   settings: {
-    sessionSecret: string;
     google: {
       redirectUri: string;
       id: string;
@@ -19,7 +23,7 @@ export function gauthInitCtor(
     if (ctx.url.path !== '/gauth/init') {
       return resolvedVoid;
     }
-    const token = secureTokenCtor(settings.sessionSecret);
+    const token = secureTokenCtor(sessionSecret);
     const params: [string, string][] = [
       ['client_id', settings.google.id],
       ['redirect_uri', settings.google.redirectUri],
@@ -43,12 +47,11 @@ export function gauthInitCtor(
 
   return gauthInit;
 }
-export type gauthOnUserData = (gauthUserInfo: gauthUserInfoType, rawAuthResponse: string) => Promise<string|undefined>;
+export type gauthOnUserData = (ctx: ctxBaseType, gauthUserInfo: gauthUserInfoType, rawAuthResponse: string) => Promise<void>;
 
 export function gauthContinueCtor(
   settings: {
     appUrl: string;
-    sessionSecret: string;
     google: {
       secret: string;
       redirectUri: string;
@@ -69,7 +72,7 @@ export function gauthContinueCtor(
       return resolvedVoid;
     }
     const {state, code} = kvpArrayToObject(ctx.url.params) as { state: string, code: string };
-    const stuid = secureTokenVerify(state, settings.sessionSecret);
+    const stuid = secureTokenVerify(state, sessionSecret);
 
     // TODO: check age of stuid, reject if older than X mins.
     if (!state || !code || !stuid) {
@@ -90,8 +93,8 @@ export function gauthContinueCtor(
         {headers: {'Content-Type': 'application/x-www-form-urlencoded'}},
       );
       const userData = jwtTrustedDecode(r.data.id_token as string) as gauthUserInfoType;
-      ctx.session.userId = await onUserData(userData, JSON.stringify(r.data));
-      if (!ctx.session.userId) {
+      await onUserData(ctx, userData, JSON.stringify(r.data));
+      if (!ctx.user?.login) {
         ctx.res.writeHead(403, "User not found.");
       }
       ctx.res.writeHead(303, {Location: settings.appUrl});

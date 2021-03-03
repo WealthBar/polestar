@@ -1222,10 +1222,7 @@ CREATE TABLE staff.login
 (
   login_id UUID PRIMARY KEY DEFAULT func.tuid_generate(),
   login VARCHAR NOT NULL UNIQUE,
-  display_name VARCHAR NOT NULL,
-  n VARCHAR,
-  q VARCHAR,
-  allow_google_login BOOLEAN NOT NULL DEFAULT TRUE
+  display_name VARCHAR NOT NULL
 );
 SELECT staff.add_history_to_table('login');
 ------------------------------------------------------------------------------------------------------
@@ -1233,7 +1230,7 @@ CREATE TABLE staff.login_log
 (
   login VARCHAR NOT NULL, -- NOT references, we want to retain the logs if login is deleted.
   at TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP() PRIMARY KEY,
-  result VARCHAR NOT NULL CHECK (result IN ('+ac', '-oauth', '+oauth', '-?')),
+  result VARCHAR NOT NULL CHECK (result IN ('+ga', '-?')),
   remote_address VARCHAR NOT NULL
 );
 CREATE INDEX login_log_login ON staff.login_log (login, at);
