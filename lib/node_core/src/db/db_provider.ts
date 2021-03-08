@@ -39,17 +39,17 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
           },
       };
       const m = connectionString.match(/^postgres:\/\/((?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
-      if(!m) {
+      if(!m || !m.groups?.user || !m.groups?.host || !m.groups?.database || !m.groups?.password) {
         throw new Error('Invalid connection string: ' + connectionString);
       }
-      const user = m.groups?.user;
-      const host = m.groups?.host;
-      const port = +(m.groups?.port || '');
-      const database = m.groups?.database;
+      const user = m.groups.user;
+      const host = m.groups.host;
+      const port = +(m.groups?.port || '5432');
+      const database = m.groups.database;
 
       debug("DB: %s@%s:%s/%s", user, host, port, database);
 
-      const password = m.groups?.password;
+      const password = m.groups.password;
       const connectionParameters: IConnectionParameters = {
         application_name: 'ems',
         database,

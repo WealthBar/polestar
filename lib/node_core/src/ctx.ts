@@ -35,7 +35,7 @@ export function ctxReqCtor(req: IncomingMessage, dbProvider: dbProviderType, set
   const url = parseUrl(req.url?.toString() || '/');
   const cookie = parseCookie(req.headers.cookie);
   const db = toDbProvideCtx('-', '-', dbProvider);
-  return {req, url, session: {}, sessionId: '', cookie, dbProvider, db, settings};
+  return {req, url, session: {}, sessionId: '', cookie, dbProvider, db, settings, remoteAddress: req.connection.remoteAddress || ''};
 }
 
 export function ctxCtor(req: IncomingMessage, res: ServerResponse, dbProvider: dbProviderType, settings: serverSettingsType): ctxType {

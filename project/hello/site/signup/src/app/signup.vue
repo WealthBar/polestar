@@ -69,7 +69,7 @@
 import mixins from 'vue-typed-mixins';
 import {crClientSetupInit} from 'ts_browser';
 import {getMessage, getMessageType} from '@/app/messages';
-import {wsSignupMixin} from '@/signup/ws';
+import {wsSignupMixin} from '@/app/ws_signup_mixin';
 
 export const deps = {window};
 

@@ -190,7 +190,7 @@ export function wsInit(
 
           const ctxWs: ctxWsType = {
             ws: wsX,
-            remoteAddress: req.connection.remoteAddress || '-',
+            remoteAddress: ctx.remoteAddress,
             sessionId: ctx.sessionId,
             session: ctx.session,
             user: ctx.user,

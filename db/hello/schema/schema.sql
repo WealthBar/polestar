@@ -1222,7 +1222,9 @@ CREATE TABLE staff.login
 (
   login_id UUID PRIMARY KEY DEFAULT func.tuid_generate(),
   login VARCHAR NOT NULL UNIQUE,
-  display_name VARCHAR NOT NULL
+  display_name VARCHAR NOT NULL,
+  locale VARCHAR NOT NULL CHECK(locale IN ('en','fr')),
+  raw_auth_response VARCHAR NOT NULL
 );
 SELECT staff.add_history_to_table('login');
 ------------------------------------------------------------------------------------------------------

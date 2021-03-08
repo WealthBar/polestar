@@ -31,7 +31,7 @@
 
 import mixins from 'vue-typed-mixins';
 import {signin, signup, forgotPassword} from '@/app/index';
-import {wsSignupMixin} from '@/signup/ws';
+import {wsSignupMixin} from '@/app/ws_signup_mixin';
 
 export default mixins(wsSignupMixin).extend({
   components: {signin, signup, forgotPassword},

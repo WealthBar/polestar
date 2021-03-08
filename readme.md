@@ -65,14 +65,22 @@ Code here should assume it is running in NodeJS as part of a cron job or a devel
 
 ## `nginx`
 
-`nginx` is used to proxy all `*.local` requests to locally running services. The config is dynamically
+`nginx` is used to proxy all `*.xxx` requests to locally running services. The config is dynamically
 build based on scanning the `project` directory for sites. Sites with a `.port` file will be proxied to.
 Sites without a `.port` file will have their `public` directory be served as raw files and built/packaged
 as static content.
 
+*NOTE*: I originally used `.local` for the local DNS but google oauth requires a "real" tld and doesn't
+accept `.local` or `.localhost` even though those are traditionally used for 127/8 DNS.
+
+So then I tried `.dev` and aliasing over top of `.dev`, even tho that is a real TLD. But no, that doesn't
+work either because `.dev` is also special in forcing all connections to `https`. 🤦‍♂️
+
+So then I tried `.xxx`. That appears to work.
+
 ## `project/<domain>/`
 
-Each project is named by the "domain" it uses. This will be mapped to `<site>.<domain>.local` be working
+Each project is named by the "domain" it uses. This will be mapped to `<site>.<domain>.dev` be working
 locally. (I'm still debating if the TLD should be included).
 
 Projects are broken into sections:
@@ -145,13 +153,23 @@ TBD
 goal: no custom configuration of CI/CD per task.
 
 
-# `*.local` DNS setup
+# `*.xxx` DNS setup
 ```
 $ brew install dnsmasq
-$ echo 'address=/.local/127.0.0.1' > /usr/local/etc/dnsmasq.conf
+# edit /usr/local/etc/dnsmasq.conf
 $ sudo cp -v /usr/local/Celler/dnsmasq/<version>homebrew.mxcl.dnsmasq.plist /Library/LaunchDaemons
 $ sudo launchctl load -w /Library/LaunchDaemons/homebrew.mxcl.dnsmasq.plist
 ```
+
+/usr/local/etc/dnsmasq.conf:
+```
+address=/.xxx/127.0.0.1
+local=/xxx/
+domain=xxx
+server=192.168.1.1
+```
+
+Replace server with your existing DNS server (or 1.1.1.1 if you just want to use cloudflare)
 
 You can manually start and stop the service with the following commands
 
@@ -178,35 +196,24 @@ google.com.             159     IN      A       216.58.217.46
 and
 
 ```
-$ dig asdf.local
+$ dig asdf.dev
 ...
 ;; ANSWER SECTION:
-asdf.local.             0       IN      A       127.0.0.1
+asdf.dev.             0       IN      A       127.0.0.1
 ...
 ```
 
 # Running locally
 
-## Startup `nginx`
+## Startup overmind
 
 ```
-$ overmind s -f procfile.dev
-```
-
-*Note*: If you change a site's `.port` or add/remove a site you need to stop and restart `nginx` as it
-does not watch the file system for changes.
-
-## Startup sites you need
-
-```
-$ cd project/<domain>/site/<subdomain>
 $ ./dev
 ```
 
-You may need to stop and restart, or not, depending on what stack the site uses to run in development mode.
+*Note*: If you change a site's `.port` or add/remove a site you need to stop and restart overmind as it
+does not watch the file system for changes.
 
-We might create some `project/<domain>/procfile.dev` files to run all of the sites for a given domain if that
-becomes more convenient.
 
 ## SMTP for development
 
@@ -214,7 +221,7 @@ becomes more convenient.
 docker run --name=papercut -p 25:25 -p 37408:37408 jijiechen/papercut:latest
 ```
 
-Access via: `http://127.0.0.1:37408`
+Access via: `http://smtp.dev:37408`
 
 # TODO
 

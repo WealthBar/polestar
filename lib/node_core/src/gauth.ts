@@ -4,6 +4,7 @@ import {secureTokenCtorType, secureTokenVerifyType} from './stoken';
 import {toUrlParam} from 'ts_agnostic';
 import {kvpArrayToObject} from 'ts_agnostic';
 import {tuidCtor} from './tuid';
+import {sessionUpdate} from './db';
 
 // server restarts invalidate all tokens
 // since the google login process is fast this should rarely be an issue.
@@ -96,12 +97,15 @@ export function gauthContinueCtor(
       await onUserData(ctx, userData, JSON.stringify(r.data));
       if (!ctx.user?.login) {
         ctx.res.writeHead(403, "User not found.");
+      } else {
+        await sessionUpdate(ctx);
+        ctx.res.writeHead(303, {Location: settings.appUrl});
       }
-      ctx.res.writeHead(303, {Location: settings.appUrl});
       ctx.res.end();
     } catch (e) {
       ctx.res.statusCode = 400;
-      ctx.res.end('Invalid Request');
+      ctx.res.setHeader('content-type', 'text/plain');
+      ctx.res.end(`Invalid Request:\n${e}`);
     }
     return resolvedVoid;
   }

@@ -8,5 +8,4 @@ popd
 pushd ../../../../lib/node_script
 ./build
 popd
-. ./config/dev_env.sh
 PORT=$(cat .port) yarn dev

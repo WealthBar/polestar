@@ -2,7 +2,8 @@ import {dbProviderType} from './db_provider';
 import {value as createSql} from './db_session_create_sql';
 import {value as deleteSql} from './db_session_delete_sql';
 import {value as expireSql} from './db_session_expire_sql';
-import {value as updateSql} from './db_session_update_sql';
+import {value as updateClientSql} from './db_session_update_client_sql';
+import {value as updateStaffSql} from './db_session_update_staff_sql';
 import {value as verifyClientSql} from './db_session_verify_client_sql';
 import {value as verifyStaffSql} from './db_session_verify_staff_sql';
 import debugCtor = require('debug');
@@ -56,23 +57,36 @@ export async function sessionVerify(ctx: Pick<ctxBaseType, 'sessionId' | 'sessio
   }, ctx.sessionId);
 }
 
-export async function sessionUpdate(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'user'>): Promise<void> {
+export async function sessionUpdate(ctx: Pick<ctxBaseType, 'sessionId' | 'session' | 'dbProvider' | 'user' | 'settings'>): Promise<void> {
   if (ctx.sessionId === '') {
     return;
   }
 
   return ctx.dbProvider('-SESSION-', async (db) => {
-    const result = await db.result(
-      updateSql,
-      {
-        sessionId: ctx.sessionId,
-        data: ctx.session,
-        login: ctx?.user?.login,
-        clientProfileId: ctx?.user?.clientProfileId,
-        federatedLoginId: ctx?.user?.federatedLoginId,
-      },
-    );
-    debug(`update result: ${JSON.stringify(result)}`);
+    if ( ctx.settings.mode === 'client' ) {
+      const result = await db.result(
+        updateClientSql,
+        {
+          sessionId: ctx.sessionId,
+          data: ctx.session,
+          login: ctx?.user?.login,
+          clientProfileId: ctx?.user?.clientProfileId,
+          federatedLoginId: ctx?.user?.federatedLoginId,
+        },
+      );
+      debug(`update result: ${JSON.stringify(result)}`);
+    }
+    if (ctx.settings.mode === 'staff') {
+      const result = await db.result(
+        updateStaffSql,
+        {
+          sessionId: ctx.sessionId,
+          data: ctx.session,
+          login: ctx?.user?.login,
+        },
+      );
+      debug(`update result: ${JSON.stringify(result)}`);
+    }
   }, ctx.sessionId);
 }
 

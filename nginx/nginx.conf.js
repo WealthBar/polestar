@@ -17,6 +17,8 @@ function readdirRecursiveSync(path, cb) {
   }
 }
 
+const hostPostfix = process.env.HOST_POSTFIX;
+
 readdirRecursiveSync('project', (file) => {
   if (file.endsWith('/.port')) {
     const subdomainsFile = p.join(p.dirname(file), '.additional_subdomains');
@@ -31,11 +33,9 @@ readdirRecursiveSync('project', (file) => {
         const { domain, sub } = m.groups;
         subdomains.unshift(sub);
         subdomains.forEach((subdomain) => {
-          console.log(`adding ${subdomain}.${domain}.local ${port};`);
-          hostMappings.push(`    ${subdomain}.${domain}.local ${port};`)
-          hostMappings.push(`    *.${subdomain}.${domain}.local ${port};`)
-          hostMappings.push(`    ${subdomain}.${domain} ${port};`)
-          hostMappings.push(`    *.${subdomain}.${domain} ${port};`)
+          console.log(`adding ${subdomain}.${domain}.${hostPostfix} ${port};`);
+          hostMappings.push(`    ${subdomain}.${domain}.${hostPostfix} ${port};`)
+          hostMappings.push(`    *.${subdomain}.${domain}.${hostPostfix} ${port};`)
         });
       }
     }
@@ -77,7 +77,7 @@ ${hostMap}
     listen 80;
     port_in_redirect off;
 
-    if ($host ~* ^([^.]+\\.)*([^.]+)\\.([^.]+)\\.local$) {
+    if ($host ~* ^([^.]+\\.)*([^.]+)\\.([^.]+)\\.${hostPostfix}$) {
       set $subdomain $2;
       set $domain $3;
     }

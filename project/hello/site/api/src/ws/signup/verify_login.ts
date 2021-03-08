@@ -37,6 +37,7 @@ export async function wsVerifyLogin(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'u
           clientProfileId: rlogin.client_profile_id,
           federatedLoginId: rlogin.federated_login_id,
         };
+        delete ctxWs.session.signin;
         return {};
       }
     }

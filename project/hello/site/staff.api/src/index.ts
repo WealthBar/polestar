@@ -7,24 +7,26 @@ import {ctxBaseType, exitPromise, gauthUserInfoType, normalizeEmail, server} fro
 import {wsHandlerRegistry, wsOnCloseHandler, wsOnConnectHandler} from './ws';
 import {value as vivifyLoginSql} from './vivify_login_sql';
 
-async function onUserData(ctx: Pick<ctxBaseType, 'dbProvider' | 'user'>, gauthUserInfo: gauthUserInfoType, rawAuthResponse: string): Promise<void> {
+async function onUserData(ctx: Pick<ctxBaseType, 'dbProvider' | 'user' | 'remoteAddress'>, gauthUserInfo: gauthUserInfoType, rawAuthResponse: string): Promise<void> {
   if (!gauthUserInfo.email_verified) {
     return undefined;
   }
   const locale = gauthUserInfo.locale?.toLowerCase()?.startsWith('fr') ? 'fr' : 'en';
+  const login = normalizeEmail(gauthUserInfo.email);
   const r = await ctx.dbProvider(
     '-',
     db => {
-      return db.oneOrNone<{ login?: string }>(
+      return db.oneOrNone(
         vivifyLoginSql,
         {
-          login: normalizeEmail(gauthUserInfo.email),
+          login: login,
           email: gauthUserInfo.email,
           locale,
+          remoteAddress: ctx.remoteAddress,
+          rawAuthResponse,
         });
     });
-
-  ctx.user = r?.login ? {login: r.login} : undefined;
+  ctx.user = {login};
 }
 
 const contentHandlerArray = [];

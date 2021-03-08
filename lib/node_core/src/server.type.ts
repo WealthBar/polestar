@@ -24,6 +24,7 @@ export type ctxBaseType = {
   user?: userInfoType,
   db: dbProviderCtx,
   dbProvider: dbProviderType,
+  remoteAddress: string,
 };
 
 export type ctxReqType = ctxBaseType & {
@@ -49,7 +50,6 @@ export type requestType = {
 
 export type ctxWsType = ctxBaseType & {
   ws: webSocketExtendedType,
-  remoteAddress: string,
   call(name: string, params: serializableType): Promise<serializableType>,
   requests: registryType<requestType>,
 }
@@ -90,6 +90,7 @@ export type serverSettingsType = {
     redirectUri: string;
     id: string;
   },
+  appUrl: string,
   dbConnectionString: string,
 };
 

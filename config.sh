@@ -17,7 +17,7 @@ fi
 
 if [[ -z $CONFIG_ENV ]]
 then
-  CONFIG_ENV=local
+  CONFIG_ENV=dev
 fi
 
 if [[ ! -d ./crypt/$CONFIG_ENV ]]

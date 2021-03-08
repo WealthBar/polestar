@@ -40,6 +40,7 @@ export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 
         clientProfileId,
         federatedLoginId,
       };
+      delete ctxWs.session.signup;
       return {};
     }
   }

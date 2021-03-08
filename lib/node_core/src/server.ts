@@ -61,7 +61,7 @@ export function server(
     );
 
     gauthContinue = gauthContinueCtor({
-        appUrl: '/app',
+        appUrl: settings.appUrl,
         google: settings.google,
       },
       secureTokenVerify,
