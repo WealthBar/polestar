@@ -13,7 +13,9 @@ async function onUserData(ctx: Pick<ctxBaseType, 'dbProvider' | 'user' | 'remote
   }
   const locale = gauthUserInfo.locale?.toLowerCase()?.startsWith('fr') ? 'fr' : 'en';
   const login = normalizeEmail(gauthUserInfo.email);
-  const r = await ctx.dbProvider(
+
+  // since by default a new login has no permissions it's fine to create the login for anyone.
+  await ctx.dbProvider(
     '-',
     db => {
       return db.oneOrNone(

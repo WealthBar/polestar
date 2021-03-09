@@ -11,7 +11,7 @@ import axios from 'axios';
 import {wsInit, wsType} from './ws';
 import {readonlyRegistryType} from 'ts_agnostic';
 import {serializableType} from 'ts_agnostic';
-import {dbProviderCtor, sessionExpire} from './db';
+import {dbProviderCtor, sessionExpire, sessionUpdate} from './db';
 
 //----------------------
 
@@ -80,6 +80,8 @@ export function server(
       const ctx = ctxCtor(req, res, dbProvider, settings);
 
       await runHandlerArray(ctx);
+
+      await sessionUpdate(ctx);
 
       if (!res.writableEnded) {
         handleNotFound(res);

@@ -98,7 +98,6 @@ export function gauthContinueCtor(
       if (!ctx.user?.login) {
         ctx.res.writeHead(403, "User not found.");
       } else {
-        await sessionUpdate(ctx);
         ctx.res.writeHead(303, {Location: settings.appUrl});
       }
       ctx.res.end();
