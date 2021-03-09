@@ -1223,7 +1223,7 @@ CREATE TABLE staff.login
   login_id UUID PRIMARY KEY DEFAULT func.tuid_generate(),
   login VARCHAR NOT NULL UNIQUE,
   display_name VARCHAR NOT NULL,
-  locale VARCHAR NOT NULL CHECK(locale IN ('en','fr')),
+  locale VARCHAR NOT NULL CHECK (locale IN ('en', 'fr')),
   raw_auth_response VARCHAR NOT NULL
 );
 SELECT staff.add_history_to_table('login');
@@ -1248,6 +1248,7 @@ CREATE UNLOGGED TABLE client.session
   login VARCHAR REFERENCES client.login (login) ON DELETE CASCADE,
   federated_login_id UUID REFERENCES client.federated_login ON DELETE CASCADE, -- can be back filled after creation, so can be NULL
   client_profile_id UUID REFERENCES client.client_profile ON DELETE CASCADE,   -- can be back filled after creation, so can be NULL
+  ivkey BYTEA,
   data JSONB DEFAULT '{}'::JSONB NOT NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   expire_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP + '1 hour'::INTERVAL NOT NULL,
@@ -1324,6 +1325,40 @@ CREATE TABLE meta.system_setting
 
 SELECT meta.add_history_to_table('system_setting');
 
+------------------------------------------------------------------------------------------------------
+-- trigger to auto assign ivkey on session insert/update
+------------------------------------------------------------------------------------------------------
+
+CREATE FUNCTION func.session_ivkey_assign() RETURNS TRIGGER
+  LANGUAGE plpgsql
+  SECURITY DEFINER -- runs as owner
+AS
+$$
+DECLARE
+  ivkey_ BYTEA;
+BEGIN
+  IF new.client_profile_id IS NULL THEN
+    new.ivkey = NULL;
+    RETURN new;
+  END IF;
+
+  INSERT INTO staff.client_profile_1_key (client_profile_id, ivkey)
+  VALUES (new.client_profile_id, func.gen_random_bytes(48))
+  ON CONFLICT DO NOTHING;
+
+  SELECT ivkey INTO ivkey_ FROM staff.client_profile_1_key WHERE client_profile_id = new.client_profile_id;
+  new.ivkey = ivkey_;
+  RETURN new;
+END;
+$$;
+
+ALTER FUNCTION session_ivkey_assign() OWNER TO hello_staff;
+
+CREATE TRIGGER session_ivkey_assign_tg
+  BEFORE INSERT OR UPDATE
+  ON client.session
+  FOR EACH ROW
+EXECUTE FUNCTION func.session_ivkey_assign();
 ------------------------------------------------------------------------------------------------------
 
 SET "audit.user" = '_SETUP_';

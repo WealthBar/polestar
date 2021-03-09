@@ -46,6 +46,7 @@ export function wsInit(
           const call = wsHandlerRegistry.lookup(i.n);
           if (call) {
             const r = await call(ctxWs, i.a);
+            await sessionUpdate(ctxWs);
             ctxWs.ws.send(JSON.stringify({
               id: i.id,
               s: '+',
@@ -57,7 +58,6 @@ export function wsInit(
               s: '-NF',
             }));
           }
-          await sessionUpdate(ctxWs);
         } catch (e) {
           ctxWs.ws.send(JSON.stringify({
             id: i.id,

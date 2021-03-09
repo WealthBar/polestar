@@ -4,7 +4,6 @@ import {crServerSetup, normalizeEmail} from 'node_core';
 import {value as createAccountSql} from './create_account_sql';
 
 export async function wsCreateAccount(ctxWs: Pick<ctxWsType, 'session' | 'db' | 'remoteAddress' | 'user'>, params: serializableType): Promise<serializableType> {
-  console.log('wsCreateAccountSetupInit', params);
   const p = params as { login?: string, code?: string, hpnb64?: string, nb64?: string, locale?: string, partnerChannel?: string };
   if (!p || !p.login || !p.code || !p.hpnb64 || !p.nb64) {
     return {error: 'INVALID_PARAMETERS'};
