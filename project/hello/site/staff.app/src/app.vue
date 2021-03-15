@@ -1,11 +1,16 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link>
-      |
-      <router-link to="/about">About</router-link>
+    <div v-if="loading">
+      <b-loading is-full-page :active="loading"></b-loading>
     </div>
-    <router-view/>
+    <div v-else>
+      <div id="nav">
+        <router-link to="/">Home</router-link>
+        |
+        <router-link to="/about">About</router-link>
+      </div>
+      <router-view/>
+    </div>
   </div>
 </template>
 
@@ -40,7 +45,10 @@ const deps = {window};
 
 export default mixins(wsStaffMixin).extend({
   data() {
-    return {login: ''};
+    return {
+      login: '',
+      loading: true,
+    };
   },
   async created() {
     const r = await this.$wsWhoAmI();
@@ -49,6 +57,7 @@ export default mixins(wsStaffMixin).extend({
       return;
     }
     this.login = r.login;
+    this.loading = false;
   },
 });
 </script>

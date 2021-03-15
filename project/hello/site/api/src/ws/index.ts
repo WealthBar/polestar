@@ -8,9 +8,11 @@ import {wsInitChallenge} from './signup/init_challenge';
 import {wsVerifyLogin} from './signup/verify_login';
 import {wsForgotPassword} from './signup/forgot_password';
 import {wsChangePassword} from './signup/change_password';
+import {wsAppWhoAmI} from './app/who_am_i';
 
 export const wsHandlerRegistry = readonlyRegistryCtor<wsHandlerType>([
   ['echo', wsEcho],
+  ['app/whoAmI', wsAppWhoAmI],
   ['signup/loginStatus', wsLoginStatus],
   ['signup/sendVerification', wsSendVerification],
   ['signup/createAccount', wsCreateAccount],

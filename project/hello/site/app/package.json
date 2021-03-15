@@ -3,16 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "vue:index": "node ../../../../tool/vue_index/vue_index.js",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@fortawesome/vue-fontawesome": "^2.0.2",
     "core-js": "^3.6.5",
+    "buefy": "^0.9.4",
     "vue": "^2.6.11",
-    "vue-router": "^3.2.0"
+    "vue-router": "^3.2.0",
+    "vue-typed-mixins": "^0.2.0",
+    "ts_agnostic": "link:../../../../lib/ts_agnostic",
+    "ts_browser": "link:../../../../lib/ts_browser"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",

@@ -182,13 +182,4 @@ export default mixins(wsSignupMixin).extend({
 
 </script>
 <style lang="scss" scoped>
-
-// hacked together transition, don't copy this.
-.step {
-  backface-visibility: hidden;
-  z-index: 1;
-  min-width: 256px;
-  max-width: 768px;
-}
-
 </style>
