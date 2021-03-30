@@ -21,7 +21,7 @@ System to System integration API for requesting a form fill workflow. All calls 
 
 All system to system requests container a header: `Authorization Bearer: {ACCESS_KEY}`
 
-### POST /init/{stoken}
+### POST /v1/init/{stoken}
 
 Body: JSON
 ```json5
@@ -55,7 +55,7 @@ or
 If the same stoken sent multiple times this first `init` is used to set the data. If
 the same stoken is used with different POST data the `MISMATCH` error is returned.
 
-### GET /result/{stoken}
+### GET /v1/result/{stoken}
 
 Returns
 
@@ -75,7 +75,7 @@ or
 }
 ```
 
-### GET /doc/${stoken}
+### GET /v1/doc/${stoken}
 
 If docusigning was requested for the given form key and the user completed the process this will return the signed PDF.
 
@@ -83,7 +83,7 @@ If can also return: 403 Forbidden, 404 Not Found (stoken doesn't exist), or 400 
 
 ## User facing app
 
-### /form/{stoken}
+### /v1/form/{stoken}
 
 Provides client form fill web UI, branded as specified by the init call for the {stoken}. 
 
