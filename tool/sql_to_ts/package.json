@@ -12,7 +12,7 @@
   "author": "Cliff Hammerschmidt",
   "license": "MIT",
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
     "node_script": "link:../../lib/node_script",
     "eslint": "^7.17.0",
