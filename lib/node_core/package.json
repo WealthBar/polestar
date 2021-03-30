@@ -25,6 +25,8 @@
     "minimist": "^1.2.5",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
+    "pg-promise": "^10.8.1",
+    "sinon": "^10.0.0",
     "pg-promise": "^10.9.5",
     "sinon": "^9.2.1",
     "sql_to_ts": "link:../../tool/sql_to_ts",
