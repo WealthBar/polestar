@@ -1,66 +1,67 @@
 <template>
-  <div
-      id="app"
-      class="container">
-    <b-loading :is-full-page="true" v-model="loading" :can-cancel="false"></b-loading>
-    <div class="columns is-centered is-vcentered m-1" style="height: 100vh">
-      <div class="column" style="height: 32rem">
-        <div class="columns is-centered">
-          <div class="card column">
-            <div class="card-content" style="padding: .5rem">
-              <b-tabs v-model="activeTab" multiline type="is-toggle" expanded>
-                <b-tab-item value="signin" label="Sign In">
-                  <signin></signin>
-                </b-tab-item>
-                <b-tab-item value="signup" label="Sign Up">
-                  <signup></signup>
-                </b-tab-item>
-                <b-tab-item value="forget_password" label="Forgot Password">
-                  <forgot-password></forgot-password>
-                </b-tab-item>
-              </b-tabs>
+  <v-app class="primary">
+      <v-dialog v-model="state.dialog" persistent max-width="600px" min-width="360px" overlay-opacity="100%">
+        <v-tabs v-model="state.tab" show-arrows background-color="blue lighten-4" icons-and-text grow>
+          <v-tabs-slider color="primary darken-1"></v-tabs-slider>
+          <v-tab v-for="i in state.tabs" :key="i.name" class="px-1">
+            <div class="ma-0">
+              <font-awesome-icon :icon="i.icon"></font-awesome-icon>
+              {{ i.name }}
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          </v-tab>
+          <v-tab-item v-for="i in state.tabs" :key="i.name">
+            <component :is="i.component"></component>
+          </v-tab-item>
+        </v-tabs>
+      </v-dialog>
+  </v-app>
 </template>
 
 <script lang="ts">
-
-import mixins from 'vue-typed-mixins';
+import '@/vue_comp';
 import {signin, signup, forgotPassword} from '@/app/index';
-import {wsSignupMixin} from '@/app/ws_signup_mixin';
+import {reactive, defineComponent} from '@vue/composition-api';
 
-export default mixins(wsSignupMixin).extend({
+const deps = {window};
+
+export default defineComponent({
   components: {signin, signup, forgotPassword},
   name: 'app',
-  data() {
-    return {
-      loading: false,
-      activeTab: 'signin',
-    };
-  },
-  async created() {
-    if (window.location.toString().includes('signup')) {
-      this.activeTab = 'signup';
+  setup() {
+    const state = reactive({
+      dialog: true,
+      tab: 0,
+      tabs: [
+        {
+          name: 'Signin',
+          icon: ['fas', 'user'],
+          component: signin,
+        },
+        {
+          name: 'Signup',
+          icon: ['far', 'user'],
+          component: signup,
+        },
+        {
+          name: 'Forgot Password',
+          icon: ['fas', 'question'],
+          component: forgotPassword,
+        },
+      ],
+    });
+
+    if (deps.window.location.toString().includes('signup')) {
+      state.tab = 1;
     }
+
+    return {
+      state,
+    };
   },
 });
 
 </script>
+
 <style lang="scss" scoped>
-
-.card {
-  backface-visibility: hidden;
-  z-index: 1;
-  min-width: 256px;
-  max-width: 600px;
-}
-
-.tab-item {
-  margin-top: 1rem;
-}
 
 </style>

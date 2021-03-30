@@ -1,46 +1,33 @@
-import Vue, {CreateElement} from 'vue';
-import app from './app.vue';
-import Buefy from 'buefy';
+import Vue from 'vue';
+import  '@vue/composition-api';
+import Vuetify, {VuetifyPreset} from 'vuetify';
+import 'vuetify/dist/vuetify.min.css';
 import './theme.scss';
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {fas} from '@fortawesome/free-solid-svg-icons';
+import {far} from '@fortawesome/free-regular-svg-icons';
 import {fab} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import App from './app.vue';
 
-library.add(fas);
-library.add(fab);
-Vue.component('vue-fontawesome', FontAwesomeIcon);
 
-Vue.use(Buefy, {
-  defaultIconComponent: 'vue-fontawesome',
-  defaultFieldLabelPosition: 'on-border',
-  defaultIconPack: 'fas',
-  customIconPacks: {
-    fas: {
-      sizes: {
-        default: 'lg',
-        'is-small': '1x',
-        'is-medium': '2x',
-        'is-large': '3x',
-      },
-      iconPrefix: '',
-    },
-    fab: {
-      sizes: {
-        default: 'lg',
-        'is-small': '1x',
-        'is-medium': '2x',
-        'is-large': '3x',
-      },
-      iconPrefix: '',
-    },
+library.add(fas, far, fab);
+Vue.component('font-awesome-icon', FontAwesomeIcon);
+
+Vue.use(Vuetify);
+
+
+const opts: Partial<VuetifyPreset> = {
+  icons: {
+    iconfont: 'faSvg',
+    values: {},
   },
-});
+};
 
-Vue.config.productionTip = false;
+export const vuetify = new Vuetify(opts);
 
 new Vue({
-  render(h: CreateElement) {
-    return h(app);
-  },
+  vuetify,
+  el: '#app',
+  render: h => h(App),
 }).$mount('#app');

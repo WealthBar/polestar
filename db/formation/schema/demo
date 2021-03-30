@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "demo ${DB_HELLO_STAFF_URL} [DEV]"
+psql -e -d ${DB_HELLO_STAFF_URL} --echo-all -f ./schema/demo_data.sql

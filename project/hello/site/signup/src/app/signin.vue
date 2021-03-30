@@ -1,185 +1,189 @@
 <template>
-  <div>
-    <form ref="form_ep" @submit.prevent="submit">
-      <b-field
-          label="Email Address"
-      >
-        <div class="columns is-gapless is-mobile mb-0">
-          <div class="column">
-            <b-input ref="email"
-                type="email"
-                name="email"
-                placeholder="alice@example.com"
+  <v-card class="px-4">
+    <v-card-text>
+      <v-form ref="form" v-model="valid" lazy-validation>
+        <v-row>
+          <v-col cols="12">
+            <v-text-field
+                validate-on-blur
                 v-model="email"
-                @focus="emailFocus"
-                @blur="emailBlur"
-            />
-          </div>
-          <div class="column is-narrow ml-1" v-if="googleEnabled">
-            <b-button @click="googleLogin" icon-pack="fab" icon-left="google"></b-button>
-          </div>
-        </div>
-      </b-field>
-      <b-field
-          label="Password"
-      >
-        <div class="columns is-gapless is-mobile mb-0">
-          <div class="column">
-            <b-input
-                type="password"
-                name="password"
-                minlength="8"
-                placeholder="super secret password"
-                password-reveal
+                :rules="emailRules"
+                label="Email"
+                required
+                autocomplete="email"
+                @keyup="emailChange"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-text-field
+                validate-on-blur
                 v-model="password"
-                @focus="passwordFocus"
-                @blur="passwordBlur"
-            />
-          </div>
-        </div>
-      </b-field>
-      <div class="columns is-mobile">
-        <div class="column p-0"></div>
-        <div class="column is-pulled-right is-narrow">
-          <b-button :loading="$wsOutstanding" type="is-primary" native-type="submit" :disabled="loginDisabled"
-              icon-right="arrow-right">
-            <span>Login</span>
-          </b-button>
-        </div>
-      </div>
-      <b-notification :closable="false" :type="notificationType">
-        {{ notificationMessage }}
-      </b-notification>
-    </form>
-  </div>
+                :rules="[rules.required, rules.min]"
+                :type="passwordInputType"
+                label="Password"
+                hint="At least 8 characters"
+                autocomplete="password"
+            >
+              <button type="button" @click.prevent="toggleShowPassword" slot="append">
+                <font-awesome-icon :icon="appendIcon()"></font-awesome-icon>
+              </button>
+            </v-text-field>
+          </v-col>
+          <v-col class="d-flex" cols="12" sm="6" xsm="12">
+            {{ message }}
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col class="d-flex" cols="12" sm="3" xsm="12" align-end>
+            <v-btn
+                x-large
+                block
+                :disabled="!valid"
+                color="success"
+                @click.prevent="validate"
+                :loading="authenticating"
+            >
+              Sign In
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-form>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts">
-
+import '@/vue_comp';
 import {crClientResponse} from 'ts_browser';
-import mixins from 'vue-typed-mixins';
-import {getMessage, getMessageType} from '@/app/messages';
-import {wsSignupMixin} from '@/app/ws_signup_mixin';
+import {vFormType} from '@/app/vuetify.type';
+import {computed, defineComponent, ref, watch} from '@vue/composition-api';
+import {wsSignup} from '@/app/ws_signup';
 
 export const deps = {window};
 
-export default mixins(wsSignupMixin).extend({
+export default defineComponent({
   name: 'signin',
-  data() {
+  setup() {
+    const email = ref('');
+    const password = ref('');
+    const valid = ref(false);
+    const showPassword = ref(false);
+    const loginFailed = ref(false);
+    const authenticating = ref(false);
+    const message = ref('');
+    const emailRules = [
+      (v: string) => !!v || 'required',
+      (v: string) => /.+@.+\..+/.test(v) || 'invalid email',
+      () => wsSignup.state.callsOutstanding > 0 || wsSignup.state?.loginStatus?.inUse || 'login not found',
+    ];
+
+    watch(
+        wsSignup.state,
+        (v, ov) => {
+          console.log('watch', v, ov);
+          if (wsSignup.state.callsOutstanding) {
+            message.value = 'waiting...';
+            return;
+          }
+          if (loginFailed.value) {
+            message.value = 'Login Failed';
+            return;
+          }
+          message.value = 'a';
+        },
+        {deep: true},
+    );
+
+    const rules = {
+      required: (v: string) => !!v || 'required',
+      min: (v: string) => (v && v.length >= 8) || '8 characters required',
+    };
+
+    const form = ref<vFormType>(undefined);
+
+    function updateFormValid() {
+      loginFailed.value = false;
+      valid.value = !!(form.value?.validate() && wsSignup.state?.loginStatus?.inUse);
+      wsSignup.updateLoginStatus({login: email.value});
+    }
+
+    async function submit() {
+      authenticating.value = true;
+      try {
+        await wsSignup.updateLoginStatusImmediate({login: email.value});
+        updateFormValid();
+        if (!valid) {
+          return;
+        }
+        const {nb64, r, salt, error} = await wsSignup.initChallenge({login: email.value});
+        if (nb64 && r && salt && !error) {
+          const {fb64} = crClientResponse(r, nb64, salt, password.value);
+          const {error} = await wsSignup.verifyLogin({login: email.value, fb64});
+          if (error) {
+            console.log('error');
+            loginFailed.value = true;
+          } else {
+            const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
+            deps.window.location.assign(url);
+          }
+        } else {
+          message.value = 'Login Failed';
+        }
+      } finally {
+        authenticating.value = false;
+      }
+    }
+
+    async function validate() {
+      updateFormValid();
+      if (valid) {
+        await submit();
+      }
+    }
+
+    function toggleShowPassword() {
+      showPassword.value = !showPassword.value;
+    }
+
+    const passwordInputType = computed(() => showPassword.value ? 'text' : 'password');
+
+    function appendIcon() {
+      return (
+          showPassword.value ?
+              ['far', 'eye-slash'] :
+              ['far', 'eye']
+      );
+    }
+
+    function nop(e: unknown) {
+      console.log('nop', e);
+    }
+
+    function emailChange(e: any) {
+      console.log('emailChange', e, email.value);
+      loginFailed.value = false;
+      wsSignup.updateLoginStatus({login: email.value});
+    }
+
     return {
-      email: '',
-      inEmail: true,
-      password: '',
-      formValid: false,
-      emailValid: false,
-      passwordValid: false,
-      inPassword: false,
-      loginFailed: false,
-      loading: false,
-      unknownError: false,
-      nb64: '',
-      locale: 'en',
+      email,
+      password,
+      valid,
+      showPassword,
+      loginFailed,
+      authenticating,
+      rules,
+      emailRules,
+      validate,
+      appendIcon,
+      toggleShowPassword,
+      passwordInputType,
+      message,
+      nop,
+      emailChange,
     };
   },
-  created() {
-    ['email', 'password'].forEach((field) => {
-      this.$watch(field, this.updateFormValid);
-    });
-  },
-  methods: {
-    emailFocus() {
-      this.loginFailed = false;
-      this.inEmail = true;
-    },
-    passwordFocus() {
-      this.loginFailed = false;
-      this.inPassword = true;
-    },
-    emailBlur() {
-      this.inEmail = false;
-    },
-    passwordBlur() {
-      this.inPassword = false;
-    },
-    async submit() {
-      this.loading = true;
-      await this.$wsSignupUpdateLoginStatusImmediate({login: this.email});
-      if (!this.formValid) {
-        return;
-      }
-      const {nb64, r, salt, error} = await this.$wsSignupInitChallenge({login: this.email});
-      if (nb64 && r && salt && !error) {
-        const {fb64} = crClientResponse(r, nb64, salt, this.password);
-        const {error} = await this.$wsSignupVerifyLogin({login: this.email, fb64});
-        if (error) {
-          this.loginFailed = true;
-          this.loading = false;
-        } else {
-          const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
-          deps.window.location.assign(url);
-        }
-      }
-    },
-    updateFormValid() {
-      this.loginFailed = false;
-      this.emailValid = !!this.email.match(/[^@]+@[^@]+\.[^@.]+/);
-      this.passwordValid = this.password.length >= 8;
-      this.formValid = this.emailValid && this.passwordValid && this.$wsLoginStatus.inUse;
-      this.$wsSignupUpdateLoginStatus({login: this.email});
-    },
-    googleLogin() {
-      // todo
-    },
-  },
-  computed: {
-    loginDisabled(): boolean {
-      if (this.$wsOutstanding) {
-        return true;
-      }
-      if (!this.formValid) {
-        return true;
-      }
-      if (!this.$wsLoginStatus.inUse) {
-        return true;
-      }
-      return false;
-    },
-    googleEnabled(): boolean {
-      return this.$wsLoginStatus?.allowGoogleLogin || false;
-    },
-    notificationTag(): string {
-      if (this.$wsOutstanding) {
-        return 'W_STANDBY';
-      }
-      if (this.inEmail) {
-        return 'S_ENTER_EMAIL';
-      }
-      if (!this.emailValid) {
-        return 'E_EMAIL_INVALID';
-      }
-      if (!this.$wsLoginStatus.inUse) {
-        return 'E_LOGIN_NOT_KNOWN';
-      }
-      if (this.inPassword) {
-        return 'S_ENTER_PASSWORD_KNOWN';
-      }
-      if (!this.passwordValid) {
-        return 'E_PASSWORD_INVALID';
-      }
-      if (this.loginFailed) {
-        return 'E_LOGIN_FAILED';
-      }
-      return 'S_LOGIN';
-    },
-    notificationType(): string {
-      return getMessageType(this.notificationTag);
-    },
-    notificationMessage(): string {
-      return getMessage(this.locale, this.notificationTag);
-    },
-  },
 });
-
 </script>
+
 <style lang="scss" scoped>
 </style>

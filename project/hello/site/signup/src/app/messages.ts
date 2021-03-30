@@ -1,4 +1,4 @@
-const messages: { [locale: string]: { [tag: string]: string } } = {
+const messages: Record<string,Record<string,string>> = {
   en: {
     S_ENTER_EMAIL: 'Enter your email',
     S_ENTER_PASSWORD_KNOWN: 'Enter your password',
@@ -17,9 +17,11 @@ const messages: { [locale: string]: { [tag: string]: string } } = {
     W_STANDBY: 'Please stand by',
     E_ERROR: 'Please try again later',
   },
+  fr: {
+  }
 };
 
-const messageTypeMap: { [key: string]: string } = {
+const messageTypeMap: Record<string,string> = {
   N: '',
   S: 'is-success',
   SL: 'is-success is-light',
@@ -35,7 +37,7 @@ export function getMessageType(message: string): string {
   return messageTypeMap[message?.split('_')?.[0] || 'E'] || 'is-danger';
 }
 
-export function getMessage(locale: string, tag: string, options: { [key: string]: string } = {}): string {
+export function getMessage(locale: string, tag: string, options: Record<string,string> = {}): string {
   let msg = messages[locale]?.[tag];
   if (!msg) {
     if (messages['en']?.[tag]) {

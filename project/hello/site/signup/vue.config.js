@@ -32,6 +32,7 @@ const linkModules = [];
 }
 
 module.exports = {
+  runtimeCompiler: true,
   devServer: {
     host,
     port,
