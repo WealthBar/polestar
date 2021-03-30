@@ -272,10 +272,10 @@
   resolved "https://registry.yarnpkg.com/@types/json-stable-stringify/-/json-stable-stringify-1.0.32.tgz#121f6917c4389db3923640b2e68de5fa64dda88e"
   integrity sha512-q9Q6+eUEGwQkv4Sbst3J4PNgDOvpuVuKj79Hl/qnmBMEIPzB5QoFRUtjcgcg2xNUZyYUGXBk5wYIBKHt0A+Mxw==
 
-"@types/lodash@^4.14.165":
-  version "4.14.167"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.167.tgz#ce7d78553e3c886d4ea643c37ec7edc20f16765e"
-  integrity sha512-w7tQPjARrvdeBkX/Rwg95S592JwxqOjmms3zWQ0XZgSyxSLdzWaYH3vErBhdVS/lRBX7F8aBYcYJYTr5TMGOzw==
+"@types/lodash@^4.14.168":
+  version "4.14.168"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.168.tgz#fe24632e79b7ade3f132891afff86caa5e5ce008"
+  integrity sha512-oVfRvqHV/V6D1yifJbVRU3TMp8OT6o6BG+U9MkwuJ3U8/CsDHvalRpsxBqivn71ztOFZBTfJMvETbqHiaNSj7Q==
 
 "@types/luxon@^1.25.0":
   version "1.25.0"
@@ -1422,10 +1422,10 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-luxon@^1.25.0:
-  version "1.25.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.25.0.tgz#d86219e90bc0102c0eb299d65b2f5e95efe1fe72"
-  integrity sha512-hEgLurSH8kQRjY6i4YLey+mcKVAWXbDNlZRmM6AgWDJ1cY3atl8Ztf5wEY7VBReFbmGnwQPz7KYJblL8B2k0jQ==
+luxon@^1.26.0:
+  version "1.26.0"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.26.0.tgz#d3692361fda51473948252061d0f8561df02b578"
+  integrity sha512-+V5QIQ5f6CDXQpWNICELwjwuHdqeJM1UenlZWx5ujcRMc9venvluCjFb4t5NYLhb6IhkbMVOxzVuOqkgMxee2A==
 
 make-dir@^3.0.0, make-dir@^3.0.2:
   version "3.1.0"
@@ -2004,32 +2004,8 @@ ts-node@^9.1.1:
     yn "3.1.1"
 
 "ts_agnostic@link:../ts_agnostic":
-  version "0.1.0"
-  dependencies:
-    "@types/debug" "^4.1.5"
-    "@types/json-stable-stringify" "^1.0.32"
-    "@types/lodash" "^4.14.165"
-    "@types/luxon" "^1.25.0"
-    "@types/mocha" "^8.0.4"
-    "@types/node" "^14.14.10"
-    "@types/sinon" "^9.0.9"
-    "@types/xxhashjs" "^0.2.2"
-    "@typescript-eslint/eslint-plugin" "^4.14.1"
-    "@typescript-eslint/parser" "^4.14.1"
-    debug "^4.3.1"
-    eslint "^7.14.0"
-    immer "^8.0.1"
-    json-stable-stringify "^1.0.1"
-    lodash "^4.17.20"
-    luxon "^1.25.0"
-    minimist "^1.2.5"
-    mocha "^8.3.2"
-    nyc "^15.1.0"
-    sinon "^10.0.0"
-    ts-node "^9.1.1"
-    typescript "^4.2.3"
-    xxhashjs "^0.2.2"
-    yallist "^4.0.0"
+  version "0.0.0"
+  uid ""
 
 tslib@^1.8.1:
   version "1.14.1"
