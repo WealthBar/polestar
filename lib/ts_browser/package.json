@@ -9,7 +9,7 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/eslint-plugin": "^4.20.0",
     "bcryptjs": "^2.4.3",
     "immer": "^8.0.1",
     "jssha": "^3.2.0",
