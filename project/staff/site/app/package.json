@@ -30,7 +30,7 @@
     "core-js": "^3.6.4",
     "immer": "^9.0.1",
     "lint-staged": "^10.0.8",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "luxon": "^1.26.0",
     "material-design-icons-iconfont": "^5.0.1",
     "minimist": "^1.2.2",
