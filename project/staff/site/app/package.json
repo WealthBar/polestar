@@ -34,7 +34,7 @@
     "luxon": "^1.26.0",
     "material-design-icons-iconfont": "^5.0.1",
     "minimist": "^1.2.2",
-    "mocha": "^7.1.0",
+    "mocha": "^8.3.2",
     "node-sass": "^4.9.0",
     "sass-loader": "^8.0.2",
     "sinon": "^9.0.0",
