@@ -100,8 +100,11 @@ HERE
 echo $SETUP_SQL | psql -X -e -d ${DB_FORMATION_SUPER_URL}${DB_FORMATION_NAME} -f -
 echo $SETUP_SQL | psql -X -e -d ${DB_FORMATION_SUPER_URL}${DB_FORMATION_NAME}_test -f -
 
-echo "seed ${DB_FORMATION_DBA_URL} [DEV]"
+echo "seed ${DB_FORMATION_DBA_URL}"
 psql -X -e -d ${DB_FORMATION_DBA_URL} --echo-all -f ./schema/schema.sql | grep ERROR
 
-echo "seed ${DB_FORMATION_DBA_URL} [TEST]"
-psql -X -e -d ${DB_FORMATION_DBA_URL_TEST} --echo-all -f ./schema/schema.sql | grep ERROR
+if [ "$CONFIG_ENV" = "dev" ]
+then
+  echo "seed ${DB_FORMATION_DBA_URL} [TEST]"
+  psql -X -e -d ${DB_FORMATION_DBA_URL_TEST} --echo-all -f ./schema/schema.sql | grep ERROR
+fi
