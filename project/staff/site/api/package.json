@@ -23,7 +23,7 @@
     "axios": "^0.21.1",
     "braces": "^3.0.2",
     "csv-write-stream": "^2.0.0",
-    "debug": "^4.1.1",
+    "debug": "^4.3.1",
     "immer": "^9.0.1",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.2.1",
