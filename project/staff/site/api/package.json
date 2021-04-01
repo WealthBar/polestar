@@ -16,7 +16,7 @@
     "@types/lodash": "^4.14.161",
     "@types/luxon": "^1.25.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^14.0.13",
+    "@types/node": "^14.14.37",
     "@types/sinon": "^7.5.2",
     "@types/ws": "^7.2.6",
     "@types/xxhashjs": "^0.2.2",
