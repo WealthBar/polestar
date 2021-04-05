@@ -2,7 +2,7 @@
 
 import {serverSettingsType} from 'node_core';
 
-if (!process.env.DB_HELLO_STAFF_URL) {
+if (!process.env.DB_FORMATION_STAFF_URL) {
   console.error("DB_HELLO_STAFF_URL not set");
   process.abort();
 }
@@ -19,7 +19,7 @@ export const settings : serverSettingsType = {
   },
   mode: 'staff',
   appUrl: schema + `staff.app.hello.${process.env.HOST_POSTFIX}`,
-  dbConnectionString: process.env.DB_HELLO_STAFF_URL,
+  dbConnectionString: process.env.DB_FORMATION_STAFF_URL,
 };
 
 if (process.env.GOOGLE_AUTH_CLIENT_ID && process.env.GOOGLE_AUTH_CLIENT_SECRET) {

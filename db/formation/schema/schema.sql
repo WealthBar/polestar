@@ -983,6 +983,10 @@ CREATE TABLE meta.migration
   migration_identifier VARCHAR NOT NULL PRIMARY KEY,
   apply_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE TRIGGER migration_append_only_tg
+  BEFORE DELETE OR TRUNCATE
+  ON meta.migration
+EXECUTE FUNCTION func.prevent_change();
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE client.brand
 (
@@ -990,32 +994,32 @@ CREATE TABLE client.brand
   brand_name VARCHAR PRIMARY KEY
 );
 SELECT client.add_history_to_table('brand');
-
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.locale
 (
   locale_id UUID NOT NULL DEFAULT func.tuid_generate() UNIQUE,
   locale_name VARCHAR PRIMARY KEY
 );
 SELECT client.add_history_to_table('locale');
-
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.jurisdiction
 (
   jurisdiction_id UUID NOT NULL DEFAULT func.tuid_generate() UNIQUE,
   jurisdiction_name VARCHAR PRIMARY KEY
 );
 SELECT client.add_history_to_table('jurisdiction');
-
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.system
 (
   system_id UUID NOT NULL DEFAULT func.tuid_generate() UNIQUE,
   system_name VARCHAR PRIMARY KEY,
   domain VARCHAR NOT NULL UNIQUE,
-  access_key VARCHAR NOT NULL UNIQUE,
-  secret_key VARCHAR NOT NULL,
+  bearer_token VARCHAR NOT NULL UNIQUE,
+  secret_key BYTEA NOT NULL,
   error_url VARCHAR NOT NULL
 );
 SELECT client.add_history_to_table('system');
-
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.form_key
 (
   form_key_id UUID NOT NULL DEFAULT func.tuid_generate() UNIQUE,
@@ -1028,13 +1032,15 @@ CREATE TABLE client.form_key
   flow_name VARCHAR NOT NULL,
   PRIMARY KEY (system_name, form_key_name)
 );
-
+SELECT client.add_history_to_table('form_key');
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.flow
 (
   flow_id UUID NOT NULL DEFAULT func.tuid_generate() UNIQUE,
   flow_name VARCHAR PRIMARY KEY
 );
-
+SELECT client.add_history_to_table('flow');
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.form_request
 (
   form_request_id UUID NOT NULL DEFAULT func.tuid_generate() UNIQUE,
@@ -1051,7 +1057,8 @@ CREATE TABLE client.form_request
   docusign_template_identifiers VARCHAR[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
+SELECT client.add_history_to_table('form_request');
+------------------------------------------------------------------------------------------------------
 CREATE TABLE client.docusign_mapping
 (
   docusign_mapping_id UUID PRIMARY KEY,
@@ -1066,16 +1073,31 @@ CREATE TABLE client.docusign_mapping
     EXCLUDE USING gist (jurisdiction_name WITH =, flow_name WITH =, brand_name WITH =, locale_name WITH =, in_use_window WITH &&),
   template_identifiers VARCHAR[] NOT NULL
 );
+SELECT client.add_history_to_table('docusign_mapping');
+------------------------------------------------------------------------------------------------------
+CREATE TABLE client.access_log
+(
+  bearer_token VARCHAR NOT NULL, -- NOT references, we want to retain the logs if login is deleted.
+  at TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP() PRIMARY KEY,
+  result VARCHAR NOT NULL CHECK (result IN ('+', '-')),
+  remote_address VARCHAR NOT NULL
+);
+CREATE INDEX access_log_at ON client.access_log (bearer_token, at);
 
+CREATE TRIGGER access_log_append_only_tg
+  BEFORE DELETE OR TRUNCATE
+  ON client.access_log
+EXECUTE FUNCTION func.prevent_change();
 ------------------------------------------------------------------------------------------------------
 CREATE UNLOGGED TABLE client.session
 (
   session_id BYTEA DEFAULT func.stuid_generate() PRIMARY KEY,
+  stoken BYTEA REFERENCES client.form_request,
+  ivkey BYTEA,
   data JSONB DEFAULT '{}'::JSONB NOT NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
   expire_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP + '1 hour'::INTERVAL NOT NULL
 );
-
 ------------------------------------------------------------------------------------------------------
 CREATE TABLE staff.login
 (
@@ -1135,6 +1157,17 @@ CREATE TABLE staff.login_x_permission_group
 );
 SELECT staff.add_history_to_table('login_x_permission_group');
 ------------------------------------------------------------------------------------------------------
+CREATE TABLE staff.stoken_1_key
+(
+  stoken_1_key UUID DEFAULT tuid_generate() NOT NULL PRIMARY KEY,
+  stoken BYTEA NOT NULL
+    UNIQUE
+    REFERENCES client.form_request
+      ON DELETE CASCADE,
+  ivkey BYTEA NOT NULL
+);
+SELECT staff.add_history_to_table('stoken_1_key');
+------------------------------------------------------------------------------------------------------
 -- system_setting
 
 CREATE TABLE meta.system_setting
@@ -1158,16 +1191,16 @@ $$
 DECLARE
   ivkey_ BYTEA;
 BEGIN
-  IF new.client_profile_id IS NULL THEN
+  IF new.stoken IS NULL THEN
     new.ivkey = NULL;
     RETURN new;
   END IF;
 
-  INSERT INTO staff.client_profile_1_key (client_profile_id, ivkey)
-  VALUES (new.client_profile_id, func.gen_random_bytes(48))
+  INSERT INTO staff.stoken_1_key (stoken, ivkey)
+  VALUES (new.stoken, func.gen_random_bytes(48))
   ON CONFLICT DO NOTHING;
 
-  SELECT ivkey INTO ivkey_ FROM staff.client_profile_1_key WHERE client_profile_id = new.client_profile_id;
+  SELECT ivkey INTO ivkey_ FROM staff.stoken_1_key WHERE stoken = new.stoken;
   new.ivkey = ivkey_;
   RETURN new;
 END;
