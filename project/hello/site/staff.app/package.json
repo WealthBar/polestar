@@ -23,10 +23,10 @@
   },
   "devDependencies": {
     "@fortawesome/free-brands-svg-icons": "^5.15.3",
-    "@types/chai": "^4.2.15",
+    "@types/chai": "^4.2.16",
     "@types/mocha": "^8.2.2",
-    "@typescript-eslint/eslint-plugin": "^4.20.0",
-    "@typescript-eslint/parser": "^4.20.0",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "@vue/cli-plugin-babel": "^4.5.12",
     "@vue/cli-plugin-eslint": "^4.5.12",
     "@vue/cli-plugin-router": "^4.5.12",
