@@ -14,7 +14,7 @@ if (pj.devDependencies) {
   }
 }
 
-if (pj.devDependencies) {
+if (pj.dependencies) {
   for (const dd of Object.entries(pj.dependencies)) {
     if (dd[1].startsWith('link')) {
       continue;
@@ -24,5 +24,9 @@ if (pj.devDependencies) {
   }
 }
 
-console.log(`yarn add -D ${dds.join(' ')}`);
-console.log(`yarn add ${ds.join(' ')}`);
+if (dds.length > 0) {
+  console.log(`yarn add -D ${dds.join(' ')}`);
+}
+if (ds.length > 0) {
+  console.log(`yarn add ${ds.join(' ')}`);
+}

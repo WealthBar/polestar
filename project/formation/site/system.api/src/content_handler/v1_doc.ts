@@ -2,7 +2,7 @@ import {resolvedVoid} from 'ts_agnostic';
 import {ctxType} from 'node_core';
 
 // subset ctx to the fields we use to make testing easier.
-export function initHandler(ctx: Pick<ctxType, 'url' | 'res'>): Promise<void> {
+export function v1DocHandler(ctx: Pick<ctxType, 'url' | 'res'>): Promise<void> {
   if (ctx.url.path !== '/v1/doc') {
     return resolvedVoid;
   }

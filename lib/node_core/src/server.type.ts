@@ -18,19 +18,20 @@ export type userInfoType = {
 
 export type ctxBaseType = {
   sessionId: string;
-  settings: serverSettingsType,
-  session: Record<string, serializableType>,
-  permission?: { [name: string]: boolean },
-  user?: userInfoType,
-  db: dbProviderCtx,
-  dbProvider: dbProviderType,
-  remoteAddress: string,
+  settings: serverSettingsType;
+  session: Record<string, serializableType>;
+  permission?: { [name: string]: boolean };
+  user?: userInfoType;
+  db: dbProviderCtx;
+  dbProvider: dbProviderType;
+  remoteAddress: string;
 };
 
 export type ctxReqType = ctxBaseType & {
-  req: IncomingMessage,
-  url: urlType,
-  cookie: [string, string][],
+  req: IncomingMessage;
+  url: urlType;
+  body?: string;
+  cookie: [string, string][];
 }
 
 export type webSocketExtendedType =
