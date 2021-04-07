@@ -1,3 +1,7 @@
+-- assumes pgcrypto loaded in func
+-- assumes tuid_generate in func
+-- set search path before including!
+
 CREATE TABLE workorder
 (
   workorder_id uuid NOT NULL PRIMARY KEY,
@@ -8,7 +12,7 @@ CREATE TABLE workorder
   CONSTRAINT workorder_context_name_check CHECK (((context_name)::text ~ '^[\x20-\x7e]+$'::text))
 );
 
-CREATE UNIQUE INDEX workorder_allow_only_not_frozen ON workorder USING btree (context_name) WHERE (frozen_at IS NULL);
+CREATE UNIQUE INDEX workorder_allow_only_one_not_frozen ON workorder USING btree (context_name) WHERE (frozen_at IS NULL);
 
 CREATE TABLE workorder_n_state
 (
@@ -33,6 +37,19 @@ SELECT
     )
 $$;
 
+-- The return type of the functions is normalized to:
+-- (
+--   workorder_id uuid,
+--   context_name VARCHAR,
+--   content_hash VARCHAR,
+--   current_content_hash VARCHAR,
+--   state jsonb,
+--   frozen_at timestamptz
+-- )
+-- to make it easier to compose in queries
+
+
+-- lookup by context name and content hash
 CREATE FUNCTION workorder_by_content_hash(context_name_ VARCHAR, content_hash_ VARCHAR)
   RETURNS TABLE
           (
@@ -61,6 +78,7 @@ WHERE
   AND wo.context_name = context_name_
 $$;
 
+-- return the active workorder for a context name or no rows if there is none
 CREATE FUNCTION workorder_get_active(context_name_ VARCHAR)
   RETURNS TABLE
           (
@@ -68,7 +86,8 @@ CREATE FUNCTION workorder_get_active(context_name_ VARCHAR)
             context_name VARCHAR,
             content_hash VARCHAR,
             current_content_hash VARCHAR,
-            state jsonb
+            state jsonb,
+            frozen_at timestamptz
           )
   LANGUAGE plpgsql
 AS
@@ -108,14 +127,17 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION workorder_get_active(context_name_ VARCHAR, default_state jsonb)
+-- gets the active workorder for the context name
+-- if no active workorder exists creates one using the default state and returns it.
+CREATE FUNCTION workorder_vivify(context_name_ VARCHAR, default_state jsonb)
   RETURNS TABLE
           (
             workorder_id uuid,
             context_name VARCHAR,
             content_hash VARCHAR,
             current_content_hash VARCHAR,
-            state jsonb
+            state jsonb,
+            frozen_at timestamptz
           )
   LANGUAGE plpgsql
 AS
@@ -210,6 +232,9 @@ BEGIN
 END;
 $$;
 
+-- update the active workorder for context name to a new state
+-- does nothing if their is no active workorder, and returns no row
+-- returns the new workorder row on success
 CREATE FUNCTION workorder_update(context_name_ VARCHAR, new_state_ jsonb)
   RETURNS TABLE
           (
@@ -217,7 +242,8 @@ CREATE FUNCTION workorder_update(context_name_ VARCHAR, new_state_ jsonb)
             context_name VARCHAR,
             content_hash VARCHAR,
             current_content_hash VARCHAR,
-            state jsonb
+            state jsonb,
+            frozen_at timestamptz
           )
   LANGUAGE plpgsql
 AS
@@ -271,7 +297,10 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION workorder_update(context_name_ VARCHAR, original_content_hash_ VARCHAR, new_state_ jsonb)
+-- like update, but will only update the workorder if the current content hash matches the given
+-- original content hash, returning the current state if it doesn't match.
+-- the updated field can be used to quickly check if the update occurred.
+CREATE FUNCTION workorder_update_if_unchanged(context_name_ VARCHAR, original_content_hash_ VARCHAR, new_state_ jsonb)
   RETURNS TABLE
           (
             workorder_id uuid,
@@ -279,6 +308,7 @@ CREATE FUNCTION workorder_update(context_name_ VARCHAR, original_content_hash_ V
             content_hash VARCHAR,
             current_content_hash VARCHAR,
             state jsonb,
+            frozen_at timestamptz,
             updated boolean
           )
   LANGUAGE plpgsql
@@ -347,7 +377,7 @@ CREATE FUNCTION workorder_freeze(context_name_ VARCHAR, original_content_hash_ V
             content_hash VARCHAR,
             current_content_hash VARCHAR,
             state jsonb,
-            frozen_at timestamp with time zone
+            frozen_at timestamptz
           )
   LANGUAGE plpgsql
 AS
