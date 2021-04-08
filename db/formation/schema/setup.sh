@@ -1,6 +1,8 @@
 #!/bin/bash
 echo "creating users"
 
+# todo check if db exists and $CONFIG_ENV is main and refuse to delete
+
 echo "dropping db"
 echo "drop database ${DB_FORMATION_NAME} WITH (FORCE);" | psql -X -e -d ${DB_FORMATION_SUPER_URL}
 echo "dropping test db"

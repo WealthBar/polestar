@@ -1,6 +1,5 @@
 import * as bcrypt from 'bcryptjs';
 import JsSha from 'jssha';
-import {pad} from 'ts_agnostic';
 
 function stringToUint8Array(s: string): Uint8Array {
   const rs = new Uint8Array(s.length);

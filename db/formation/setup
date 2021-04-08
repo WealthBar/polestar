@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# todo check the ${CONFIG_ENV} and prompt for sanity if it is `main`
 ./schema/setup.sh
 if [ -f "./seed/${CONFIG_ENV}/setup.sh" ]
 then
