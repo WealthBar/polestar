@@ -24,11 +24,12 @@ describe('gauthInit', () => {
 
     const ctx: any = {
       url: {
-        path: '/init',
+        path: '/gauth/init',
       },
       res: {
         writeHead: sinon.stub(),
         end: sinon.stub(),
+        setHeader: sinon.stub(),
       },
     };
 
@@ -64,6 +65,7 @@ describe('gauthInit', () => {
       res: {
         writeHead: sinon.stub(),
         end: sinon.stub(),
+        setHeader: sinon.stub(),
       },
     };
 
@@ -80,9 +82,7 @@ describe('gauthContinue', () => {
     const secureTokenVerify = sinon.stub();
     const userVivify = sinon.stub();
 
-    const axios: any = {
-      post: sinon.stub(),
-    };
+    const poster = sinon.stub();
 
     const idTokenJson: gauthUserInfoType = {
       email: 'a@example.com',
@@ -99,23 +99,24 @@ describe('gauthContinue', () => {
       other: 'stuff',
     };
 
-    axios.post.resolves({
+    poster.resolves({
       data: axiosData,
     });
 
     userVivify.resolves('user_id');
     secureTokenVerify.returns('stoken');
 
-    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, axios);
+    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, poster);
 
     const ctx: any = {
       url: {
-        path: '/continue',
+        path: '/gauth/continue',
         params: [['state', 'stoken'], ['code', '4code']],
       },
       res: {
         writeHead: sinon.stub(),
         end: sinon.stub(),
+        setHeader: sinon.stub(),
       },
       session: {},
     };
@@ -123,7 +124,7 @@ describe('gauthContinue', () => {
     await subject(ctx);
 
     sinon.assert.calledOnceWithExactly(
-      axios.post,
+      poster,
       'https://oauth2.googleapis.com/token',
       'code=4code'
       + '&client_id=gid'
@@ -136,16 +137,15 @@ describe('gauthContinue', () => {
 
     sinon.assert.calledOnceWithExactly(
       userVivify,
+      ctx,
       idTokenJson,
       JSON.stringify(axiosData),
     );
 
-    assert.strictEqual(ctx.session.userId, 'user_id');
-
     sinon.assert.calledOnceWithExactly(
       ctx.res.writeHead,
-      303,
-      {Location: settings.appUrl},
+      403,
+      "User not found.",
     );
 
     sinon.assert.calledOnce(ctx.res.end);
@@ -155,31 +155,30 @@ describe('gauthContinue', () => {
     const secureTokenVerify = sinon.stub();
     const userVivify = sinon.stub();
 
-    const axios: any = {
-      post: sinon.stub(),
-    };
+    const poster = sinon.stub();
 
     let axiosData = {
       id_token: '{}.invalid.sig',
       other: 'stuff',
     };
 
-    axios.post.resolves({
+    poster.resolves({
       data: axiosData,
     });
 
     secureTokenVerify.returns('stoken');
 
-    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, axios);
+    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, poster);
 
     const ctx: any = {
       url: {
-        path: '/continue',
+        path: '/gauth/continue',
         params: [['state', 'stoken'], ['code', '4code']],
       },
       res: {
         writeHead: sinon.stub(),
         end: sinon.stub(),
+        setHeader: sinon.stub(),
       },
       session: {},
     };
@@ -187,7 +186,7 @@ describe('gauthContinue', () => {
     await subject(ctx);
 
     sinon.assert.calledOnceWithExactly(
-      axios.post,
+      poster,
       'https://oauth2.googleapis.com/token',
       'code=4code'
       + '&client_id=gid'
@@ -202,7 +201,8 @@ describe('gauthContinue', () => {
     assert.strictEqual(ctx.session.userId, undefined);
     sinon.assert.notCalled(ctx.res.writeHead);
     assert.strictEqual(ctx.res.statusCode, 400);
-    sinon.assert.calledOnceWithExactly(ctx.res.end, "Invalid Request");
+    sinon.assert.calledOnce(ctx.res.end);
+    ctx.res.end.args[0][0].startsWith("Invalid Request");
   });
 
   it('handles invalid stoken', async () => {
@@ -218,12 +218,13 @@ describe('gauthContinue', () => {
 
     const ctx: any = {
       url: {
-        path: '/continue',
+        path: '/gauth/continue',
         params: [['state', 'stoken'], ['code', '4code']],
       },
       res: {
         writeHead: sinon.stub(),
         end: sinon.stub(),
+        setHeader: sinon.stub(),
       },
       session: {},
     };
@@ -256,6 +257,7 @@ describe('gauthContinue', () => {
       res: {
         writeHead: sinon.stub(),
         end: sinon.stub(),
+        setHeader: sinon.stub(),
       },
       session: {},
     };

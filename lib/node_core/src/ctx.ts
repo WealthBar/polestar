@@ -31,7 +31,11 @@ function parseCookie(cookie: string | undefined): [string, string][] {
   });
 }
 
-export function ctxReqCtor(req: IncomingMessage, dbProvider: dbProviderType, settings: serverSettingsType): ctxReqType {
+export function ctxReqCtor(
+  req: IncomingMessage,
+  dbProvider: dbProviderType,
+  settings: serverSettingsType,
+): ctxReqType {
   const url = parseUrl(req.url?.toString() || '/');
   const cookie = parseCookie(req.headers.cookie);
   const db = toDbProvideCtx('-', '-', dbProvider);
@@ -44,7 +48,7 @@ export function ctxReqCtor(req: IncomingMessage, dbProvider: dbProviderType, set
     dbProvider,
     db,
     settings,
-    remoteAddress: req.connection.remoteAddress || '',
+    remoteAddress: req.connection?.remoteAddress || '',
   };
 }
 

@@ -19,6 +19,7 @@ describe('ctxCtor', () => {
       headers: {
         cookie: 'c=3; d=4',
       },
+      connection: { remoteAddress: 'aoeu' },
     };
     const res: any = {};
     const db = dbProviderStub(sinon);
@@ -26,6 +27,7 @@ describe('ctxCtor', () => {
     commonChecks(ctx, res, req);
     assert.deepStrictEqual(ctx.url, {path: '/hello', params: [['a', '1'], ['b', '2']]});
     assert.deepStrictEqual(ctx.cookie, [['c', '3'], ['d', '4']]);
+    assert.strictEqual(ctx.remoteAddress, 'aoeu');
   });
 
 
