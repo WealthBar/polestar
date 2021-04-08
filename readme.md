@@ -152,8 +152,9 @@ TBD
 
 goal: no custom configuration of CI/CD per task.
 
+# Running locally
 
-# `*.xxx` DNS setup
+## `*.xxx` DNS setup
 ```
 $ brew install dnsmasq
 # edit /usr/local/etc/dnsmasq.conf
@@ -203,7 +204,26 @@ asdf.dev.             0       IN      A       127.0.0.1
 ...
 ```
 
-# Running locally
+## DB setup
+
+1. Spin up a Postgres 13 server on port 5413
+2. For each project you'll be using, `cd db/<project>` then `./setup`
+
+If you don't already have a local Postgres server (Postgres.app), go to https://postgresapp.com/ and download the version that has all the versions (currently called `Postgres.app with all currently supported PostgreSQL versions`) and follow the instructions to install it.
+
+If you already have Postgres.app installed, click on the task bar icon (the little elephant), choose `Open Postgres`. To create a new database, click on the sidebar icon on the bottom left if it's not already open, and then `+` in the bottom left to open the "Create a new server" dialog. You can name it whatever you want, but make sure to set the version to `13` and make sure the port is `5413`, then click `Create Server`.
+
+## Installation
+
+1. Switch to Node 15: `nvm install 15`
+2. Run script: `./init.sh`
+
+If node 15 is already installed, you can `nvm use 15` instead of `install`ing it. You may want to set 15 as a default so you don't have to `use` every time: `nvm alias default 15`.
+
+## Configuration
+
+2. Unlock encrypted secrets: `git-crypt unlock ~/<path>/polestar.key`
+1. Run config script: `. ./config.sh`
 
 ## Startup overmind
 
