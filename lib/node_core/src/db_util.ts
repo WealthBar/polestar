@@ -1,5 +1,5 @@
 import {dbProviderType, dbType} from './db/db_provider';
-import {DateTime, Duration} from "luxon";
+import {DateTime, Duration} from 'luxon';
 
 export type dbProviderCtx = <T>(callback: (db: dbType) => Promise<T>) => Promise<T|undefined>;
 

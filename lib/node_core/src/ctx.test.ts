@@ -62,5 +62,4 @@ describe('ctxCtor', () => {
   it ('bad params', () => {
     assert.deepStrictEqual(_internal_.parseUrl('?c&d=&'), {path: '/', params: [['c', ''], ['d', ''], ['', '']]});
   });
-})
-;
+});
