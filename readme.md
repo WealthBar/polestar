@@ -47,19 +47,19 @@ add another tier to the directory structure.
 
 Currently, we build each area as a single package. We may revisit that at some point as well.
 
-### `agnostic`
+### `ts_agnostic`
 
 Code here should run pretty much anywhere and make minimal assumptions about the environment consuming it.
 
-### `backend`
+### `node_core`
 
 Code here should assume it is running in NodeJS.
 
-### `frontend`
+### `ts_browser`
 
 Code here should assume it is running in a browser.
 
-### `script`
+### `node_script`
 
 Code here should assume it is running in NodeJS as part of a cron job or a development tool.
 
