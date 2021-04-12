@@ -93,7 +93,7 @@ CREATE TABLE client.form_request
   stoken BYTEA PRIMARY KEY,
   form_key_name VARCHAR NOT NULL,
   system_name VARCHAR NOT NULL,
-  CONSTRAINT form_key_fk FOREIGN KEY (form_key_name, system_name) REFERENCES client.form_key,
+  CONSTRAINT form_key_fk FOREIGN KEY (system_name, form_key_name) REFERENCES client.form_key,
   brand_name VARCHAR NOT NULL REFERENCES client.brand ON DELETE RESTRICT,
   jurisdiction_name VARCHAR NOT NULL REFERENCES client.jurisdiction ON DELETE RESTRICT,
   signing_date DATE NOT NULL,
@@ -345,13 +345,6 @@ VALUES
   ('ca_sk'),
   ('ca_yt')
 ;
-
-INSERT INTO
-  client.brand (brand_name)
-VALUES
-  ('cidi'),
-  ('ac'),
-  ('ciis');
 
 ------------------------------------------------------------------------------------------------------
 

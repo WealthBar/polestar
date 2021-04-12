@@ -34,6 +34,7 @@
     "source-map-support": "^0.5.19",
     "sql_to_ts": "link:../../../../tool/sql_to_ts",
     "ts-node": "^9.1.1",
+    "ts-toolbelt": "^9.6.0",
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "typescript": "^4.2.3"
   }

@@ -3,6 +3,7 @@ import {IncomingMessage, ServerResponse} from 'http';
 import {dbProviderType} from './db';
 import {dbProviderCtx, toDbProvideCtx} from './db_util';
 import {resolvedFalse, resolvedTrue, resolvedVoid} from 'ts_agnostic';
+import {Object} from 'ts-toolbelt';
 
 function parseUrl(rawUrl: string): urlType {
   const m = rawUrl.match(/^\/?(?<path>([^/?]\/?)*)(\?(?<params>.*$))?/);
@@ -64,12 +65,14 @@ export function ctxSetDb(ctx: { user?: { login?: string }, sessionId: string, db
   ctx.db = toDbProvideCtx(ctx?.user?.login || '-', ctx.sessionId, ctx.dbProvider);
 }
 
-export async function ctxBody(ctx: Pick<ctxType, 'req' | 'res' | 'body'>, maxBodyLength = 1e6): Promise<boolean> {
+export async function ctxBody(ctx: Pick<ctxType, 'body'> & Object.P.Pick<ctxType, ['req', 'method' | 'on']> & Object.P.Pick<ctxType, ['res', 'statusCode' | 'setHeader' | 'end']>, maxBodyLength = 1e6): Promise<boolean> {
   if (ctx.body) {
     return resolvedTrue;
   }
   if (ctx.req.method !== 'POST') {
-    ctx.res.writeHead(405, {'Content-Type': 'text/plain'}).end();
+    ctx.res.statusCode = 405;
+    ctx.res.setHeader('Content-Type', 'text/plain');
+    ctx.res.end();
     return resolvedFalse;
   }
   // this assumes the LB in front of the service handles slow rollers for us.
@@ -81,7 +84,9 @@ export async function ctxBody(ctx: Pick<ctxType, 'req' | 'res' | 'body'>, maxBod
       chunks.push(chunk);
       totalChars += chunk.length;
       if (totalChars > maxBodyLength) {
-        ctx.res.writeHead(413, {'Content-Type': 'text/plain'}).end();
+        ctx.res.statusCode = 413;
+        ctx.res.setHeader('Content-Type', 'text/plain');
+        ctx.res.end();
         r(false);
       }
     });
@@ -90,6 +95,15 @@ export async function ctxBody(ctx: Pick<ctxType, 'req' | 'res' | 'body'>, maxBod
       r(true);
     });
   });
+}
+
+export function ctxHost(ctx: Pick<ctxType, 'req' | 'host'>): void {
+  if (ctx.host) {
+    return;
+  }
+  const hostHdr = ctx.req.headers.host;
+  const m = hostHdr?.match(/([^.]+\.)*(?<tld>[^.:]+\.[^.:]+)(:\d+)?$/);
+  ctx.host = m?.groups?.tld;
 }
 
 export const _internal_ = {parseUrl, parseCookie};

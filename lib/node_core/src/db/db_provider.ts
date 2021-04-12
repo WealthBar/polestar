@@ -12,7 +12,7 @@ export type dbProviderType = <T>(
   auditUser: string,
   callback: (db: dbType) => Promise<T>,
   trackingTag?: string,
-) => Promise<T|undefined>;
+) => Promise<T | undefined>;
 
 export function dbProviderCtor(connectionString: string): dbProviderType {
   let db: dbType;
@@ -21,7 +21,7 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
     auditUser: string,
     callback: (db: dbType) => Promise<T>,
     trackingTag = '',
-  ): Promise<T|undefined> {
+  ): Promise<T | undefined> {
     if (!db) {
       const pgPromiseOptions = {
         query:
@@ -39,7 +39,7 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
           },
       };
       const m = connectionString.match(/^postgres:\/\/((?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
-      if(!m || !m.groups?.user || !m.groups?.host || !m.groups?.database || !m.groups?.password) {
+      if (!m || !m.groups?.user || !m.groups?.host || !m.groups?.database || !m.groups?.password) {
         throw new Error('Invalid connection string: ' + connectionString);
       }
       const user = m.groups.user;
@@ -47,7 +47,7 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
       const port = +(m.groups?.port || '5432');
       const database = m.groups.database;
 
-      debug("DB: %s@%s:%s/%s", user, host, port, database);
+      debug('DB: %s@%s:%s/%s', user, host, port, database);
 
       const password = m.groups.password;
       const connectionParameters: IConnectionParameters = {
@@ -74,7 +74,7 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
 }
 
 /* istanbul ignore next */
-export async function rolledback(dbProvider: dbProviderType, cb: (db: dbType) => Promise<void>) : Promise<void> {
+export async function rolledback(dbProvider: dbProviderType, cb: (db: dbType) => Promise<void>): Promise<void> {
   return dbProvider('test', async db => {
     try {
       await db.tx(async db => {
@@ -82,7 +82,7 @@ export async function rolledback(dbProvider: dbProviderType, cb: (db: dbType) =>
         throw new Error('rolledback');
       });
     } catch (e) {
-      if (e !== 'rolledback') {
+      if (e?.message !== 'rolledback') {
         throw e;
       }
     }

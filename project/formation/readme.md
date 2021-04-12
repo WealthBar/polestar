@@ -24,18 +24,15 @@ All system to system requests container a header: `Authorization Bearer: {ACCESS
 ### POST /v1/init/{stoken}
 
 Body: JSON
-```json5
-{
-    form_key: string,
-    brand: string,
-    jurisdiction: string, // {country_iso2}(_{region_iso2}): ca, ca_bc, ca_ab, us, us_wa, etc.
-    signing_date: yyyy-mm-dd,
-    locale: string, // {locale_iso2}: en, fr
-    valid_for: number, // seconds until the form request expires. Max 30 days.
-    data: { // used to pre-fill answers, included in docusign data even if not in web form
-      {key}:{value},
-      ...
-    },
+```typescript
+type init = {
+  formKey: string,
+  brand: string,
+  jurisdiction: string, // {country_iso2}(_{region_iso2}): ca, ca_bc, ca_ab, us, us_wa, etc.
+  signingDate: string,
+  locale: string, // {locale_iso2}: en, fr
+  validUntil: string, // iso datetime: YYYY-MM-EEThh-mm-ssZ
+  data: Record<string, string>
 }
 ```
 

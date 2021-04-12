@@ -31,6 +31,8 @@ export type ctxReqType = ctxBaseType & {
   req: IncomingMessage;
   url: urlType;
   body?: string;
+  host?: string;
+  note?: Record<string, serializableType>;
   cookie: [string, string][];
 }
 

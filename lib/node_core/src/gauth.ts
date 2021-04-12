@@ -4,7 +4,6 @@ import {secureTokenCtorType, secureTokenVerifyType} from './stoken';
 import {toUrlParam} from 'ts_agnostic';
 import {kvpArrayToObject} from 'ts_agnostic';
 import {tuidCtor} from './tuid';
-import {sessionUpdate} from './db';
 
 // server restarts invalidate all tokens
 // since the google login process is fast this should rarely be an issue.

@@ -1,6 +1,9 @@
 export const value = `
 WITH sys AS (
-  SELECT bearer_token FROM client.system WHERE bearer_token = $(bearerToken)
+  SELECT *
+  FROM
+    client.system
+  WHERE bearer_token = $(bearerToken)
   ),
   i_al AS (
     INSERT INTO client.access_log
@@ -20,13 +23,14 @@ WITH sys AS (
        $(remoteAddress))
       RETURNING TRUE
     )
-SELECT EXISTS(
-  (
-    SELECT 1
-    FROM
-      sys,
-      i_al
-    )
-  ) AS r;
+SELECT system_id,
+  system_name,
+  domain,
+  ENCODE(secret_key, 'hex') AS secret_key,
+  error_url
+FROM
+  sys,
+  i_al
+;
 
 `;

@@ -1,10 +1,11 @@
 // istanbul ignore file
-// -- will be replaced with DB based session storage
+// will add tests once it is stable
 
 import {ctxType, contentHandlerType, ctxReqType, reqHandlerType} from './server.type';
 import {resolvedVoid} from 'ts_agnostic';
 import {toDbProvideCtx} from './db_util';
 import {sessionVerify} from './db';
+import {ctxHost} from './ctx';
 
 export type sessionInitCtorType = (settings: Record<string,unknown>) => reqHandlerType;
 
@@ -32,16 +33,12 @@ export function sessionSetCtor(
   } & Record<string,unknown>
   ): contentHandlerType {
   function sessionSet(ctx: ctxType): Promise<void> {
-    // TODO: lift the top-level-domain extraction into the ctx setup so other handlers can use it too.
-    const hostHdr = ctx.req.headers.host;
-    const m = hostHdr?.match(/([^.]+\.)*(?<tld>[^.:]+\.[^.:]+)(:\d+)?$/)
-    const host = m?.groups?.tld;
+    ctxHost(ctx);
+    console.log('Session Host:', ctx.host);
 
-    console.log('Session Host:', host);
-
-    if (host) {
+    if (ctx.host) {
       // SameSite=Lax is required for the redirect from GoogleAuth back to our server to send cookies in Chrome.
-      ctx.res.setHeader('Set-Cookie', `SessionId=${ctx.sessionId}; HttpOnly; Path=/; SameSite=None; Domain=${host}; Max-Age=3600${settings.schema === 'https' ? '; Secure' : ''}`);
+      ctx.res.setHeader('Set-Cookie', `SessionId=${ctx.sessionId}; HttpOnly; Path=/; SameSite=None; Domain=${ctx.host}; Max-Age=3600${settings.schema === 'https' ? '; Secure' : ''}`);
     }
     // update ctx.db to use the sessionId as the tracking tag.
     ctx.db = toDbProvideCtx(ctx.user?.login||'-', ctx.sessionId, ctx.dbProvider);

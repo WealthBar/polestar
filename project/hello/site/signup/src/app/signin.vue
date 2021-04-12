@@ -88,7 +88,7 @@ export default defineComponent({
             message.value = 'Login Failed';
             return;
           }
-          message.value = 'a';
+          message.value = '';
         },
         {deep: true},
     );

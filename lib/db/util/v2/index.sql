@@ -17,3 +17,10 @@ BEGIN
   RAISE EXCEPTION 'Records in table % cannot be %d', tg_table_name, LOWER(tg_op);
 END;
 $$;
+
+create function func.tz_to_iso(tz timestamp with time zone) returns character varying
+  language sql
+as
+$$
+SELECT to_char(tz, 'YYYY-MM-DD"T"HH24:mi:ssZ')
+$$;
