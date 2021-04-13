@@ -1,5 +1,5 @@
 // istanbul ignore file
-// -- bootstrap
+// -- teardown, only testable in application context
 
 import {tuidCtor} from './tuid';
 import {cancellationTokenCtorCtor} from 'ts_agnostic';

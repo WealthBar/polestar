@@ -1,3 +1,5 @@
+// istanbul ignore file
+
 export const value = `
 INSERT INTO
   "session"

@@ -1,3 +1,6 @@
+// istanbul ignore file
+// -- bootstrap
+
 import * as pgPromise from 'pg-promise';
 import debugCtor = require('debug');
 import {IConnectionParameters} from 'pg-promise/typescript/pg-subset';
@@ -68,7 +71,8 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
     return db.tx(async (db) => {
       await db.none(
         'SET local "audit.user" TO $(user); SET local "audit.tracking_tag" TO $(trackingTag); SET local timezone TO \'UTC\';',
-        {user: auditUser, trackingTag});
+        {user: auditUser, trackingTag}
+      );
       return callback(db);
     });
   }
