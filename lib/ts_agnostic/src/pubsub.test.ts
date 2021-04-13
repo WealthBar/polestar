@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import * as assert from 'assert';
 import {pubSubCtorCtor, pubSubPlayCtorCtor} from './pubsub';
 import {registryCtor} from './registry';
 import {tuidCtorForTesting} from './tuid';
