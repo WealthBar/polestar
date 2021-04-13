@@ -20,7 +20,7 @@ export async function v1AuthHandler(ctx: Pick<ctxType, 'url' | 'remoteAddress' |
     domain: string,
     secret_key: string,
     error_url: string
-  }>(db => db.one(v1AuthSql, {bearerToken, remoteAddress}));
+  }|null>(db => db.oneOrNone(v1AuthSql, {bearerToken, remoteAddress}));
   if (!r?.system_name) {
     ctx.res.statusCode = 403;
     ctx.res.setHeader('Content-Type', 'text/plain');

@@ -77,4 +77,50 @@ describe('v1_init', () => {
     assert.strictEqual(r.locale_name, 'en');
     assert.deepStrictEqual(r.form_data, {'firstName': 'bob'});
   }));
+
+  it('rejects when stoken is invalid', () => setup(async (db: dbType) => {
+    const init = {
+      formKey: 'test_key',
+      brand: 'test',
+      jurisdiction: 'ca_bc',
+      signingDate: '2021-03-01',
+      locale: 'en',
+      validUntil: '2021-03-31T23:59:59Z',
+      data: {
+        'firstName': 'bob',
+      },
+    };
+
+    const ctx = {
+      url: {
+        path: `/v1/init/0000`,
+        params: [],
+      },
+      body: JSON.stringify(init),
+      note: undefined,
+      db: cb => cb(db),
+      req: {
+        on: sinon.stub(),
+        headers: {
+          authorization: 'Bearer test123',
+        },
+      },
+      res: {
+        statusCode: 0,
+        setHeader: sinon.stub(),
+        end: sinon.stub<any>(),
+      },
+      remoteAddress: 'test',
+    };
+
+    await v1AuthHandler(ctx);
+    sinon.assert.notCalled(ctx.res.end);
+
+    await v1InitHandler(ctx);
+
+    assert(ctx.req.on.notCalled);
+    assert.strictEqual(ctx.res.statusCode, 200);
+    sinon.assert.calledWith(ctx.res.setHeader, 'Content-Type', 'application/json');
+    sinon.assert.calledWith(ctx.res.end, JSON.stringify({error: 'INVALID_REQUEST'}));
+  }));
 });
