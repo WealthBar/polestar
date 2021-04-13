@@ -8,20 +8,20 @@ const errorInvalidRequest = JSON.stringify({error: 'INVALID_REQUEST'});
 const errorMismatch = JSON.stringify({error: 'MISMATCH'});
 
 function systemNote(ctx: Pick<ctxType, 'note'>): {
-  bearerToken?: string,
-  systemId?: string,
-  systemName?: string,
-  domain?: string,
-  secretKey?: string,
-  errorUrl?: string
-} {
+  bearerToken: string,
+  systemId: string,
+  systemName: string,
+  domain: string,
+  secretKey: string,
+  errorUrl: string
+} | undefined {
   return ctx?.note?.['system'] as {
-    bearerToken?: string,
-    systemId?: string,
-    systemName?: string,
-    domain?: string,
-    secretKey?: string,
-    errorUrl?: string
+    bearerToken: string,
+    systemId: string,
+    systemName: string,
+    domain: string,
+    secretKey: string,
+    errorUrl: string
   };
 }
 
@@ -34,6 +34,7 @@ type initType = {
   validUntil: string, // iso datetime: YYYY-MM-EEThh-mm-ssZ
   data: Record<string, string>
 };
+
 const initRequired = [
 'formKey',
   'brand',
@@ -53,13 +54,9 @@ export async function v1InitHandler(ctx: Pick<ctxType, 'url' | 'body' | 'note' |
   ctx.res.setHeader('Content-Type', 'application/json');
 
   const system = systemNote(ctx);
-  if (!system?.systemId || !system?.secretKey) {
-    ctx.res.end(errorInvalidRequest);
-    return resolvedVoid;
-  }
 
   const stoken = ctx.url.path.substr(9); // remove leading '/v1/init/'
-  if (!system?.secretKey || !secureTokenVerify(stoken, system?.secretKey)) {
+  if (!system?.secretKey || !secureTokenVerify(stoken, system.secretKey)) {
     ctx.res.end(errorInvalidRequest);
     return resolvedVoid;
   }
