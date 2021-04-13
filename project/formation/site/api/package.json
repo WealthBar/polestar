@@ -1,0 +1,41 @@
+{
+  "name": "project_formation_api",
+  "version": "0.0.1",
+  "description": "formation api",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "test": "NODE_PRESERVE_SYMLINKS=1 NODE_ENV=test nyc mocha",
+    "build": "tsc",
+    "dev": "NODE_PRESERVE_SYMLINKS=1 nodemon",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
+    "sql_to_ts": "node node_modules/sql_to_ts/bin/sql_to_ts"
+  },
+  "dependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/lodash": "^4.14.168",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^14.14.37",
+    "@types/sinon": "^9.0.11",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
+    "axios": "^0.21.1",
+    "debug": "^4.3.1",
+    "eslint": "^7.23.0",
+    "immer": "^9.0.1",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
+    "luxon": "^1.26.0",
+    "mocha": "^8.3.2",
+    "node_core": "link:../../../../lib/node_core",
+    "node_script": "link:../../../../lib/node_script",
+    "nyc": "^15.1.0",
+    "sinon": "^10.0.0",
+    "source-map-support": "^0.5.19",
+    "sql_to_ts": "link:../../../../tool/sql_to_ts",
+    "ts-node": "^9.1.1",
+    "ts_agnostic": "link:../../../../lib/ts_agnostic",
+    "typescript": "^4.2.3",
+    "y18n": "^5.0.6"
+  }
+}

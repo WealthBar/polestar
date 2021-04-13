@@ -4,4 +4,6 @@ nginx: node ./nginx/nginx.conf.js && nginx -c $(pwd)/nginx/nginx.conf
 #signup_hello: cd project/hello/site/signup && ./dev
 #staff_api_hello: cd project/hello/site/staff.api && ./dev
 #staff_app_hello: cd project/hello/site/staff.app && ./dev
+api_formation: cd project/formation/site/api && ./dev
+app_formation: cd project/formation/site/app && ./dev
 system_api_formation: cd project/formation/site/system.api && ./dev
