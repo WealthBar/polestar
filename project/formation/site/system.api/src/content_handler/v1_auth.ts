@@ -1,4 +1,4 @@
-import {resolvedVoid, vivify} from 'ts_agnostic';
+import {resolvedVoid} from 'ts_agnostic';
 import {ctxType} from 'node_core';
 import {value as v1AuthSql} from './v1_auth_sql';
 import {Object} from 'ts-toolbelt';
