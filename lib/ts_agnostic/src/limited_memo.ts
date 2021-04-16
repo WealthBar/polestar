@@ -26,7 +26,7 @@ export function limitedMemoFCtorCtor(
       const now = getTime();
       // if we're got a recent result
       if (memos[key] && (now - memos[key].at < maxTimeToHoldResultForMs)) {
-        return memos[key].r; // result the recent result
+        return memos[key].r; // return the recent result
       }
       // get a new result
       const r = await f(params);

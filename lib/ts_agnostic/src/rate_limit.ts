@@ -49,8 +49,6 @@ export function rateLimitEmitLastCtor(
       lastParams = params; // track last params asked for
       ++lastParamsVersion; // and a version
 
-      console.log('  lastParams: ' + lastParams);
-
       if (timeoutHandle) {
         return; // f already scheduled to run in the future.
       }
@@ -73,12 +71,9 @@ export function rateLimitEmitLastCtor(
         }
       };
 
-      console.log('  since: ' + since);
-
       if (since < delayBetweenCallsMs) {
         // too soon, schedule to run in the future
         timeoutHandle = setTimeout(callF, delayBetweenCallsMs - since);
-        console.log('  timeoutHandle: ' + timeoutHandle);
       } else {
         // callF NOW!
         await callF();
