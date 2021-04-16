@@ -46,8 +46,6 @@ export function rateLimitEmitLastCtor(
 
     // create the wrapped form of f to return later
     async function rateLimitedF(params: TP) {
-      console.log(params);
-
       lastParams = params; // track last params asked for
       ++lastParamsVersion; // and a version
 
@@ -63,10 +61,6 @@ export function rateLimitEmitLastCtor(
         const paramsVersionIssued = lastParamsVersion;
         callback(await f(lastParams));
         last = getTime(); // update to time when last call completed.
-
-        console.log('  paramsVersionIssued: ' + paramsVersionIssued);
-        console.log('  lastParamsVersion: ' + lastParamsVersion);
-
         if (paramsVersionIssued !== lastParamsVersion) {
           // edge case, lastParams was updated while we waited on f to complete
           // so schedule another call to f for later using those params (or newer ones)
