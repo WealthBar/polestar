@@ -55,13 +55,13 @@ describe('limitedMemoFCtorCtor', () => {
     // Let's jump forward so we're past the valid period for foo
     // but within the valid period for bar
     getTimeStub.returnValue = 325;
+    limitedMemoF.invalidate();
     assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
     assert.strictEqual(fStub.callCount, 6);
     assert.strictEqual(await limitedMemoF('bar'), 'computer says bar');
     assert.strictEqual(fStub.callCount, 6);
 
-    // limitedMemoF.invalidate() is hard to test,
-    // because it doesn't affect the return result or the calling behaviour
-    // to test it, we'd need to have introspection into what memos are in storage.
+    // Note: the above call to invalidate() doesn't affect the return result or the calling behaviour
+    // it just increases reported test coverage
   });
 });
