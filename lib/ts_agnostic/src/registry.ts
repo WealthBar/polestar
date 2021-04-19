@@ -31,7 +31,6 @@ export function readonlyRegistryCtor<T extends { toString(): string }>(items: [s
       h.update(item[0]);
     }
     signature = pad('0000000000000000', h.digest().toString(16));
-    console.log(signature);
   }
 
   return {
