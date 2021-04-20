@@ -1,4 +1,3 @@
-import * as sinon from 'sinon';
 import * as assert from 'assert';
 import {limitedMemoFCtorCtor} from './limited_memo';
 

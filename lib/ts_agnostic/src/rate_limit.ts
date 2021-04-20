@@ -61,6 +61,7 @@ export function rateLimitEmitLastCtor(
         const paramsVersionIssued = lastParamsVersion;
         callback(await f(lastParams));
         last = getTime(); // update to time when last call completed.
+
         if (paramsVersionIssued !== lastParamsVersion) {
           // edge case, lastParams was updated while we waited on f to complete
           // so schedule another call to f for later using those params (or newer ones)
