@@ -4,30 +4,28 @@ import {rateLimitCtor, rateLimitEmitLastCtor} from './rate_limit';
 import {resolvedUndefined} from './resolved';
 
 describe('rateLimitCtor', () => {
-  it('produces a rate-limited function', async () => {
-    // Setup
-    let time = 1000;
-    const getTimeStub = () => time;
+  // Setup
+  let time = 1000;
+  const getTimeStub = () => time;
 
-    const setTimeoutStub = (callback) => {
-      setTimeoutStub.callback = callback;
-      setTimeoutStub.callCount++;
-      return setTimeoutStub.handle++;
-    }
-    setTimeoutStub.handle = 1;
-    setTimeoutStub.callback = () => undefined;
-    setTimeoutStub.callCount = 0;
+  const setTimeoutStub = (callback) => {
+    setTimeoutStub.callback = callback;
+    setTimeoutStub.callCount++;
+    return setTimeoutStub.handle++;
+  }
+  setTimeoutStub.handle = 1;
+  setTimeoutStub.callback = () => undefined;
+  setTimeoutStub.callCount = 0;
 
-    // rateLimiterCtor returns a rate limiter function.
-    const rateLimit = rateLimitCtor(getTimeStub, setTimeoutStub);
-    assert.strictEqual(typeof rateLimit, 'function');
+  // rateLimiterCtor returns a rate limiter function.
+  const rateLimit = rateLimitCtor(getTimeStub, setTimeoutStub);
 
-    // The rate limiter gives us a rate-limited wrapper around the the function we pass it.
-    const fStub = () => { fStub.callCount += 1 };
-    fStub.callCount = 0
-    let rateLimitedF = rateLimit(100, fStub);
-    assert.strictEqual(typeof rateLimitedF, 'function');
+  // The rate limiter gives us a rate-limited wrapper around the the function we pass it.
+  const fStub = () => { fStub.callCount += 1 };
+  fStub.callCount = 0
+  let rateLimitedF = rateLimit(100, fStub);
 
+  it('happy path', async () => {
     // If we call the rate-limited wrapper once, the original function is called right away
     rateLimitedF();
     assert.strictEqual(setTimeoutStub.callCount, 0);
@@ -61,37 +59,35 @@ describe('rateLimitCtor', () => {
 });
 
 describe('rateLimitEmitLastCtor', () => {
-  it('produces a rate-limited function that prefers the most recent call', async () => {
-    // Setup
-    let time = 1000;
-    const getTimeStub = () => time;
+  // so setup, much boilerplate
+  let time = 1000;
+  const getTimeStub = () => time;
 
-    const setTimeoutStub = (callback) => {
-      setTimeoutStub.callback = callback;
-      setTimeoutStub.callCount++;
-      return setTimeoutStub.handle++;
-    }
-    setTimeoutStub.callCount = 0;
-    setTimeoutStub.handle = 1;
-    setTimeoutStub.callback = () => undefined;
+  const setTimeoutStub = (callback) => {
+    setTimeoutStub.callback = callback;
+    setTimeoutStub.callCount++;
+    return setTimeoutStub.handle++;
+  }
+  setTimeoutStub.callCount = 0;
+  setTimeoutStub.handle = 1;
+  setTimeoutStub.callback = () => undefined;
 
-    // rateLimitEmitLastCtor returns a rate limiter function
-    const rateLimitEmitLast = rateLimitEmitLastCtor(getTimeStub, setTimeoutStub);
-    assert.strictEqual(typeof rateLimitEmitLast, 'function');
+  // rateLimitEmitLastCtor returns a rate limiter function
+  const rateLimitEmitLast = rateLimitEmitLastCtor(getTimeStub, setTimeoutStub);
 
-    // The rate limiter gives us a rate-limited wrapper around the the function we pass it.
-    const delayBetweenCallsMsMock = 100
-    const fStub = (arg) => {
-      fStub.calledWith.push(arg);
-      fStub.callCount += 1;
-      return resolvedUndefined;
-    };
-    fStub.calledWith = [null];
-    fStub.callCount = 0;
-    const callbackStub = sinon.stub();
-    let rateLimitedF = rateLimitEmitLast(delayBetweenCallsMsMock, fStub, callbackStub)
-    assert.strictEqual(typeof rateLimitedF, 'function');
+  // The rate limiter gives us a rate-limited wrapper around the the function we pass it.
+  const delayBetweenCallsMsMock = 100
+  const fStub = (arg) => {
+    fStub.calledWith.push(arg);
+    fStub.callCount += 1;
+    return resolvedUndefined;
+  };
+  fStub.calledWith = [null];
+  fStub.callCount = 0;
+  const callbackStub:()=>void = () => {};
+  let rateLimitedF = rateLimitEmitLast(delayBetweenCallsMsMock, fStub, callbackStub)
 
+  it('happy path', async () => {
     // If we call the rate-limited wrapper once, the original function is called right away
     await rateLimitedF('first call');
     assert.strictEqual(setTimeoutStub.callCount, 0);
@@ -112,18 +108,24 @@ describe('rateLimitEmitLastCtor', () => {
 
     // 100ms from the first deferred call, the timed-out callback runs with the latest arguments
     time = 1110;
-    setTimeoutStub.callback();
+    await setTimeoutStub.callback();
     assert.strictEqual(fStub.callCount, 2);
     assert.strictEqual(fStub.calledWith[fStub.callCount], 'third call');
-
-    // TODO: the timeoutHandle needs to get set to undefined
 
     // After a bit more time has elapsed we should again be able to get a call through,
     // this is essentially identical to the first call we made
     time = 2000;
     await rateLimitedF('fourth call');
-    // these asserts fail unless I change `callback(await f(lastParams))` to simply `f(lastParams)` ??
-    // assert.strictEqual(fStub.callCount, 3);
-    // assert.strictEqual(setTimeoutStub.callCount, 1);
+    assert.strictEqual(fStub.callCount, 3);
+    assert.strictEqual(setTimeoutStub.callCount, 1);
+  });
+
+  it('edge case, lastParams was updated while we waited on f to complete', async () => {
+    assert.strictEqual(setTimeoutStub.handle, 2);
+
+    setTimeoutStub.callback(); // calling without await to set up the problematic race condition
+    await rateLimitedF('another call while waiting for the previous call');
+
+    assert.strictEqual(setTimeoutStub.handle, 4); // both calls incremented the handle!
   });
 });
