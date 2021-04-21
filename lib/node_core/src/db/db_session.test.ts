@@ -1,6 +1,8 @@
 import * as assert from 'assert';
 import {serverSettingsType, userInfoType} from './../server.type';
-import {sessionCreate, sessionVerify} from './db_session';
+import {sessionCreate, sessionVerify, sessionUpdate} from './db_session';
+import {value as updateClientSql} from './db_session_update_client_sql';
+import {value as updateStaffSql} from './db_session_update_staff_sql';
 import {resolvedUndefined} from './../../../ts_agnostic/src/resolved';
 
 describe('sessionCreate', () => {
@@ -32,7 +34,7 @@ describe('sessionCreate', () => {
     return {ctxStub, dbProviderStub, dbStub};
   }
 
-  it('happy path', async () => {
+  it('Happy path', async () => {
     const {ctxStub, dbProviderStub, dbStub} = setup({session_id: 'session_id_mock'});
     
     await sessionCreate(ctxStub);
@@ -43,7 +45,7 @@ describe('sessionCreate', () => {
     assert.strictEqual(dbProviderStub.error, null);
   });
 
-  it('error: could not create a session', async () => {
+  it('Error - could not create a session', async () => {
     const {ctxStub, dbProviderStub, dbStub} = setup({});
 
     await sessionCreate(ctxStub);
@@ -99,7 +101,7 @@ describe('sessionVerify', () => {
     return {ctxStub, dbProviderStub, dbStub};
   };
 
-  it('happy path - client', async () => {
+  it('Happy path - client', async () => {
     const {ctxStub, dbProviderStub, dbStub} = setup({
       dbResultMock: {
         login: 'db_result_login_mock',
@@ -121,7 +123,7 @@ describe('sessionVerify', () => {
     assert.strictEqual(ctxStub.session, 'db_result_data_mock');
   });
 
-  it('happy path - staff', async () => {
+  it('Happy path - staff', async () => {
     const {ctxStub, dbProviderStub, dbStub} = setup({
       dbResultMock: {
         login: 'db_result_login_mock',
@@ -174,11 +176,111 @@ describe('sessionVerify', () => {
     });
 
     await sessionVerify(ctxStub);
-    assert.strictEqual(dbProviderStub.callCount, 2); // // because sessionCreate called it too
+    assert.strictEqual(dbProviderStub.callCount, 2); // because sessionCreate called it too
     assert.strictEqual(dbStub.oneOrNone.callCount, 1);
     assert.strictEqual(ctxStub.user.login, 'user_login_mock');
     assert.strictEqual(ctxStub.user.clientProfileId, undefined);
     assert.strictEqual(ctxStub.user.federatedLoginId, undefined);
     assert.deepStrictEqual(ctxStub.session, {'': ''});
+  });
+});
+
+describe('sessionUpdate', () => {
+  const setup = (args: {
+    sessionIdMock: string,
+    userMock: object | null,
+    modeMock: 'client' | 'staff',
+  }) => {
+    const {sessionIdMock, userMock, modeMock} = args
+
+    const dbProviderStub = (auditUser, callback, trackingTag) => {
+      dbProviderStub.callCount++;
+      callback(dbStub);
+      return resolvedUndefined;
+    };
+    dbProviderStub.callCount = 0;
+
+    const dbResultStub = (...params) => {
+      dbResultStub.callCount++;
+      dbResultStub.calledWith = params;
+    };
+    dbResultStub.callCount = 0;
+    dbResultStub.calledWith = null;
+
+    const dbStub = () => resolvedUndefined;
+    dbStub.result = dbResultStub;
+
+    const ctxStub = {
+      sessionId: sessionIdMock,
+      session: {'': ''},
+      dbProvider: dbProviderStub,
+      user: null || <userInfoType>userMock,
+      settings: <serverSettingsType>{
+        host: 'settings_host_mock',
+        port: 'settings_port_mock',
+        schema: 'settings_schema_mock',
+        mode: modeMock,
+        appUrl: 'settings_appUrl_mock',
+        dbConnectionString: 'settings_dbConnectionString_mock',
+      }
+    }
+
+    return {ctxStub, dbProviderStub, dbStub};
+  };
+
+  it('Happy path - client', async () => {
+    const {ctxStub, dbProviderStub, dbStub} = setup({
+      sessionIdMock: 'session_id_mock',
+      userMock: {login: 'user_login_mock'},
+      modeMock: 'client',
+    });
+
+    await sessionUpdate(ctxStub);
+    assert.strictEqual(dbProviderStub.callCount, 1);
+    assert.strictEqual(dbStub.result.callCount, 1);
+    assert.deepStrictEqual(dbStub.result.calledWith, [
+      updateClientSql,
+      {
+        sessionId: 'session_id_mock',
+        data: {'': ''},
+        login: 'user_login_mock',
+        clientProfileId: undefined,
+        federatedLoginId: undefined,
+      }
+    ]);
+  });
+
+  it('Happy path - staff', async () => {
+    const {ctxStub, dbProviderStub, dbStub} = setup({
+      sessionIdMock: 'session_id_mock',
+      userMock: {login: 'user_login_mock'},
+      modeMock: 'staff',
+    });
+
+    await sessionUpdate(ctxStub);
+    assert.strictEqual(dbProviderStub.callCount, 1);
+    assert.strictEqual(dbStub.result.callCount, 1);
+    assert.strictEqual(dbStub.result.calledWith[0], updateStaffSql);
+    assert.deepStrictEqual(dbStub.result.calledWith, [
+      updateStaffSql,
+      {
+        sessionId: 'session_id_mock',
+        data: {'': ''},
+        login: 'user_login_mock',
+      }
+    ]);
+  });
+
+  it('Session does not exist', async () => {
+    const {ctxStub, dbProviderStub, dbStub} = setup({
+      sessionIdMock: '',
+      userMock: null,
+      modeMock: 'client',
+    });
+
+    await sessionUpdate(ctxStub);
+    // early return, nothing happens!
+    assert.strictEqual(dbProviderStub.callCount, 0);
+    assert.strictEqual(dbStub.result.callCount, 0);
   });
 });
