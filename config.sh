@@ -31,7 +31,7 @@ export CONFIG_ENV
 IFS=$'\n' # tho really none of the shell scripts should have spaces in their names anyways...
 
 # shellcheck disable=SC2044
-for config_file in $(find -s ./crypt -maxdepth 1 -name '*.sh' -type f)
+for config_file in $(find ./crypt -maxdepth 1 -name '*.sh' -type f)
 do
   echo "${config_file}"
   # shellcheck disable=SC1090
@@ -40,7 +40,7 @@ done
 
 
 # shellcheck disable=SC2044
-for config_file in $(find -s ./crypt/${CONFIG_ENV} -maxdepth 1 -name '*.sh' -type f)
+for config_file in $(find ./crypt/${CONFIG_ENV} -maxdepth 1 -name '*.sh' -type f)
 do
   echo "${config_file}"
   # shellcheck disable=SC1090
