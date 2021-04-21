@@ -1,5 +1,3 @@
-// istanbul ignore file
-
 export const value = `
 SELECT login
      , data

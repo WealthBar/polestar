@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars */
+// istanbul ignore file
+// -- test helper
+
 import {dbType} from './db_provider';
 import * as sinon from 'sinon';
 

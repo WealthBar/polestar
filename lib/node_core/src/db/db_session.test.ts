@@ -1,9 +1,13 @@
 import * as assert from 'assert';
 import {serverSettingsType, userInfoType} from './../server.type';
-import {sessionCreate, sessionVerify, sessionUpdate, sessionDelete} from './db_session';
+import {sessionCreate, sessionVerify, sessionUpdate, sessionDelete, sessionExpire} from './db_session';
+import {value as createSql} from './db_session_create_sql';
 import {value as deleteSql} from './db_session_delete_sql';
+import {value as expireSql} from './db_session_expire_sql';
 import {value as updateClientSql} from './db_session_update_client_sql';
 import {value as updateStaffSql} from './db_session_update_staff_sql';
+import {value as verifyClientSql} from './db_session_verify_client_sql';
+import {value as verifyStaffSql} from './db_session_verify_staff_sql';
 import {resolvedUndefined} from './../../../ts_agnostic/src/resolved';
 
 describe('sessionCreate', () => {
@@ -18,9 +22,11 @@ describe('sessionCreate', () => {
 
     const dbOneStub = query => {
       dbOneStub.callCount++;
+      dbOneStub.calledWith = query;
       return dbResultMock;
     };
     dbOneStub.callCount = 0;
+    dbOneStub.calledWith = null;
 
     const dbStub = () => resolvedUndefined;
     dbStub.one = dbOneStub;
@@ -41,6 +47,7 @@ describe('sessionCreate', () => {
     await sessionCreate(ctxStub);
     assert.strictEqual(dbProviderStub.callCount, 1);
     assert.strictEqual(dbStub.one.callCount, 1);
+    assert.strictEqual(dbStub.one.calledWith, createSql);
     assert.strictEqual(ctxStub.sessionId, 'session_id_mock');
     assert.deepStrictEqual(ctxStub.session, {}); // {} from hardcoded value in subject
     assert.strictEqual(dbProviderStub.error, null);
@@ -52,6 +59,7 @@ describe('sessionCreate', () => {
     await sessionCreate(ctxStub);
     assert.strictEqual(dbProviderStub.callCount, 1);
     assert.strictEqual(dbStub.one.callCount, 1);
+    assert.strictEqual(dbStub.one.calledWith, createSql);
     assert.strictEqual(ctxStub.sessionId, '');
     assert.deepStrictEqual(ctxStub.session, {'': ''});
     assert.strictEqual(dbProviderStub.error.message, 'could not create a new session.');
@@ -74,11 +82,13 @@ describe('sessionVerify', () => {
     };
     dbProviderStub.callCount = 0;
 
-    const dbOneOrNoneStub = query => {
+    const dbOneOrNoneStub = (...params) => {
+      dbOneOrNoneStub.calledWith = params;
       dbOneOrNoneStub.callCount++;
       return dbResultMock;
     };
     dbOneOrNoneStub.callCount = 0;
+    dbOneOrNoneStub.calledWith = null;
 
     const dbStub = () => resolvedUndefined;
     dbStub.oneOrNone = dbOneOrNoneStub;
@@ -118,6 +128,10 @@ describe('sessionVerify', () => {
     await sessionVerify(ctxStub);
     assert.strictEqual(dbProviderStub.callCount, 1);
     assert.strictEqual(dbStub.oneOrNone.callCount, 1);
+    assert.deepStrictEqual(dbStub.oneOrNone.calledWith, [
+      verifyClientSql,
+      {sessionId: 'session_id_mock'},
+    ]);
     assert.strictEqual(ctxStub.user.login, 'db_result_login_mock');
     assert.strictEqual(ctxStub.user.clientProfileId, undefined);
     assert.strictEqual(ctxStub.user.federatedLoginId, undefined);
@@ -140,6 +154,10 @@ describe('sessionVerify', () => {
     await sessionVerify(ctxStub);
     assert.strictEqual(dbProviderStub.callCount, 1);
     assert.strictEqual(dbStub.oneOrNone.callCount, 1);
+    assert.deepStrictEqual(dbStub.oneOrNone.calledWith, [
+      verifyStaffSql,
+      {sessionId: 'session_id_mock'},
+    ]);
     assert.strictEqual(ctxStub.user.login, 'db_result_login_mock');
     assert.strictEqual(ctxStub.user.clientProfileId, undefined);
     assert.strictEqual(ctxStub.user.federatedLoginId, undefined);
@@ -162,6 +180,10 @@ describe('sessionVerify', () => {
     await sessionVerify(ctxStub);
     assert.strictEqual(dbProviderStub.callCount, 2); // because sessionCreate called it too
     assert.strictEqual(dbStub.oneOrNone.callCount, 1);
+    assert.deepStrictEqual(dbStub.oneOrNone.calledWith, [
+      verifyClientSql,
+      {sessionId: ''},
+    ]);
     assert.strictEqual(ctxStub.user.login, 'db_result_login_mock');
     assert.strictEqual(ctxStub.user.clientProfileId, 'db_result_client_profile_id_mock');
     assert.strictEqual(ctxStub.user.federatedLoginId, 'db_result_federated_login_id_mock');
@@ -179,6 +201,10 @@ describe('sessionVerify', () => {
     await sessionVerify(ctxStub);
     assert.strictEqual(dbProviderStub.callCount, 2); // because sessionCreate called it too
     assert.strictEqual(dbStub.oneOrNone.callCount, 1);
+    assert.deepStrictEqual(dbStub.oneOrNone.calledWith, [
+      verifyClientSql,
+      {sessionId: 'session_id_mock'},
+    ]);
     assert.strictEqual(ctxStub.user.login, 'user_login_mock');
     assert.strictEqual(ctxStub.user.clientProfileId, undefined);
     assert.strictEqual(ctxStub.user.federatedLoginId, undefined);
@@ -323,5 +349,37 @@ describe('sessionDelete', () => {
       deleteSql,
       {sessionId: 'session_id_mock'}
     ]);
+  });
+});
+
+describe('sessionExpire', () => {
+  const setup = () => {
+    const dbProviderStub = (auditUser, callback, trackingTag) => {
+      dbProviderStub.callCount++;
+      callback(dbStub);
+      return resolvedUndefined;
+    };
+    dbProviderStub.callCount = 0;
+
+    const dbResultStub = (...params) => {
+      dbResultStub.callCount++;
+      dbResultStub.calledWith = params;
+    };
+    dbResultStub.callCount = 0;
+    dbResultStub.calledWith = null;
+
+    const dbStub = () => resolvedUndefined;
+    dbStub.result = dbResultStub;
+
+    return {dbProviderStub, dbStub};
+  };
+  
+  it('Happy path', async () => {
+    const {dbProviderStub, dbStub} = setup();
+
+    await sessionExpire(dbProviderStub);
+    assert.strictEqual(dbProviderStub.callCount, 1);
+    assert.strictEqual(dbStub.result.callCount, 1);
+    assert.deepStrictEqual(dbStub.result.calledWith, [expireSql]);
   });
 });

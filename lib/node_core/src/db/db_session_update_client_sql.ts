@@ -1,5 +1,3 @@
-// istanbul ignore file
-
 export const value = `
 UPDATE "session"
 SET
