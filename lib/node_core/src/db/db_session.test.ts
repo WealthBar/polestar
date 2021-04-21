@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {serverSettingsType, userInfoType} from './../server.type';
-import {sessionCreate, sessionVerify, sessionUpdate} from './db_session';
+import {sessionCreate, sessionVerify, sessionUpdate, sessionDelete} from './db_session';
+import {value as deleteSql} from './db_session_delete_sql';
 import {value as updateClientSql} from './db_session_update_client_sql';
 import {value as updateStaffSql} from './db_session_update_staff_sql';
 import {resolvedUndefined} from './../../../ts_agnostic/src/resolved';
@@ -282,5 +283,45 @@ describe('sessionUpdate', () => {
     // early return, nothing happens!
     assert.strictEqual(dbProviderStub.callCount, 0);
     assert.strictEqual(dbStub.result.callCount, 0);
+  });
+});
+
+describe('sessionDelete', () => {
+  const setup = (sessionIdMock) => {
+    const dbProviderStub = (auditUser, callback, trackingTag) => {
+      dbProviderStub.callCount++;
+      callback(dbStub);
+      return resolvedUndefined;
+    };
+    dbProviderStub.callCount = 0;
+
+    const dbResultStub = (...params) => {
+      dbResultStub.callCount++;
+      dbResultStub.calledWith = params;
+    };
+    dbResultStub.callCount = 0;
+    dbResultStub.calledWith = null;
+
+    const dbStub = () => resolvedUndefined;
+    dbStub.result = dbResultStub;
+
+    const ctxStub = {
+      sessionId: sessionIdMock,
+      dbProvider: dbProviderStub,
+    }
+
+    return {ctxStub, dbProviderStub, dbStub};
+  };
+  
+  it('Happy path', async () => {
+    const {ctxStub, dbProviderStub, dbStub} = setup('session_id_mock');
+
+    await sessionDelete(ctxStub);
+    assert.strictEqual(dbProviderStub.callCount, 1);
+    assert.strictEqual(dbStub.result.callCount, 1);
+    assert.deepStrictEqual(dbStub.result.calledWith, [
+      deleteSql,
+      {sessionId: 'session_id_mock'}
+    ]);
   });
 });
