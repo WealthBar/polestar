@@ -33,8 +33,9 @@ jobs:
 
       # Replace with matrix loop
       - name: Setup database db/formation
+        working-directory: ./db/formation
         run: |
-          ./db/formation/setup
+          setup
 
       # Replace with matrix loop
       - name: Test App project/formation/site/app
