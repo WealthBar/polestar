@@ -1,0 +1,46 @@
+name: CI Testing
+
+on:
+  push:
+    branches:
+      - ci-dev
+
+jobs:
+  ci-testing:
+    name: Test Polestar Apps
+    runs-on: ubuntu-18.04
+
+    env:
+      CI_COMMIT_SHA: ${{ github.sha }}
+      APP_NAME: polestar
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Decrypt repo
+        env:
+          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+        run: |
+          sudo apt-get update && sudo apt-get install -qq -y git-crypt coreutils
+          echo "$GIT_CRYPT_KEY" | base64 --decode > ~/polestar-git-crypt.key
+          cd $GITHUB_WORKSPACE
+          git-crypt unlock ~/polestar-git-crypt.key
+
+      - name: Config root repo
+        run: |
+          source ./config.sh ci
+
+      # Replace with matrix loop
+      - name: Setup database db/formation
+        run: |
+          ./db/formation/setup
+
+      # Replace with matrix loop
+      - name: Test App project/formation/site/app
+        working-directory: ./project/formation/site/app
+        run: |
+          init
+          lint
+          build
+          test
