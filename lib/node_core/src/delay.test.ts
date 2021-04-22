@@ -14,7 +14,7 @@ describe('delay', () => {
     assert(diff >= 100);
   });
 
-  it('Cancellation token is passed, cancellation is not requested', async () => {
+  it('Cancellation token is passed', async () => {
     const onCancelRequestedStub = (r) => {
       onCancelRequestedStub.callCount++;
       return () => {}
@@ -38,7 +38,7 @@ describe('delay', () => {
     assert(diff >= 100);
   });
 
-  it('Cancellation token is passed, cancellation is requested', async () => {
+  it('Cancellation is requested', async () => {
     const onCancelRequestedStub = (r) => {
       onCancelRequestedStub.callCount++;
       return () => {}
@@ -52,7 +52,13 @@ describe('delay', () => {
       waitForCancellation: () => resolvedTrue,
     }
 
-    delay(100, cancellationToken);
+    const start = Date.now();
+    await(delay(100, cancellationToken));
+    const end = Date.now();
+    const diff = end - start;
+
     assert.strictEqual(onCancelRequestedStub.callCount, 0);
+    assert(diff < 10);
+    assert(diff >= 0);
   });
 });

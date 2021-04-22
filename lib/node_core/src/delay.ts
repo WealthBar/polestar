@@ -4,6 +4,7 @@ export async function delay(milliseconds: number, cancellationToken?: cancellati
   return new Promise(r => {
     if (cancellationToken) {
       if (cancellationToken.isCancellationRequested) {
+        r();
         return;
       }
       cancellationToken.onCancelRequested(r);
