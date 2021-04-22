@@ -36,12 +36,11 @@ jobs:
         working-directory: ./db/formation
         run: |
           ./setup
-
       # Replace with matrix loop
-      - name: Test App project/formation/site/app
-        working-directory: ./project/formation/site/app
-        run: |
-          ./init
-          ./lint
-          ./build
-          ./test
+      # - name: Test App project/formation/site/app
+      #   working-directory: ./project/formation/site/app
+      #   run: |
+      #     ./init
+      #     ./lint
+      #     ./build
+      #     ./test
