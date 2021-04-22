@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+pushd ../ts_agnostic
+./build
+popd
+yarn tsc

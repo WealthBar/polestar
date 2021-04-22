@@ -184,7 +184,7 @@ describe('v1_init', () => {
 
       await v1InitHandler(ctx);
 
-      assert(ctx.req.on.notCalled);
+      sinon.assert.notCalled(ctx.req.on);
       assert.strictEqual(ctx.res.statusCode, 200);
       sinon.assert.calledWith(ctx.res.setHeader, 'Content-Type', 'application/json');
       sinon.assert.calledWith(ctx.res.end, '{}');

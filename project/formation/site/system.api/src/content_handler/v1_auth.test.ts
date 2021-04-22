@@ -28,7 +28,6 @@ describe('v1_auth', () => {
       note: {} as Record<string, serializableType>,
       db: cb => cb(db),
       req: {
-        on: sinon.stub(),
         headers: {
           authorization: 'Bearer test123',
         },
@@ -43,7 +42,6 @@ describe('v1_auth', () => {
 
     await v1AuthHandler(ctx);
     sinon.assert.notCalled(ctx.res.end);
-    sinon.assert.notCalled(ctx.req.on);
     const system = ctx.note['system'] as Record<string, string>;
 
     assert.strictEqual(system['systemName'], 'test');
@@ -63,7 +61,6 @@ describe('v1_auth', () => {
       note: {} as Record<string, serializableType>,
       db: cb => cb(db),
       req: {
-        on: sinon.stub(),
         headers: {
           authorization: 'Bearer haxer',
         },
@@ -77,7 +74,6 @@ describe('v1_auth', () => {
     };
 
     await v1AuthHandler(ctx);
-    sinon.assert.notCalled(ctx.req.on);
     sinon.assert.called(ctx.res.end);
     assert.strictEqual(ctx.res.statusCode, 403);
     sinon.assert.calledWithExactly(ctx.res.setHeader, 'Content-Type', 'text/plain');
@@ -94,7 +90,6 @@ describe('v1_auth', () => {
       note: {} as Record<string, serializableType>,
       db: cb => cb(db),
       req: {
-        on: sinon.stub(),
         headers: {
           authorization: 'haxer',
         },
@@ -108,7 +103,6 @@ describe('v1_auth', () => {
     };
 
     await v1AuthHandler(ctx);
-    sinon.assert.notCalled(ctx.req.on);
     sinon.assert.called(ctx.res.end);
     assert.strictEqual(ctx.res.statusCode, 403);
     sinon.assert.calledWithExactly(ctx.res.setHeader, 'Content-Type', 'text/plain');

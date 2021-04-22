@@ -15,6 +15,36 @@ export type dbProviderType = <T>(
 ) => Promise<T | undefined>;
 
 const dbs: Record<string, dbType> = {};
+
+function parseConnectionString(connectionString: string): { connectionParameters: IConnectionParameters, key: string } {
+  const m = connectionString.match(/^postgres:\/\/((?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
+  if (!m || !m.groups?.user || !m.groups?.host || !m.groups?.database || !m.groups?.password) {
+    throw new Error('Invalid connection string: ' + connectionString);
+  }
+  const user = m.groups.user;
+  const host = m.groups.host;
+  const port = +(m.groups.port || '5432');
+  const database = m.groups.database;
+
+  debug('DB: %s@%s:%s/%s', user, host, port, database);
+
+  const password = m.groups.password;
+  const connectionParameters: IConnectionParameters = {
+    application_name: 'ems',
+    database,
+    host,
+    port,
+    user,
+    password,
+    ssl: host === 'localhost' ? false : {rejectUnauthorized: false},
+  };
+  const key = `user ${user}, host ${host}:${port} db ${database}`;
+  return {connectionParameters, key};
+}
+
+export const internal = {parseConnectionString};
+
+// istanbul ignore next
 export function dbProviderCtor(connectionString: string): dbProviderType {
   async function dbProvider<T>(
     auditUser: string,
@@ -36,28 +66,7 @@ export function dbProviderCtor(connectionString: string): dbProviderType {
           }
         },
     };
-    const m = connectionString.match(/^postgres:\/\/((?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
-    if (!m || !m.groups?.user || !m.groups?.host || !m.groups?.database || !m.groups?.password) {
-      throw new Error('Invalid connection string: ' + connectionString);
-    }
-    const user = m.groups.user;
-    const host = m.groups.host;
-    const port = +(m.groups?.port || '5432');
-    const database = m.groups.database;
-
-    debug('DB: %s@%s:%s/%s', user, host, port, database);
-
-    const password = m.groups.password;
-    const connectionParameters: IConnectionParameters = {
-      application_name: 'ems',
-      database,
-      host,
-      port,
-      user,
-      password,
-      ssl: host === 'localhost' ? false : {rejectUnauthorized: false},
-    };
-    const key = `user ${user}, host ${host}:${port} db ${database}`;
+    const {connectionParameters, key} = parseConnectionString(connectionString);
     if (!dbs[key]) {
       debug('db connect:', key);
       dbs[key] = pgPromise<Ext>(pgPromiseOptions)(connectionParameters);

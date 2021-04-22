@@ -19,7 +19,7 @@
     "core-js": "^3.10.0",
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "ts_browser": "link:../../../../lib/ts_browser",
-    "register-service-worker": "^1.7.1",
+    "vue_workflow": "link:../../../../lib/vue_workflow",
     "vue": "^2.6.11",
     "vuetify": "^2.4.9"
   },

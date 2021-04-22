@@ -20,7 +20,7 @@ export type ctxBaseType = {
   sessionId: string;
   settings: serverSettingsType;
   session: Record<string, serializableType>;
-  permission?: { [name: string]: boolean };
+  permission?: Record<string, boolean>;
   user?: userInfoType;
   db: dbProviderCtx;
   dbProvider: dbProviderType;

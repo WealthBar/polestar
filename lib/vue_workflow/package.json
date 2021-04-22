@@ -1,27 +1,25 @@
 {
-  "name": "signup",
+  "name": "vue_workflow",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "test:unit": "vue-cli-service test:unit",
-    "lint": "eslint src --ext .ts"
-  },
+  "description": "vue_workflow",
+  "repository": "git@github.com:wealthbar/polestar",
+  "author": "developers@wealthbar.com",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "private": false,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-brands-svg-icons": "^5.15.3",
     "@fortawesome/free-regular-svg-icons": "^5.15.3",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
-    "@fortawesome/free-brands-svg-icons": "^5.15.3",
     "@fortawesome/vue-fontawesome": "^2.0.2",
     "axios": "^0.21.1",
-    "core-js": "^3.10.0",
-    "ts_agnostic": "link:../../../../lib/ts_agnostic",
-    "ts_browser": "link:../../../../lib/ts_browser",
+    "core-js": "^3.10.2",
+    "immer": "^9.0.1",
+    "ts_agnostic": "link:../ts_agnostic",
     "vue": "^2.6.12",
-    "vue-router": "^3.5.1",
-    "vue-typed-mixins": "^0.2.0",
-    "vuetify": "^2.4.9"
+    "vuetify": "^2.4.11"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
@@ -46,5 +44,10 @@
     "typescript": "^4.2.3",
     "vue-template-compiler": "^2.6.12",
     "@vue/composition-api": "^1.0.0-rc.6"
+  },
+  "scripts": {
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
+    "coverage": "yarn test; open coverage/index.html",
+    "test": "NODE_ENV=test nyc mocha"
   }
 }
