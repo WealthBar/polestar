@@ -13,6 +13,7 @@ jobs:
     env:
       CI_COMMIT_SHA: ${{ github.sha }}
       APP_NAME: polestar
+      CONFIG_ENV: ci
 
     steps:
       - name: Checkout
