@@ -35,7 +35,8 @@ jobs:
       - name: Setup database db/formation
         working-directory: ./db/formation
         run: |
-          ./setup
+          echo "$DB_FORMATION_SUPER_URL"
+          ./s etup
       # Replace with matrix loop
       # - name: Test App project/formation/site/app
       #   working-directory: ./project/formation/site/app
