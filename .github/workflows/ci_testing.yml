@@ -31,12 +31,14 @@ jobs:
         run: |
           source ./config.sh ci
 
+      - name: Output DB URL
+        run: echo $DB_FORMATION_SUPER_URL
+
       # Replace with matrix loop
       - name: Setup database db/formation
         working-directory: ./db/formation
         run: |
-          echo "$DB_FORMATION_SUPER_URL"
-          ./s etup
+          ./setup
       # Replace with matrix loop
       # - name: Test App project/formation/site/app
       #   working-directory: ./project/formation/site/app
