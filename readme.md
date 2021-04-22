@@ -9,7 +9,7 @@ The primary goals are to:
 
 # SameSite Crap
 
-If you are using Chrome goto: chrome://flags and disable "Cookies without SameSite must be secure". For some _stupid_ 
+If you are using Chrome goto: chrome://flags and disable "Cookies without SameSite must be secure". For some _stupid_
 reason chrome enforces this on `.local` domains.
 
 FireFox is smart enough to not screw this up.
@@ -179,7 +179,7 @@ $ sudo launchctl stop homebrew.mxcl.dnsmasq
 $ sudo launchctl start homebrew.mxcl.dnsmasq
 ```
 
-In `System Preferences -> Network -> Advanced -> DNS` add `127.0.0.1` as your first DNS server 
+In `System Preferences -> Network -> Advanced -> DNS` add `127.0.0.1` as your first DNS server
 entry (be sure to have your second entry as your original DNS server).
 
 If you have both WiFi and wired you’ll need to update both network interface settings.
@@ -197,10 +197,10 @@ google.com.             159     IN      A       216.58.217.46
 and
 
 ```
-$ dig asdf.dev
+$ dig asdf.xxx
 ...
 ;; ANSWER SECTION:
-asdf.dev.             0       IN      A       127.0.0.1
+asdf.xxx.             0       IN      A       127.0.0.1
 ...
 ```
 
@@ -217,13 +217,14 @@ If you already have Postgres.app installed, click on the task bar icon (the litt
 
 1. Switch to Node 15: `nvm install 15`
 2. Run script: `./init.sh`
+3. Install dev runner globally `npm i -g @vue/cli`
 
 If node 15 is already installed, you can `nvm use 15` instead of `install`ing it. You may want to set 15 as a default so you don't have to `use` every time: `nvm alias default 15`.
 
 ## Configuration
 
-2. Unlock encrypted secrets: `git-crypt unlock ~/<path>/polestar.key`
-1. Run config script: `. ./config.sh`
+1. Unlock encrypted secrets: `git-crypt unlock ~/<path>/polestar.key`
+2. Run config script: `. ./config.sh`
 
 ## Startup overmind
 
@@ -249,7 +250,7 @@ Access via: `http://smtp.dev:37408`
 
 `db/hello` has the start of the db setup work.
 
-A DB could be shared by many other projects it has to be external to any given project and managed as 
+A DB could be shared by many other projects it has to be external to any given project and managed as
 its own _thing_. "Deployment" for a DB is either initial setup, or the incremental application of
 a schema migrations, or the alternation of data.
 
@@ -262,7 +263,7 @@ db/<domain>/
  setup # shell script to setup initial DB
  schema/
    ... # files used by setup to initialize the schema
- up # script to apply migrations  
+ up # script to apply migrations
  migration/
   <tz>.sql
  seed/(main|project|local)/
