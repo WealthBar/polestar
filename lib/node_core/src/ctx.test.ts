@@ -46,7 +46,7 @@ describe('ctxCtor', () => {
     assert.deepStrictEqual(ctx.cookie, []);
   });
 
-  it('no query params', async () => {
+  it('no query params', () => {
     assert.deepStrictEqual(_internal_.parseUrl('/hello'), {path: '/hello', params: []});
   });
 

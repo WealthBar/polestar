@@ -46,13 +46,6 @@ describe('parseDbTimeStampTZ', () => {
     assert.strictEqual(result?.year, 2021);
     assert.strictEqual(result?.month, 4);
   });
-
-  // NOTE: there's a try/catch around the call to Luxon.
-  // The catch remains untested because I can't get Luxon to error.
-  // If I pass is junk, it comes back with a Luxon datetime object with a key saying it was unparsable.
-  // This may mean that consumers have to check for unparsable status before using the object.
-  // It might be worthwhile to throw if unparseable?
-  // Same goes for parseDbMilliseconds.
 });
 
 describe('parseDbMilliseconds', () => {

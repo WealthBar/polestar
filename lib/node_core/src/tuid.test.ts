@@ -24,3 +24,10 @@ describe('tuid', () => {
     }
   });
 });
+
+describe('tuidEpochMicro', () => {
+  it('returns undefined if the TUID cannot be parsed', () => {
+    assert.strictEqual(tuidEpochMicro(''), undefined);
+    assert.strictEqual(tuidEpochMicro('foo'), undefined);
+  });
+});
