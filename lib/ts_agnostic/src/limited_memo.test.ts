@@ -43,8 +43,11 @@ describe('limitedMemoFCtorCtor', () => {
     assert.strictEqual(await limitedMemoF('bar'), 'computer says bar');
     assert.strictEqual(fStub.callCount, 3);
 
-    // If we clear the memos, we should expect any subsequent calls to be newly computed
+    // If we clear the memos, they're all gone
     limitedMemoF.clear();
+    assert.deepStrictEqual(limitedMemoF.internal.memos, {});
+
+    // In order to test invalidate(), we'll set up two memos at different times
     assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
     assert.strictEqual(fStub.callCount, 4);
     getTimeStub.returnValue = 250
@@ -55,12 +58,9 @@ describe('limitedMemoFCtorCtor', () => {
     // but within the valid period for bar
     getTimeStub.returnValue = 325;
     limitedMemoF.invalidate();
-    assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
-    assert.strictEqual(fStub.callCount, 6);
-    assert.strictEqual(await limitedMemoF('bar'), 'computer says bar');
-    assert.strictEqual(fStub.callCount, 6);
-
-    // Note: the above call to invalidate() doesn't affect the return result or the calling behaviour
-    // it just increases reported test coverage
+    assert.deepStrictEqual(
+      limitedMemoF.internal.memos, 
+      { barKey: { r: 'computer says bar', at: 250 } },
+    );
   });
 });

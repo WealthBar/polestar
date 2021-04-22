@@ -7,6 +7,7 @@ export type limitedMemoFCtorType = <TP, TR>(
   ) & {
   invalidate(): void;
   clear(): void;
+  internal: { readonly memos: Record<string, { at: number; r: TR }> };
 };
 
 // dep wrapper, return a limitedMemoFCtor
@@ -17,16 +18,15 @@ export function limitedMemoFCtorCtor(
     maxTimeToHoldResultForMs: number,
     f: (params: TP) => Promise<TR>,
     toKey: (params: TP) => string,
-  ): ((params: TP) => Promise<TR>) & { invalidate(): void; clear(): void; } {
+  ): ((params: TP) => Promise<TR>) & { invalidate(): void; clear(): void; internal: { readonly memos: Record<string, { at: number; r: TR }> }} {
     // using let allows clear to wholesale replace the memos
-    let memos: { [key: string]: { at: number; r: TR } } = {};
-
+    let memos: Record<string, { at: number; r: TR }> = {};
     async function limitedMemoF(params: TP): Promise<TR> {
       const key = toKey(params);
       const now = getTime();
       // if we're got a recent result
       if (memos[key] && (now - memos[key].at < maxTimeToHoldResultForMs)) {
-        return memos[key].r; // return the recent result
+        return memos[key].r; // result the recent result
       }
       // get a new result
       const r = await f(params);
@@ -38,11 +38,9 @@ export function limitedMemoFCtorCtor(
       // return it
       return r;
     }
-
     limitedMemoF.clear = () => {
       memos = {};
     };
-
     limitedMemoF.invalidate = () => {
       const now = getTime();
       for (const key of Object.keys(memos)) {
@@ -51,6 +49,11 @@ export function limitedMemoFCtorCtor(
           delete memos[key];
         }
       }
+    };
+    limitedMemoF.internal = {
+      get memos() {
+        return memos;
+      },
     };
     return limitedMemoF;
   }
