@@ -1,9 +1,8 @@
-import {_internal_, ctxCtor, ctxSetDb, ctxBody} from './ctx';
+import {_internal_, ctxCtor, ctxBody, ctxHost} from './ctx';
 import * as assert from 'assert';
 import {ctxType, serverSettingsType} from './server.type';
 import {dbProviderStub} from './db';
 import * as sinon from 'sinon';
-import {resolvedUndefined} from 'ts_agnostic';
 
 function commonChecks(ctx: ctxType, res: any, req: any) {
   assert.strictEqual(ctx.sessionId, '');
@@ -147,5 +146,33 @@ describe('ctxBody', () => {
     assert.strictEqual(ctxStub.res.statusCode, 413);
     sinon.assert.calledOnceWithExactly(ctxStub.res.setHeader, 'Content-Type', 'text/plain');
     sinon.assert.calledOnceWithExactly(ctxStub.res.end);
+  });
+});
+
+describe('ctxHost', () => {
+  it('does nothing if there is already host', async () => {
+    const ctxStub = {
+      host: 'domain.tld',
+      req: <any>{},
+      res: <any>{},
+    }
+
+    assert.strictEqual(ctxHost(ctxStub), undefined);
+    assert.strictEqual(ctxStub.host, 'domain.tld');
+  });
+
+  it('sets ctx.host', async () => {
+    const ctxStub = {
+      host: undefined,
+      req: <any>{
+        headers: {
+          host: 'sub.domain.tld'
+        },
+      },
+      res: <any>{},
+    }
+
+    assert.strictEqual(ctxHost(ctxStub), undefined);
+    assert.strictEqual(ctxStub.host, 'domain.tld');
   });
 });
