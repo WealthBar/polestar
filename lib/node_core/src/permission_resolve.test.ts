@@ -40,4 +40,12 @@ describe('permissionResolve', () => {
       '+permissionC': true,
     });
   });
+
+  it('errors if an unrocognized permission is passed', () => {
+    const result = permissionResolve([
+      {relation_type: 'foo', permission_name: 'permissionA'},
+    ]);
+
+    assert.deepStrictEqual(result, {});
+  });
 });
