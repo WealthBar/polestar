@@ -7,14 +7,16 @@ describe('rateLimitCtor', () => {
     const getTimeStub = () => getTimeStub.returnValue;
     getTimeStub.returnValue = 1000;
 
-    const setTimeoutStub = (callback) => {
+    const setTimeoutStub = (callback, delay) => {
       setTimeoutStub.callback = callback;
+      setTimeoutStub.delay = delay;
       setTimeoutStub.callCount++;
       return setTimeoutStub.handle++;
     }
-    setTimeoutStub.handle = 1;
     setTimeoutStub.callback = () => undefined;
+    setTimeoutStub.delay = null;
     setTimeoutStub.callCount = 0;
+    setTimeoutStub.handle = 1;
 
     // rateLimiterCtor returns a rate limiter function.
     const rateLimit = rateLimitCtor(getTimeStub, setTimeoutStub);
@@ -39,6 +41,7 @@ describe('rateLimitCtor', () => {
     getTimeStub.returnValue = 1010;
     rateLimitedF();
     assert.strictEqual(setTimeoutStub.callCount, 1);
+    assert.strictEqual(setTimeoutStub.delay, 90);
     assert.strictEqual(fStub.callCount, 1);
 
     // If we call the rate-limited wrapper a third time before the rate is up, the call will be dropped
@@ -67,14 +70,16 @@ describe('rateLimitEmitLastCtor', () => {
     const getTimeStub = () => getTimeStub.returnValue;
     getTimeStub.returnValue = 1000;
 
-    const setTimeoutStub = (callback) => {
+    const setTimeoutStub = (callback, delay) => {
       setTimeoutStub.callback = callback;
+      setTimeoutStub.delay = delay;
       setTimeoutStub.callCount++;
       return setTimeoutStub.handle++;
     }
+    setTimeoutStub.callback = () => undefined;
+    setTimeoutStub.delay = null;
     setTimeoutStub.callCount = 0;
     setTimeoutStub.handle = 1;
-    setTimeoutStub.callback = () => undefined;
 
     // rateLimitEmitLastCtor returns a rate limiter function
     const rateLimitEmitLast = rateLimitEmitLastCtor(getTimeStub, setTimeoutStub);
@@ -107,6 +112,7 @@ describe('rateLimitEmitLastCtor', () => {
     getTimeStub.returnValue = 1010;
     await rateLimitedF('second call');
     assert.strictEqual(setTimeoutStub.callCount, 1);
+    assert.strictEqual(setTimeoutStub.delay, 90);
     assert.strictEqual(fStub.callCount, 1);
     
     // If we call the rate-limited wrapper a third time before the rate is up, the deferred call should be set to use this argument instead
@@ -137,6 +143,7 @@ describe('rateLimitEmitLastCtor', () => {
     getTimeStub.returnValue = 1010;
     await rateLimitedF('second call'); // will be deferred, just like the above test
     assert.strictEqual(setTimeoutStub.callCount, 1); // that's normal
+    assert.strictEqual(setTimeoutStub.delay, 90);
 
     getTimeStub.returnValue = 2000; // well past the rate limit
     setTimeoutStub.callback(); // simulating a long-running callback to set up the problemastic race condition
