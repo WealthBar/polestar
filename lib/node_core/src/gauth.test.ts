@@ -16,7 +16,7 @@ const settings = {
 };
 
 describe('gauthInit', () => {
-  it('basics', async () => {
+  it('Basics', async () => {
     const secureTokenCtor = sinon.stub();
     secureTokenCtor.returns('stoken');
 
@@ -53,7 +53,7 @@ describe('gauthInit', () => {
       });
   });
 
-  it('ignores others paths', async () => {
+  it('Ignores others paths', async () => {
     const secureTokenCtor = sinon.stub();
 
     const subject = gauthInitCtor(settings, secureTokenCtor);

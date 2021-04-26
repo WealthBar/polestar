@@ -46,50 +46,25 @@ describe('ctxCtor', () => {
     assert.deepStrictEqual(ctx.cookie, []);
   });
 
-  it('no query params', () => {
+  it('No query params', () => {
     assert.deepStrictEqual(_internal_.parseUrl('/hello'), {path: '/hello', params: []});
   });
 
-  it('no cookie', async () => {
+  it('No cookie', () => {
     assert.deepStrictEqual(_internal_.parseCookie(''), []);
   });
 
-  it('bad cookie', () => {
+  it('Bad cookie', () => {
     assert.deepStrictEqual(_internal_.parseCookie('a=; b; '), [['a', ''], ['b', ''], ['', '']]);
   });
 
-  it('bad params', () => {
+  it('Bad params', () => {
     assert.deepStrictEqual(_internal_.parseUrl('?c&d=&'), {path: '/', params: [['c', ''], ['d', ''], ['', '']]});
   });
 });
 
 describe('ctxBody', () => {
-  it('resolves true if there is a body', async () => {
-    const ctxStub = {
-      body: "Shredder!! Why haven't you completed my new body!?",
-      req: <any>{},
-      res: <any>{},
-    }
-
-    assert.strictEqual(await ctxBody(ctxStub), true);
-  });
-
-  it('resolves false if there is no body and the request is not a POST', async () => {
-    const ctxStub = {
-      req: <any>{},
-      res: <any>{
-        setHeader: sinon.stub(),
-        end: sinon.stub(),
-      },
-    }
-
-    assert.strictEqual(await ctxBody(ctxStub), false);
-    assert.strictEqual(ctxStub.res.statusCode, 405);
-    sinon.assert.calledOnceWithExactly(ctxStub.res.setHeader, 'Content-Type', 'text/plain');
-    sinon.assert.calledOnceWithExactly(ctxStub.res.end);
-  });
-
-  it('returns true if there is no body, the request is a POST, and the request length is acceptable', async () => {
+  it('Sets ctx.body', async () => {
     const onStub = (step, callback) => {
       if (step === 'data') {
         callback('chunk_mock');
@@ -117,8 +92,33 @@ describe('ctxBody', () => {
     assert.strictEqual(ctxStub.req.on.callCount, 2);
     assert.strictEqual(ctxStub.body, 'chunk_mock');
   });
+  
+  it('Resolves true if there is already a ctx.body', async () => {
+    const ctxStub = {
+      body: "Shredder!! Why haven't you completed my new body!?",
+      req: <any>{},
+      res: <any>{},
+    }
 
-  it('returns false if there is no body and the request is a POST, but the request is too long', async () => {
+    assert.strictEqual(await ctxBody(ctxStub), true);
+  });
+
+  it('Resolves false if there is no ctx.body and the request is not a POST', async () => {
+    const ctxStub = {
+      req: <any>{},
+      res: <any>{
+        setHeader: sinon.stub(),
+        end: sinon.stub(),
+      },
+    }
+
+    assert.strictEqual(await ctxBody(ctxStub), false);
+    assert.strictEqual(ctxStub.res.statusCode, 405);
+    sinon.assert.calledOnceWithExactly(ctxStub.res.setHeader, 'Content-Type', 'text/plain');
+    sinon.assert.calledOnceWithExactly(ctxStub.res.end);
+  });
+
+  it('Returns false if there is no ctx.body and the request is a POST, but the request is too long', async () => {
     const onStub = (step, callback) => {
       if (step === 'data') {
         callback('large_chunk_mock');
@@ -150,18 +150,7 @@ describe('ctxBody', () => {
 });
 
 describe('ctxHost', () => {
-  it('does nothing if there is already host', async () => {
-    const ctxStub = {
-      host: 'domain.tld',
-      req: <any>{},
-      res: <any>{},
-    }
-
-    assert.strictEqual(ctxHost(ctxStub), undefined);
-    assert.strictEqual(ctxStub.host, 'domain.tld');
-  });
-
-  it('sets ctx.host', async () => {
+  it('Sets ctx.host', async () => {
     const ctxStub = {
       host: undefined,
       req: <any>{
@@ -169,6 +158,17 @@ describe('ctxHost', () => {
           host: 'sub.domain.tld'
         },
       },
+      res: <any>{},
+    }
+
+    assert.strictEqual(ctxHost(ctxStub), undefined);
+    assert.strictEqual(ctxStub.host, 'domain.tld');
+  });
+
+  it('Does nothing if there is already a host', async () => {
+    const ctxStub = {
+      host: 'domain.tld',
+      req: <any>{},
       res: <any>{},
     }
 

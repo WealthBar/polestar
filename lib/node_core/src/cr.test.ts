@@ -101,7 +101,7 @@ describe('cr', () => {
 });
 
 describe('crServerSetup', () => {
-  it('throws an error if the HPN is bad', () => {
+  it('Throws an error if the HPN is bad', () => {
     try {
       crServerSetup('definitely not a valid HPN');
     } catch(e) {
@@ -111,12 +111,12 @@ describe('crServerSetup', () => {
 });
 
 describe('crServerVerify', () => {
-  it('returns false if the stoken cannot be verified', () => {
+  it('Returns false if the stoken cannot be verified', () => {
     assert.strictEqual(crServerVerify('fb64', 'r', 'q', 'secret'), false);
   });
 
-  it('returns false if the stuid is not old enough', () => {
-    // setup based on 'basics' test,
+  it('Returns false if the stuid is not old enough', () => {
+    // setup based on 'basics' test
     const secret = 'asdf';
     const password = 'testing123';
     const {nb64} = crServerSetupInit();

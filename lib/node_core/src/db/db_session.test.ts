@@ -41,7 +41,7 @@ describe('sessionCreate', () => {
     return {ctxStub, dbProviderStub, dbStub};
   }
 
-  it('Happy path', async () => {
+  it('happy path', async () => {
     const {ctxStub, dbProviderStub, dbStub} = setup({session_id: 'session_id_mock'});
     
     await sessionCreate(ctxStub);
