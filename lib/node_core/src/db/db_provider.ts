@@ -1,3 +1,6 @@
+// istanbul ignore file
+// -- bootstrap
+
 import * as pgPromise from 'pg-promise';
 import debugCtor = require('debug');
 import {IConnectionParameters} from 'pg-promise/typescript/pg-subset';

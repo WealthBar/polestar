@@ -16,6 +16,8 @@ export function parseDbTimeStampTZ(datetime?: string): DateTime | undefined {
   try {
     return DateTime.fromISO(datetime);
   } catch {
+    // istanbul ignore next
+    // -- can't get Luxon to error in testing.
     return undefined;
   }
 }
@@ -27,6 +29,8 @@ export function parseDbMilliseconds(ms?: string): Duration | undefined {
   try {
     return Duration.fromMillis(+ms);
   } catch {
+    // istanbul ignore next
+    // -- can't get Luxon to error in testing.
     return undefined;
   }
 }

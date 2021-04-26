@@ -95,7 +95,7 @@ export function gauthContinueCtor(
       const userData = jwtTrustedDecode(r.data.id_token as string) as gauthUserInfoType;
       await onUserData(ctx, userData, JSON.stringify(r.data));
       if (!ctx.user?.login) {
-        ctx.res.writeHead(403, "User not found.");
+        ctx.res.writeHead(403, 'User not found.');
       } else {
         ctx.res.writeHead(303, {Location: settings.appUrl});
       }

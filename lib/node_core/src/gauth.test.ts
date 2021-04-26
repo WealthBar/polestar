@@ -16,7 +16,7 @@ const settings = {
 };
 
 describe('gauthInit', () => {
-  it('basics', async () => {
+  it('Basics', async () => {
     const secureTokenCtor = sinon.stub();
     secureTokenCtor.returns('stoken');
 
@@ -53,7 +53,7 @@ describe('gauthInit', () => {
       });
   });
 
-  it('ignores others paths', async () => {
+  it('Ignores others paths', async () => {
     const secureTokenCtor = sinon.stub();
 
     const subject = gauthInitCtor(settings, secureTokenCtor);
@@ -78,11 +78,9 @@ describe('gauthInit', () => {
 });
 
 describe('gauthContinue', () => {
-  it('basics', async () => {
-    const secureTokenVerify = sinon.stub();
-    const userVivify = sinon.stub();
-
-    const poster = sinon.stub();
+  const setup = (userLogin) => {
+    const secureTokenVerify = sinon.stub().returns('stoken');
+    const userVivify = sinon.stub().resolves('user_id');
 
     const idTokenJson: gauthUserInfoType = {
       email: 'a@example.com',
@@ -93,20 +91,13 @@ describe('gauthContinue', () => {
       locale: 'en-us',
       picture: 'http://example.com/picture',
     };
-
     let axiosData = {
       id_token: '{}.' + Buffer.from(JSON.stringify(idTokenJson)).toString('base64') + '.sig',
       other: 'stuff',
     };
-
-    poster.resolves({
+    const poster = sinon.stub().resolves({
       data: axiosData,
     });
-
-    userVivify.resolves('user_id');
-    secureTokenVerify.returns('stoken');
-
-    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, poster);
 
     const ctx: any = {
       url: {
@@ -119,8 +110,50 @@ describe('gauthContinue', () => {
         setHeader: sinon.stub(),
       },
       session: {},
+      user: { login: userLogin },
     };
 
+    return {secureTokenVerify, userVivify, poster, ctx, idTokenJson, axiosData}
+  }
+
+  it('Happy Path', async () => {
+    const {secureTokenVerify, userVivify, poster, ctx, idTokenJson, axiosData} = setup('user_login_mock');
+
+    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, poster);
+    await subject(ctx);
+
+    sinon.assert.calledOnceWithExactly(
+      poster,
+      'https://oauth2.googleapis.com/token',
+      'code=4code'
+      + '&client_id=gid'
+      + '&redirect_uri=uri'
+      + '&client_secret=gs'
+      + '&grant_type=authorization_code'
+      ,
+      {headers: {'Content-Type': 'application/x-www-form-urlencoded'}},
+    );
+
+    sinon.assert.calledOnceWithExactly(
+      userVivify,
+      ctx,
+      idTokenJson,
+      JSON.stringify(axiosData),
+    );
+
+    sinon.assert.calledOnceWithExactly(
+      ctx.res.writeHead,
+      303,
+      {Location: '/app'},
+    );
+
+    sinon.assert.calledOnce(ctx.res.end);
+  });
+
+  it('No user', async () => {
+    const {secureTokenVerify, userVivify, poster, ctx, idTokenJson, axiosData} = setup(undefined);
+
+    const subject = gauthContinueCtor(settings, secureTokenVerify, userVivify, poster);
     await subject(ctx);
 
     sinon.assert.calledOnceWithExactly(
@@ -145,13 +178,13 @@ describe('gauthContinue', () => {
     sinon.assert.calledOnceWithExactly(
       ctx.res.writeHead,
       403,
-      "User not found.",
+      'User not found.',
     );
 
     sinon.assert.calledOnce(ctx.res.end);
   });
 
-  it('handles invalid jwt', async () => {
+  it('Handles invalid jwt', async () => {
     const secureTokenVerify = sinon.stub();
     const userVivify = sinon.stub();
 
@@ -205,7 +238,7 @@ describe('gauthContinue', () => {
     ctx.res.end.args[0][0].startsWith("Invalid Request");
   });
 
-  it('handles invalid stoken', async () => {
+  it('Handles invalid stoken', async () => {
     const secureTokenVerify = sinon.stub();
     const userVivify = sinon.stub();
     const axios: any = {
@@ -239,7 +272,7 @@ describe('gauthContinue', () => {
     sinon.assert.calledOnceWithExactly(ctx.res.end, "Invalid Request");
   });
 
-  it('ignores other paths', async () => {
+  it('Ignores other paths', async () => {
     const secureTokenVerify = sinon.stub();
     const userVivify = sinon.stub();
 
