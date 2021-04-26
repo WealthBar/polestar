@@ -1,82 +1,66 @@
-import * as sinon from 'sinon';
 import * as assert from 'assert';
-import {limitedMemoFCtor} from './limited_memo';
+import {limitedMemoFCtorCtor, limitedMemoFCtorType} from './limited_memo';
 
-describe('limitedMemoFCtor', () => {
-  it('memoizes results', async () => {
-    const fStub = sinon.stub();
-    fStub.withArgs('foo').returns('computer says foo');
-    fStub.withArgs('bar').returns('computer says bar');
-    const toKeyStub = sinon.stub();
-    toKeyStub.returnsArg(0);
-    const memoizedFunc = limitedMemoFCtor(5, fStub, toKeyStub);
+describe('limitedMemoFCtorCtor', () => {
+  it('Memoizes', async () => {
+    const getTimeStub = () => getTimeStub.returnValue
+    getTimeStub.returnValue = 0
 
-    let result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 1);
-    
-    result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 1);
+    // The file under test exports limitedMemoFCtor
+    // but in this case we need to do it ourselves so we can control time
+    const limitedMemoFCtor:limitedMemoFCtorType = limitedMemoFCtorCtor(getTimeStub);
+    const maxTimeToHoldResultForMs = 100;
+    const fStub = (param) => {
+      fStub.callCount++;
+      return new Promise((r) => r('computer says ' + param));
+    }
+    fStub.callCount = 0;
+    const toKeyStub = (param) => param + 'Key'
 
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 2);
+    // We call the constructor to get a memoized wrapper around fStub
+    const limitedMemoF = limitedMemoFCtor(
+      maxTimeToHoldResultForMs,
+      fStub,
+      toKeyStub,
+    );
+    assert.strictEqual(typeof limitedMemoF, 'function');
 
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 2);
+    // Okay, finally ready to test our memoized function
+    assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
+    assert.strictEqual(fStub.callCount, 1);
 
-    // If we clear the cache, we should see fStub get called again
-    memoizedFunc.clear();
+    // Call it again within the memoization timeframe...
+    getTimeStub.returnValue = 10
+    assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
+    assert.strictEqual(fStub.callCount, 1);
 
-    result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 3);
-    
-    result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 3);
+    // and outside the memoization timeframe
+    getTimeStub.returnValue = 200
+    assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
+    assert.strictEqual(fStub.callCount, 2);
 
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 4);
+    // If we call with a different param, limitedMemoF will end up with two results memoized
+    assert.strictEqual(await limitedMemoF('bar'), 'computer says bar');
+    assert.strictEqual(fStub.callCount, 3);
 
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 4);
+    // If we clear the memos, they're all gone
+    limitedMemoF.clear();
+    assert.deepStrictEqual(limitedMemoF.internal.memos, {});
 
-    // We're not past the maxTime yet, so invalidating should do nothing
-    memoizedFunc.invalidate();
+    // In order to test invalidate(), we'll set up two memos at different times
+    assert.strictEqual(await limitedMemoF('foo'), 'computer says foo');
+    assert.strictEqual(fStub.callCount, 4);
+    getTimeStub.returnValue = 250
+    assert.strictEqual(await limitedMemoF('bar'), 'computer says bar');
+    assert.strictEqual(fStub.callCount, 5);
 
-    result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 4);
-
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 4);
-
-    // If we wait until after the maxTime has elapsed and THEN invalidate,
-    // we should see the same result as when we called clear().
-    // (because both memoized results are the same age)
-    await new Promise(r => setTimeout(r, 10));
-    memoizedFunc.invalidate();
-  
-    result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 5);
-    
-    result = await memoizedFunc('foo');
-    assert.strictEqual(result, 'computer says foo');
-    sinon.assert.callCount(fStub, 5);
-
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 6);
-
-    result = await memoizedFunc('bar');
-    assert.strictEqual(result, 'computer says bar');
-    sinon.assert.callCount(fStub, 6);
+    // Let's jump forward so we're past the valid period for foo but within the valid period for bar
+    // if we invalidate the memos, the old foo memo is gone but the recent bar memo remains
+    getTimeStub.returnValue = 325;
+    limitedMemoF.invalidate();
+    assert.deepStrictEqual(
+      limitedMemoF.internal.memos, 
+      { barKey: { r: 'computer says bar', at: 250 } },
+    );
   });
 });

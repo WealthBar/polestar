@@ -1,24 +1,29 @@
-export function rateLimitCtor(getTime: () => number, setTimeout: (f: () => void, ms: number) => number) {
-  return function rateLimit(ms: number, f: () => void): () => void {
-    let last = getTime() - ms;
+export function rateLimitCtor(
+  getTime: () => number,
+  setTimeout: (f: () => void, delayBetweenCallsMs: number) => number
+) {
+  return function rateLimit(delayBetweenCallsMs: number, f: () => void): () => void {
+    let last = getTime() - delayBetweenCallsMs;
     let timeoutHandle: number | undefined;
-    return () => {
+
+    const rateLimitedF = () => {
       if (timeoutHandle) {
         return; // f() already scheduled to run in the future.
       }
       const now = getTime();
       const since = now - last;
-      if (since < ms) { // too soon, schedule to run in the future
+      if (since < delayBetweenCallsMs) { // too soon, schedule to run in the future
         timeoutHandle = setTimeout(() => {
           f();
           last = getTime(); // update to time when called.
           timeoutHandle = undefined;
-        }, ms - since);
-      } else {
+        }, delayBetweenCallsMs - since);
+      } else { // long enough since last call, call f() directly.
         last = now;
-        f(); // long enough since last call, call f() directly.
+        f(); 
       }
     };
+    return rateLimitedF;
   };
 }
 
@@ -29,7 +34,11 @@ export function rateLimitEmitLastCtor(
   // rateLimitEmitLast wraps an async function f and "rate limits" calls to it
   // ensures f is called at most once every delayBetweenCallsMs
   // ensures the last call made to rateLimitedF in the last delayBetweenCallsMs is the one forwarded to callF
-  function rateLimitEmitLast<TP, TR>(delayBetweenCallsMs: number, f: (params: TP) => Promise<TR>, callback: (last: TR) => void): (params: TP) => void {
+  function rateLimitEmitLast<TP, TR>(
+    delayBetweenCallsMs: number,
+    f: (params: TP) => Promise<TR>,
+    callback: (last: TR) => void
+  ): (params: TP) => void {
     let last = getTime() - delayBetweenCallsMs;
     let timeoutHandle: number | undefined;
     let lastParams: TP;
