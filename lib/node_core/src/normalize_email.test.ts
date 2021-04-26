@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {normalizeEmail} from './normalize_email'
 
 describe('normalizeEmail', () => {
-  it('converts to lowercase', () => {
+  it('Converts to lowercase', () => {
     let result = normalizeEmail('JOHNNY@CIDI.TEST');
     assert.strictEqual(result, 'johnny@cidi.test');
 
@@ -10,7 +10,7 @@ describe('normalizeEmail', () => {
     assert.strictEqual(result, 'johnny@cidi.test');
   });
 
-  it('strips periods from the user part only', () => {
+  it('Strips periods from the user part only', () => {
     let result = normalizeEmail('johnny.cash+june@cidi.test.testing');
     assert.strictEqual(result, 'johnnycash+june@cidi.test.testing');
 

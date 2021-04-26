@@ -1,3 +1,6 @@
+// istanbul ignore file
+// -- bootstrap
+
 import {
   ctxReqType,
   ctxWsType,

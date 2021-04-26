@@ -1,2 +1,11 @@
 #!/usr/bin/env bash
+pushd ../../../../lib/ts_agnostic
+./build
+popd
+pushd ../../../../lib/ts_browser
+./build
+popd
+pushd ../../../../lib/vue_workflow
+./build
+popd
 yarn tsc

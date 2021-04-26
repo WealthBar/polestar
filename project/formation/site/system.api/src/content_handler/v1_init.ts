@@ -46,7 +46,11 @@ const initRequired = [
 ];
 
 // subset ctx to the fields we use to make testing easier.
-export async function v1InitHandler(ctx: Pick<ctxType, 'url' | 'body' | 'note' | 'db'> & Object.P.Pick<ctxType, ['res', 'statusCode' | 'setHeader' | 'end']> & Object.P.Pick<ctxType, ['req', 'method' | 'on']>): Promise<void> {
+export async function v1InitHandler(
+ctx: Pick<ctxType, 'url' | 'body' | 'note' | 'db'>
+& Object.P.Pick<ctxType, ['res', 'statusCode' | 'setHeader' | 'end']>
+& Object.P.Pick<ctxType, ['req', 'method' | 'on']>
+): Promise<void> {
   if (!ctx.url.path.startsWith('/v1/init/')) {
     return resolvedVoid;
   }

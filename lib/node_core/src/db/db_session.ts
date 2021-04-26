@@ -50,7 +50,11 @@ export async function sessionVerify(ctx: Pick<ctxBaseType, 'sessionId' | 'sessio
       if (ctx.user) {
         ctx.user.login = result.login;
       } else {
-        ctx.user = {login: result.login, clientProfileId: result.client_profile_id, federatedLoginId: result.federated_login_id};
+        ctx.user = {
+          login: result.login,
+          clientProfileId: result.client_profile_id,
+          federatedLoginId: result.federated_login_id,
+        };
       }
       ctx.session = result.data;
     }
@@ -63,7 +67,7 @@ export async function sessionUpdate(ctx: Pick<ctxBaseType, 'sessionId' | 'sessio
   }
 
   return ctx.dbProvider('-SESSION-', async (db) => {
-    if ( ctx.settings.mode === 'client' ) {
+    if (ctx.settings.mode === 'client') {
       const result = await db.result(
         updateClientSql,
         {

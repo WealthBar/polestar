@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import {permissionResolve} from './permission_resolve'
 
 describe('permissionResolve', () => {
-  it('adds a permission', () => {
+  it('Adds a permission', () => {
     const result = permissionResolve([
       {relation_type: 'add', permission_name: 'permissionA'},
     ]);
@@ -11,7 +11,7 @@ describe('permissionResolve', () => {
     assert.deepStrictEqual(result, {permissionA: true});
   });
 
-  it('removes a permission', () => {
+  it('Removes a permission', () => {
     const result = permissionResolve([
       {relation_type: 'remove', permission_name: 'permissionB'},
     ]);
@@ -19,7 +19,7 @@ describe('permissionResolve', () => {
     assert.deepStrictEqual(result, {});
   });
 
-  it('grants a permission', () => {
+  it('Grants a permission', () => {
     const result = permissionResolve([
       {relation_type: 'add_grant', permission_name: 'permissionC'},
     ]);
@@ -27,7 +27,7 @@ describe('permissionResolve', () => {
     assert.deepStrictEqual(result, { permissionC: true, '+permissionC': true });
   });
 
-  it('handles an array of permissions', () => {
+  it('Handles an array of permissions', () => {
     const result = permissionResolve([
       {relation_type: 'add', permission_name: 'permissionA'},
       {relation_type: 'remove', permission_name: 'permissionB'},
@@ -39,5 +39,13 @@ describe('permissionResolve', () => {
       permissionC: true,
       '+permissionC': true,
     });
+  });
+
+  it('Errors if an unrocognized permission is passed', () => {
+    const result = permissionResolve([
+      {relation_type: 'foo', permission_name: 'permissionA'},
+    ]);
+
+    assert.deepStrictEqual(result, {});
   });
 });

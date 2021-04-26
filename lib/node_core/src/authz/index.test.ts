@@ -22,9 +22,9 @@ function mctx(permission: { [name: string]: boolean }, login?: string): ctxAuthz
 }
 
 describe("authzType", () => {
-
   it("authz.anyOf", () => {
     const ctx = mctx(objSet("A", "B"));
+    assert(!authz.anyOf([])({}));
     assert(!authz.anyOf([])(ctx));
     assert(!authz.anyOf(["C"])(ctx));
     assert(authz.anyOf(["A"])(ctx));
@@ -36,6 +36,7 @@ describe("authzType", () => {
 
   it("authz.allOf", () => {
     const ctx = mctx(objSet("A", "B"));
+    assert(!authz.allOf([])({}));
     assert(!authz.allOf([])(ctx));
     assert(!authz.allOf(["C"])(ctx));
     assert(authz.allOf(["A"])(ctx));

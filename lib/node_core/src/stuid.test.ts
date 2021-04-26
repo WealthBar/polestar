@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {isStuid, stuidCtor, stuidEpochMicro} from './stuid';
 
 describe('stuid', () => {
-  it('increase', () => {
+  it('Increase', () => {
     const bt = Date.now() * 1000;
     const a = [
       stuidCtor(), stuidCtor(), stuidCtor(), stuidCtor(),
@@ -26,5 +26,12 @@ describe('stuid', () => {
       }
       assert(a[i] < a[i + 1], `${a[i]} < ${a[i + 1]}`);
     }
+  });
+});
+
+describe('stuidEpochMicro', () => {
+  it('Returns undefined if the TUID cannot be parsed', () => {
+    assert.strictEqual(stuidEpochMicro(''), undefined);
+    assert.strictEqual(stuidEpochMicro('foo'), undefined);
   });
 });

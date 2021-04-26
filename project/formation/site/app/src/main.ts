@@ -1,6 +1,5 @@
 import Vue from 'vue'
-import App from './app.vue'
-import './register_service_worker'
+import App from './app/index.vue'
 
 Vue.config.productionTip = false
 

@@ -10,13 +10,21 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-brands-svg-icons": "^5.15.3",
+    "@fortawesome/free-regular-svg-icons": "^5.15.3",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/vue-fontawesome": "^2.0.2",
+    "@vue/composition-api": "^1.0.0-rc.6",
+    "axios": "^0.21.1",
     "core-js": "^3.10.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "ts-node": "^9.1.1",
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "ts_browser": "link:../../../../lib/ts_browser",
-    "register-service-worker": "^1.7.1",
-    "vue": "^2.6.11"
+    "vue": "^2.6.12",
+    "vue_workflow": "link:../../../../lib/vue_workflow",
+    "vuetify": "^2.4.9"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
@@ -36,7 +44,7 @@
     "eslint-plugin-vue": "^6.2.2",
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",
-    "typescript": "~4.1.5",
+    "typescript": "^4.2.4",
     "vue-template-compiler": "^2.6.11"
   }
 }

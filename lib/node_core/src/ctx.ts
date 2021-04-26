@@ -8,6 +8,8 @@ import {Object} from 'ts-toolbelt';
 function parseUrl(rawUrl: string): urlType {
   const m = rawUrl.match(/^\/?(?<path>([^/?]\/?)*)(\?(?<params>.*$))?/);
   if (!m || !m.groups) {
+    // istanbul ignore next
+    // -- unreachable branch, but necessary for type safety
     return {path: '/', params: []};
   }
 
