@@ -23,6 +23,7 @@
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "ts_browser": "link:../../../../lib/ts_browser",
     "vue": "^2.6.12",
+    "vue-router": "^3.5.1",
     "vue_workflow": "link:../../../../lib/vue_workflow",
     "vuetify": "^2.4.9"
   },

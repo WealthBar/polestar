@@ -1,0 +1,43 @@
+{
+  "name": "node_workorder",
+  "version": "0.1.0",
+  "description": "Lib functions that are used on the node backend for work orders.",
+  "repository": "git@github.com:wealthbar/polestar",
+  "author": "developers@wealthbar.com",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/lodash": "^4.14.168",
+    "@types/luxon": "^1.25.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^14.14.37",
+    "@types/sinon": "^9.0.9",
+    "@types/ws": "^7.4.0",
+    "axios": "^0.21.1",
+    "bcryptjs": "^2.4.3",
+    "debug": "^4.3.1",
+    "immer": "^9.0.1",
+    "lodash": "^4.17.20",
+    "luxon": "^1.26.0",
+    "minimist": "^1.2.5",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
+    "pg-promise": "^10.9.5",
+    "sinon": "^9.2.1",
+    "sql_to_ts": "link:../../tool/sql_to_ts",
+    "ts-node": "^9.1.1",
+    "ts-toolbelt": "^9.6.0",
+    "ts_agnostic": "link:../ts_agnostic",
+    "typescript": "^4.2.3",
+    "ws": "^7.4.4"
+  },
+  "scripts": {
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",
+    "coverage": "yarn test; open coverage/index.html",
+    "test": "NODE_ENV=test nyc mocha",
+    "sql_to_ts": "node node_modules/sql_to_ts/bin/sql_to_ts.js"
+  }
+}

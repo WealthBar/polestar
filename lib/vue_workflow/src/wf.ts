@@ -1,7 +1,7 @@
 import {woApiType, woMetadataType, woStateType} from './api';
 import {serializableType} from 'ts_agnostic';
 import {cloneDeep} from 'lodash';
-import {ref, reactive, Ref, UnwrapRef} from '@vue/composition-api';
+import {ref, Ref} from '@vue/composition-api';
 
 export type wfType = {
   prev(): Promise<void>;
@@ -20,7 +20,6 @@ export type wfType = {
 
 export function wfCtor(
   woApi: woApiType,
-  initStep: string,
   contextName: string,
   routeReplace: (contentHash: string) => Promise<void>,
   routePush: (contentHash: string) => Promise<void>,
@@ -28,7 +27,7 @@ export function wfCtor(
 ): wfType {
   let woState: woStateType;
   let woMetadata: woMetadataType;
-
+  const initStep = 'init';
   const activeStep = ref(initStep);
   const loading = ref(true);
   const step = ref<Record<string, serializableType>>({});

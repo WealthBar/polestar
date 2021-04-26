@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <router-view></router-view>
+  <div>
+    404 Not Found
   </div>
 </template>
 
@@ -8,7 +8,7 @@
 import {defineComponent} from "@vue/composition-api";
 
 export default defineComponent({
-  name: 'app',
+  name: '404',
 });
 
 </script>
