@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {registryCtor, readonlyRegistryCtor} from './registry';
 
 describe('readonlyRegistryCtor', () => {
-  it('basics', () => {
+  it('Basics', () => {
     let id = 0;
     let value = 100;
     const mk = function () {
@@ -41,7 +41,7 @@ describe('readonlyRegistryCtor', () => {
 });
 
 describe('registryCtor', () => {
-  it('basics', () => {
+  it('Basics', () => {
     const registry = registryCtor<{ id: string, value: number }>();
     let id = 0;
     let value = 100;

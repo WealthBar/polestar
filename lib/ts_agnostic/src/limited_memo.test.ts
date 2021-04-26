@@ -1,14 +1,14 @@
 import * as assert from 'assert';
-import {limitedMemoFCtorCtor} from './limited_memo';
+import {limitedMemoFCtorCtor, limitedMemoFCtorType} from './limited_memo';
 
 describe('limitedMemoFCtorCtor', () => {
-  it('memoizes', async () => {
+  it('Memoizes', async () => {
     const getTimeStub = () => getTimeStub.returnValue
     getTimeStub.returnValue = 0
 
     // The file under test exports limitedMemoFCtor
     // but in this case we need to do it ourselves so we can control time
-    const limitedMemoFCtor = limitedMemoFCtorCtor(getTimeStub);
+    const limitedMemoFCtor:limitedMemoFCtorType = limitedMemoFCtorCtor(getTimeStub);
     const maxTimeToHoldResultForMs = 100;
     const fStub = (param) => {
       fStub.callCount++;
@@ -54,8 +54,8 @@ describe('limitedMemoFCtorCtor', () => {
     assert.strictEqual(await limitedMemoF('bar'), 'computer says bar');
     assert.strictEqual(fStub.callCount, 5);
 
-    // Let's jump forward so we're past the valid period for foo
-    // but within the valid period for bar
+    // Let's jump forward so we're past the valid period for foo but within the valid period for bar
+    // if we invalidate the memos, the old foo memo is gone but the recent bar memo remains
     getTimeStub.returnValue = 325;
     limitedMemoF.invalidate();
     assert.deepStrictEqual(

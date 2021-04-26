@@ -29,7 +29,7 @@ describe('rateLimitCtor', () => {
     return {getTimeStub, setTimeoutStub, fStub, rateLimitedF};
   };
 
-  it('happy path', async () => {
+  it('Happy path', async () => {
     const {getTimeStub, setTimeoutStub, fStub, rateLimitedF} = setup();
 
     // If we call the rate-limited wrapper once, the original function is called right away
@@ -99,7 +99,7 @@ describe('rateLimitEmitLastCtor', () => {
     return {getTimeStub, setTimeoutStub, fStub, rateLimitedF};
   };
 
-  it('happy path', async () => {
+  it('Happy path', async () => {
     const {getTimeStub, setTimeoutStub, fStub, rateLimitedF} = setup();
 
     // If we call the rate-limited wrapper once, the original function is called right away
@@ -135,7 +135,7 @@ describe('rateLimitEmitLastCtor', () => {
     assert.strictEqual(setTimeoutStub.callCount, 1);
   });
 
-  it('edge case, lastParams was updated while we waited on f to complete', async () => {
+  it('Edge case - lastParams was updated while we waited on f to complete', async () => {
     const {getTimeStub, setTimeoutStub, fStub, rateLimitedF} = setup();
     
     await rateLimitedF('first call');
