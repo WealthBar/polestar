@@ -2,8 +2,6 @@
 SELECT
   form_request_id,
   flow_name,
-  brand_name,
-  locale_name
 FROM
   form_request
   JOIN form_key

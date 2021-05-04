@@ -1,7 +1,8 @@
-import {woApiType, woMetadataType, woStateType} from './api';
+import {woApiType} from './api';
 import {serializableType} from 'ts_agnostic';
 import {cloneDeep} from 'lodash';
 import {ref, Ref} from '@vue/composition-api';
+import {woMetadataType, woStateType} from "ts_workorder";
 
 export type wfType = {
   prev(): Promise<void>;
@@ -30,7 +31,6 @@ export function wfCtor(
   const activeStep = ref(initStep);
   const loading = ref(true);
   const step = ref<Record<string, serializableType>>({});
-  const meta = ref<Record<string, serializableType>>({});
   const computed = ref<Record<string, serializableType>>({});
 
   function liftState(): void {

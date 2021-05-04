@@ -4,7 +4,7 @@ import {settings} from "../settings";
 import {contextNameIsValidCtor} from "./context_name_is_valid_ctor";
 import {getDefaultStateCtor} from "../get_default_state_ctor";
 import {commit} from "../commit";
-import {woOpTemplateCtor} from "vue_workflow";
+import {woOpTemplateCtor} from "node_workorder";
 
 export const wsFlowV1Ctor = (
   ns: string,

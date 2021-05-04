@@ -19,6 +19,7 @@
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "debug": "^4.3.1",
+    "eslint": "^7.25.0",
     "immer": "^9.0.1",
     "lodash": "^4.17.20",
     "luxon": "^1.26.0",
@@ -31,6 +32,8 @@
     "ts-node": "^9.1.1",
     "ts-toolbelt": "^9.6.0",
     "ts_agnostic": "link:../ts_agnostic",
+    "ts_workorder": "link:../ts_workorder",
+    "node_core": "link:../node_core",
     "typescript": "^4.2.3",
     "ws": "^7.4.4"
   },

@@ -21,6 +21,7 @@
     "nyc": "^15.1.0",
     "ts-node": "^9.1.1",
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
+    "ts_workorder": "link:../../../../lib/ts_workorder",
     "ts_browser": "link:../../../../lib/ts_browser",
     "vue": "^2.6.12",
     "vue-router": "^3.5.1",

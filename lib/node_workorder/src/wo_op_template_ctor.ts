@@ -1,8 +1,8 @@
 import {dbType} from 'node_core';
 import {serializableType} from 'ts_agnostic';
 import {dbProviderCtxType} from "node_core";
-import {woActionType, woMetadataType, woOpType, woSignType, woStateType} from "./api";
-import {sigCtor} from "node_core/dist/sig";
+import {sigCtor} from "node_core";
+import {woActionType, woMetadataType, woOpType, woSignType, woStateType} from "ts_workorder";
 
 export type woTemplateType = {
   secret: string,

@@ -29,7 +29,7 @@
 <script lang="ts">
 import '../vue_comp';
 import {defineComponent} from '@vue/composition-api';
-import {wfType} from '@/wf';
+import {wfType} from '../wf';
 
 export default defineComponent({
   name: 'wfStep',

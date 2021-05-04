@@ -12,17 +12,12 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
-    "baseUrl": "./src",
+    "rootDir": "./src",
     "types": [
       "webpack-env",
       "mocha",
       "chai"
     ],
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
     "lib": [
       "esnext",
       "dom",

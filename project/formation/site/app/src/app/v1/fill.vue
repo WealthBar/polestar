@@ -4,15 +4,20 @@
       {{ stoken }}
       {{ content_hash }}
     </code>
+    <component
+      :is="flowComponent"
+      :wf="wf"
+    >
+    </component>
   </div>
 </template>
 
 <script lang="ts"> import '@/vue_comp';
 import {defineComponent} from "@vue/composition-api";
 import {router} from "@/router";
-import {wfCtor} from "vue_workflow/dist/wf";
-import {woApiCtor} from "vue_workflow/dist/api";
+import {woApiCtor,wfCtor} from "vue_workflow";
 import {wsApp} from "@/app/ws";
+import {flow} from "@/app/v1/flow";
 
 export default defineComponent({
   name: 'fill',
@@ -21,13 +26,14 @@ export default defineComponent({
     content_hash: {type: String, required: false},
   },
   async setup({stoken, content_hash}: { stoken: string, content_hash?: string }) {
-    const {wfName} = await wsApp.wfName({stoken});
+    const {flowName, formRequestId} = await wsApp.wfFlowInfo({stoken});
 
+    const flowComponent = flow[flowName];
     const wf = wfCtor(
       woApiCtor(wsApp.woOp),
-      `v1/${wfName}/${stoken}`,
-      router.replace,
-      router.push,
+      `v1/${flowName}:${formRequestId}`,
+      (content_hash:string)=>router.replace(`v1/fill/${stoken}/${content_hash}`),
+      (content_hash:string)=>router.push(`v1/fill/${stoken}/${content_hash}`),
       async (msg: string) => {
         console.error(msg)
       },
@@ -35,7 +41,7 @@ export default defineComponent({
 
     await wf.resume(content_hash);
 
-    return {stoken, content_hash};
+    return {stoken, content_hash, wf, flowComponent};
   },
 });
 

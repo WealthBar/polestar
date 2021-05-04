@@ -1,6 +1,6 @@
 import {serializableType} from "ts_agnostic";
 import {dbType} from "node_core";
-import {woActionType} from "vue_workflow";
+import {woActionType} from "ts_workorder";
 
 export const validateCtor = (
   navHistoryToActionName: (navHistory: string[]) => string,

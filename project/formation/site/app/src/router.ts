@@ -8,7 +8,7 @@ const routes: RouteConfig[] = [
     path: 'v1/fill/:stoken/:content_hash?',
     name: 'fill',
     props: true,
-    component: () => import(/* webpackChunkName: "fill" */ '@/app/fill.vue')
+    component: () => import(/* webpackChunkName: "fill" */ '@/app/v1/fill.vue')
   },
   {
     path: '*',

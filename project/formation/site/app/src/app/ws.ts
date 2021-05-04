@@ -1,49 +1,26 @@
 import '@/vue_comp';
 import {ws} from '@/ws';
-import {reactive} from '@vue/composition-api';
-import {woOpResultType, woOpType} from "vue_workflow/dist/api";
+import {woOpResultType, woOpType} from "ts_workorder";
+import {callTrackerCtor} from "vue_workflow";
 
 const delayTimeMilliseconds = 100;
-const wsWoOp = ws.callCtor<woOpType, woOpResultType>('wo/v1/op');
-const wsWfName = ws.callCtor<{ stoken: string }, { wfName: string }>('wf/v1/name');
-
-// todo: move call tracking into a lib? have to sort out how we'd handle the `reactive` bit still.
-const state = reactive(
+const wsWoV1Test = ws.callCtor<woOpType, woOpResultType>('wo/v1/test');
+const wsWfV1FlowInfo = ws.callCtor<{ stoken: string, },
   {
-    callsOutstanding: 0,
-  }
-);
+    formRequestId: string,
+    flowName: string,
+    brandName: string,
+    localeName: string,
+  }>('wf/v1/flowInfo');
 
-async function trackCall<T>(f: () => Promise<T>): Promise<T> {
-  ++state.callsOutstanding;
-
-  try {
-    return await f();
-  } catch (e) {
-    console.error(e);
-    throw e;
-  } finally {
-    // delay the decrement to help smooth out 1->0->1->0->1->0 flicker caused
-    // by updates that are watching $wsOutstanding and updating UI elements
-    if (state.callsOutstanding === 1) {
-      setTimeout(() => --state.callsOutstanding, delayTimeMilliseconds * 2);
-    } else {
-      --state.callsOutstanding;
-    }
-  }
-}
-
-async function woOp(woOp: woOpType): Promise<Partial<woOpResultType>> {
-  return trackCall(() => wsWoOp(woOp));
-}
-
-async function wfName({stoken}: { stoken: string }): Promise<Partial<{ wfName: string }>> {
-  return trackCall(() => wsWfName({stoken}));
-}
+export const deps = {window};
+const trackCall = callTrackerCtor(deps.window.setTimeout, delayTimeMilliseconds * 2);
+const woTest = (woOp: woOpType): ReturnType<typeof wsWoV1Test> => trackCall(() => wsWoV1Test(woOp));
+const wfFlowInfo = ({stoken}: { stoken: string }): ReturnType<typeof wsWfV1FlowInfo> => trackCall(() => wsWfV1FlowInfo({stoken}));
 
 export const wsApp = {
-  state,
-  woOp,
-  wfName,
+  callsOutstanding: trackCall.callsOutstanding,
+  woTest,
+  wfFlowInfo,
 };
 

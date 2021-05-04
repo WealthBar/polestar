@@ -11,8 +11,6 @@ export async function wsWfV1FlowInfo({db}: Pick<ctxWsType, 'db'>, params: serial
     const r = await db.oneOrNone<{
       form_request_id: string,
       flow_name: string,
-      brand_name: string,
-      locale_name: string
     }>(flowInfoSql, {stoken});
 
     if (!r) {
@@ -22,8 +20,6 @@ export async function wsWfV1FlowInfo({db}: Pick<ctxWsType, 'db'>, params: serial
     return {
       formRequestId: r.form_request_id,
       flowName: r.flow_name,
-      brandName: r.brand_name,
-      localeName: r.locale_name,
     };
   });
 }

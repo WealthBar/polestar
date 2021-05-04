@@ -17,7 +17,7 @@
 
 import '../vue_comp';
 import {computed, defineComponent} from '@vue/composition-api';
-import {wfType} from '@/wf';
+import {wfType} from '../wf';
 
 export default defineComponent({
   name: 'wf-container',

@@ -8,4 +8,4 @@ function navHistoryToActionName(_navHistory: string[]): string {
 const validate = validateCtor(navHistoryToActionName, {}, {});
 const formDataToStep = (formData) => ({'test': {'data': formData}});
 
-export const wsFlowV1Test = wsFlowV1Ctor('test/v1', formDataToStep, validate);
+export const wsFlowV1Test = wsFlowV1Ctor('v1/test', formDataToStep, validate);
