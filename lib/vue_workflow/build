@@ -3,3 +3,5 @@ pushd ../ts_agnostic
 ./build
 popd
 yarn tsc
+# hack
+mkdir -p dist/wf && cp src/wf/*.vue dist/wf

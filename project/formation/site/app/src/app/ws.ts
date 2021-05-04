@@ -7,12 +7,12 @@ const delayTimeMilliseconds = 100;
 const wsWoOp = ws.callCtor<woOpType, woOpResultType>('wo/v1/op');
 const wsWfName = ws.callCtor<{ stoken: string }, { wfName: string }>('wf/v1/name');
 
+// todo: move call tracking into a lib? have to sort out how we'd handle the `reactive` bit still.
 const state = reactive(
   {
     callsOutstanding: 0,
   }
 );
-
 
 async function trackCall<T>(f: () => Promise<T>): Promise<T> {
   ++state.callsOutstanding;
@@ -46,3 +46,4 @@ export const wsApp = {
   woOp,
   wfName,
 };
+

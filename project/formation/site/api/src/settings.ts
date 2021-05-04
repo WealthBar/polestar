@@ -14,4 +14,5 @@ export const settings : serverSettingsType = {
   mode: 'client',
   appUrl: `app.formation.${process.env.HOST_POSTFIX}`,
   dbConnectionString: process.env.DB_FORMATION_CLIENT_URL,
+  secret: process.env.FORMATION_SECRET,
 };

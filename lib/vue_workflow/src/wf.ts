@@ -14,7 +14,6 @@ export type wfType = {
   readonly activeStep: Ref<string>;
   readonly computed: Ref<Record<string, serializableType>>;
   readonly step: Ref<Record<string, serializableType>>;
-  readonly meta: Ref<Record<string, serializableType>>;
   readonly loading: Ref<boolean>;
 };
 
@@ -36,7 +35,6 @@ export function wfCtor(
 
   function liftState(): void {
     step.value = woState?.step?.[activeStep.value] || {};
-    meta.value = woState?.meta || {};
     computed.value = woMetadata?.computed || {};
   }
 
@@ -167,7 +165,6 @@ export function wfCtor(
     commit,
     resume,
     activeStep,
-    meta,
     computed,
     step,
     loading,

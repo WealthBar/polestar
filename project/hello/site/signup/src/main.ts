@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import  '@vue/composition-api';
+import '@vue/composition-api';
 import Vuetify, {VuetifyPreset} from 'vuetify';
 import 'vuetify/dist/vuetify.min.css';
 import './theme.scss';
@@ -20,7 +20,12 @@ Vue.use(Vuetify);
 const opts: Partial<VuetifyPreset> = {
   icons: {
     iconfont: 'faSvg',
-    values: {},
+    values: {
+      complete: {
+        component: FontAwesomeIcon,
+        props: {icon: ['far', 'eye']},
+      },
+    },
   },
 };
 

@@ -1,9 +1,9 @@
-import {dbProviderType, dbType} from './db/db_provider';
+import {dbProviderType, dbType} from './db';
 import {DateTime, Duration} from 'luxon';
 
-export type dbProviderCtx = <T>(callback: (db: dbType) => Promise<T>) => Promise<T|undefined>;
+export type dbProviderCtxType = <T>(callback: (db: dbType) => Promise<T>) => Promise<T|undefined>;
 
-export function toDbProvideCtx(auditUser: string, trackingTag: string, dbProvider: dbProviderType): dbProviderCtx {
+export function toDbProvideCtx(auditUser: string, trackingTag: string, dbProvider: dbProviderType): dbProviderCtxType {
   return function <T>(callback: (db: dbType) => Promise<T>): Promise<T|undefined> {
     return dbProvider(auditUser, callback, trackingTag);
   }

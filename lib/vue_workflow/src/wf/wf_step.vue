@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts">
+import '../vue_comp';
 import {defineComponent} from '@vue/composition-api';
 import {wfType} from '@/wf';
 

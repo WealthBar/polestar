@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2020",
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
@@ -12,7 +12,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "types": [
       "webpack-env",
       "mocha",
@@ -27,17 +27,15 @@
       "esnext",
       "dom",
       "dom.iterable",
-      "scripthost"
     ]
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx",
     "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    "src/*.test.ts",
   ]
 }

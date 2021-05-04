@@ -2,7 +2,7 @@ import {IncomingMessage, ServerResponse} from 'http';
 import WebSocket from 'ws';
 import {serializableType} from 'ts_agnostic';
 import {registryType} from 'ts_agnostic';
-import {dbProviderCtx} from './db_util';
+import {dbProviderCtxType} from './db_util';
 import {dbProviderType} from './db';
 
 export type urlType = {
@@ -22,7 +22,7 @@ export type ctxBaseType = {
   session: Record<string, serializableType>;
   permission?: Record<string, boolean>;
   user?: userInfoType;
-  db: dbProviderCtx;
+  db: dbProviderCtxType;
   dbProvider: dbProviderType;
   remoteAddress: string;
 };
@@ -95,6 +95,7 @@ export type serverSettingsType = {
   },
   appUrl: string,
   dbConnectionString: string,
+  [key: string]: serializableType,
 };
 
 export type wsHandlerType = (ctxWs: ctxWsType, callParams: serializableType | undefined) => Promise<serializableType | undefined>;

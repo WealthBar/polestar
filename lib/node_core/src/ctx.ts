@@ -1,7 +1,7 @@
 import {ctxReqType, ctxType, serverSettingsType, urlType} from './server.type';
 import {IncomingMessage, ServerResponse} from 'http';
 import {dbProviderType} from './db';
-import {dbProviderCtx, toDbProvideCtx} from './db_util';
+import {dbProviderCtxType, toDbProvideCtx} from './db_util';
 import {resolvedFalse, resolvedTrue, resolvedVoid} from 'ts_agnostic';
 import {Object} from 'ts-toolbelt';
 
@@ -63,7 +63,7 @@ export function ctxCtor(req: IncomingMessage, res: ServerResponse, dbProvider: d
 
 export type ctxCtorType = typeof ctxCtor;
 
-export function ctxSetDb(ctx: { user?: { login?: string }, sessionId: string, dbProvider: dbProviderType, db?: dbProviderCtx }): void {
+export function ctxSetDb(ctx: { user?: { login?: string }, sessionId: string, dbProvider: dbProviderType, db?: dbProviderCtxType }): void {
   ctx.db = toDbProvideCtx(ctx?.user?.login || '-', ctx.sessionId, ctx.dbProvider);
 }
 

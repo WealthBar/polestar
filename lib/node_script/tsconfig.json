@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strictNullChecks": true,
-    "target": "es2015",
+    "target": "es2020",
     "module": "commonjs",
     "outDir": "dist",
     "declaration": true,
@@ -10,12 +10,17 @@
     "removeComments": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": [ "es2020" ]
+    "rootDir": "./src",
+    "lib": [
+      "es2020"
+    ]
   },
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    "**/*.test.*"
   ]
 }

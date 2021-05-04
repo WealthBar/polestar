@@ -28,7 +28,9 @@ export default defineComponent({
       `v1/${wfName}/${stoken}`,
       router.replace,
       router.push,
-      async (msg)=>{console.error(msg)},
+      async (msg: string) => {
+        console.error(msg)
+      },
     );
 
     await wf.resume(content_hash);

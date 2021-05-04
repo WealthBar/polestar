@@ -31,7 +31,7 @@ type init = {
   jurisdiction: string, // {country_iso2}(_{region_iso2}): ca, ca_bc, ca_ab, us, us_wa, etc.
   signingDate: string,
   locale: string, // {locale_iso2}: en, fr
-  validUntil: string, // iso datetime: YYYY-MM-EEThh-mm-ssZ
+  validUntil: string, // iso datetime: YYYY-MM-DDThh-mm-ssZ
   data: Record<string, string>
 }
 ```
@@ -43,7 +43,7 @@ Returns: application/json
 
 or
 
-```json5
+```typescript
 {
   error: 'INVALID_REQUEST' | 'ACCESS_DENIED' | 'MISMATCH'
 }
@@ -57,16 +57,16 @@ the same stoken is used with different POST data the `MISMATCH` error is returne
 Returns
 
 Returns: application/json
-```json5
+```typescript
 {
   state: 'INPROGRESS' | 'EXPIRED' | 'COMPLETED',
-  data?: { {key}:{value} }, // data provided by the user if state is COMPLETED
+  data?: Record<string, string>, // data provided by the user if state is COMPLETED
 }
 ``` 
 
 or
 
-```json5
+```typescript
 {
   error: 'INVALID_REQUEST' | 'ACCESS_DENIED' | 'NOT_FOUND'
 }
@@ -74,9 +74,9 @@ or
 
 ### GET /v1/doc/${stoken}
 
-If docusigning was requested for the given form key and the user completed the process this will return the signed PDF.
+If docusigning was requested for the given form key, and the user completed the process this will return the signed PDF.
 
-If can also return: 403 Forbidden, 404 Not Found (stoken doesn't exist), or 400 Invalid (form doesn't get signed) 
+If can also return: 403 Forbidden, 404 Not Found (stoken doesn't exist), or 400 Invalid (form doesn't get signed), 4xx valid but no pdf exists
 
 ## User facing app
 
@@ -103,7 +103,7 @@ participant Formation
 participant BEDB
 
 Client -> BE: gather form
-BE -> Formation : POST /init/{stoken} { form_key: FORM, ... }
+BE -> Formation : POST /v1/init/{stoken} { form_key: FORM, ... }
 Formation -> BE: { }
 BE -> Client: REDIRECT https://formation.xxx/fill/{stoken}
 Client  -> Formation: /form/{stoken}

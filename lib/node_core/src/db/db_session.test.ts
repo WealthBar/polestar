@@ -8,7 +8,7 @@ import {value as updateClientSql} from './db_session_update_client_sql';
 import {value as updateStaffSql} from './db_session_update_staff_sql';
 import {value as verifyClientSql} from './db_session_verify_client_sql';
 import {value as verifyStaffSql} from './db_session_verify_staff_sql';
-import {resolvedUndefined} from './../../../ts_agnostic/src/resolved';
+import {resolvedUndefined} from 'ts_agnostic';
 
 describe('sessionCreate', () => {
   const setup = (dbResultMock: object) => {

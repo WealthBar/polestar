@@ -1,5 +1,6 @@
 export * from './authz';
 export * from './db';
+export * from './db_util';
 export * from './ctx';
 export * from './delay';
 export * from './exit';

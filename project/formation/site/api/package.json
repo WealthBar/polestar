@@ -28,6 +28,7 @@
     "luxon": "^1.26.0",
     "mocha": "^8.3.2",
     "node_core": "link:../../../../lib/node_core",
+    "vue_workflow": "link:../../../../lib/vue_workflow",
     "node_script": "link:../../../../lib/node_script",
     "nyc": "^15.1.0",
     "sinon": "^10.0.0",

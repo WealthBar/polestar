@@ -1,12 +1,24 @@
 import {cloneDeep} from 'lodash';
 import {serializableType} from 'ts_agnostic';
 
+export type woActionType = {
+  name: string,
+  params: Record<string, string>, // cause pdf form's are all string:string
+  sig?: string,
+};
+
+export type woSignType = {
+  envId: string,
+  url: string,
+  signed: boolean
+};
+
 export type woStateType = {
   navHistory: string[],
-  meta?: Record<string, Record<string, serializableType>>,
   step?: Record<string, Record<string, serializableType>>,
   contentHash?: string,
-  signUrl?: string,
+  sign?: woSignType,
+  action?: woActionType,
 };
 
 type woCacheEntryType = {
@@ -21,7 +33,7 @@ export type woOpType = {
   contextName: string,
 } & (
   {
-    op: 'UPDATE' | 'SIGN' | 'COMMIT' | 'ABORT',
+    op: 'UPDATE' | 'SIGN' | 'COMMIT',
     states?: woStateType[],
   } | {
   op: 'RESUME',
@@ -68,7 +80,7 @@ export function woApiCtor(remoteCall: (op: woOpType) => Promise<woOpResultType>)
       }
     }
 
-    if (['COMMIT', 'ABORT', 'SIGN'].includes(op.op)) {
+    if (['COMMIT', 'SIGN'].includes(op.op)) {
       // on commit we clear all other versions from the cache and only retain the committed wo/computed returned.
       delete woCache[op.contextName];
     }

@@ -5,7 +5,7 @@ Vue.use(VueRouter)
 
 const routes: RouteConfig[] = [
   {
-    path: '/:stoken/:content_hash?',
+    path: 'v1/fill/:stoken/:content_hash?',
     name: 'fill',
     props: true,
     component: () => import(/* webpackChunkName: "fill" */ '@/app/fill.vue')
@@ -18,6 +18,6 @@ const routes: RouteConfig[] = [
 
 export const router = new VueRouter({
   mode: 'history',
-  base: process.env.BASE_URL,
+  base: '/',
   routes
 })
