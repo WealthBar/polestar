@@ -1,5 +1,5 @@
 import test from './test.vue';
 
-export const flow = {
+export const flow:Record<string, unknown> = {
   test,
 };

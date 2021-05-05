@@ -13,8 +13,7 @@
           <slot name="content"/>
         </v-card-text>
         <v-card-actions v-if="actions">
-          <v-btn v-if="origin" :to="origin">Previous</v-btn>
-          <v-btn v-else @click="onPrev">Previous</v-btn>
+          <v-btn v-if="prev" @click="onPrev">Previous</v-btn>
           <v-spacer></v-spacer>
           <v-btn type="submit" v-if="next">Next</v-btn>
           <v-btn type="submit" v-if="sign">Sign</v-btn>
@@ -26,15 +25,15 @@
 </template>
 
 <script lang="ts">
-import '../vue_comp';
+import './vue_comp';
 import {defineComponent} from '@vue/composition-api';
-import {wfType} from '../wf';
+import {wfType} from 'vue_workflow';
 
 export default defineComponent({
   name: 'wfStep',
   props: {
     wf: {type: Object, required: true},
-    origin: {type: String, required: false, default: undefined},
+    prev: {type: Boolean, required: false, default: true},
     validate: {type: Function, required: false, default: undefined},
     next: {type: Function, required: false, default: undefined},
     sign: {type: Function, required: false, default: undefined},
@@ -43,7 +42,6 @@ export default defineComponent({
   },
   setup({
     wf,
-    origin,
     validate,
     next,
     sign,

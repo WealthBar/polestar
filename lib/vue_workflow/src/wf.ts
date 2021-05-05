@@ -1,4 +1,4 @@
-import {woApiType} from './api';
+import {woApiType} from '@/api';
 import {serializableType} from 'ts_agnostic';
 import {cloneDeep} from 'lodash';
 import {ref, Ref} from '@vue/composition-api';

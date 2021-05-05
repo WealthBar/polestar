@@ -12,11 +12,11 @@
 <script lang="ts">
 import "@/vue_comp";
 import {defineComponent} from "@vue/composition-api";
-import wfWorkflow from "vue_workflow/dist/wf/wf_step.vue";
 import {wfType} from "vue_workflow";
+import {wfStep} from "vue_workflow_components";
 
 export default defineComponent({
-  components: {wfWorkflow},
+  components: {wfStep},
   props: {wf: {type: Object, required: true}},
   setup({wf}: { wf: wfType }) {
     return {};

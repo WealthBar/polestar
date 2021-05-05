@@ -19,8 +19,11 @@ const woTest = (woOp: woOpType): ReturnType<typeof wsWoV1Test> => trackCall(() =
 const wfFlowInfo = ({stoken}: { stoken: string }): ReturnType<typeof wsWfV1FlowInfo> => trackCall(() => wsWfV1FlowInfo({stoken}));
 
 export const wsApp = {
-  callsOutstanding: trackCall.callsOutstanding,
-  woTest,
-  wfFlowInfo,
-};
+    callsOutstanding: trackCall.callsOutstanding,
+    flow: {
+      test: woTest
+    } as Record<string, (params: woOpType) => Promise<Partial<woOpResultType & { error: string }>>>,
+    wfFlowInfo,
+  }
+;
 

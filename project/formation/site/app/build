@@ -8,4 +8,7 @@ popd
 pushd ../../../../lib/vue_workflow
 ./build
 popd
-yarn tsc
+pushd ../../../../lib/vue_workflow_components
+./build
+popd
+yarn build

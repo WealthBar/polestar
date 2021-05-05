@@ -9,17 +9,18 @@
 <script lang="ts">
 import "@/vue_comp";
 import {defineComponent} from "@vue/composition-api";
-import wfWorkflow from "vue_workflow/dist/wf/wf_container.vue";
 import {wfType} from "vue_workflow";
 import init from "./test/init.vue";
+import done from "./test/done.vue";
+import {wfContainer} from "vue_workflow_components";
 
 export default defineComponent({
   components: {
-    wfWorkflow
+    wfContainer
   },
   props: {wf: {type: Object, required: true}},
   setup({wf}: { wf: wfType }) {
-    const steps = {init};
+    const steps = {init, done};
     return {wf, steps};
   },
 });

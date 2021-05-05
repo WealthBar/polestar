@@ -1,5 +1,7 @@
 import {ref} from "@vue/composition-api";
 
+// return type is inferred correctly.
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const callTrackerCtor = (
   setTimeout: (f: () => void, ms: number) => void,
   delayTimeMilliseconds: number

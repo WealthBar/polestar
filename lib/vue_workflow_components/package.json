@@ -1,16 +1,16 @@
 {
-  "name": "vue_skel",
+  "name": "vue_workflow_components",
   "version": "1.0.0",
   "description": "",
   "license": "MIT",
-  "main": "dist/vue_skel.ssr.js",
-  "browser": "dist/vue_skel.esm.js",
-  "module": "dist/vue_skel.esm.js",
-  "unpkg": "dist/vue_skel.min.js",
-  "types": "vue_skel.d.ts",
+  "main": "dist/vue_workflow_components.esm.js",
+  "browser": "dist/vue_workflow_components.esm.js",
+  "module": "dist/vue_workflow_components.esm.js",
+  "unpkg": "dist/vue_workflow_components.min.js",
+  "types": "vue_workflow_components.d.ts",
   "files": [
     "dist/*",
-    "vue_skel.d.ts",
+    "vue_workflow_components.d.ts",
     "src/**/*.vue"
   ],
   "sideEffects": false,
@@ -21,7 +21,9 @@
     "build:es": "cross-env NODE_ENV=production rollup --config rollup/rollup.config.js --format es",
     "build:unpkg": "cross-env NODE_ENV=production rollup --config rollup/rollup.config.js --format iife"
   },
-  "dependencies": {},
+  "dependencies": {
+    "vue_workflow": "link:../vue_workflow"
+  },
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",

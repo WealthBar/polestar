@@ -15,6 +15,7 @@ if (!port) {
 
 const linkAliases = {};
 const linkModules = [];
+
 {
   const d = fs.opendirSync('node_modules');
   for (; ;) {
@@ -24,12 +25,20 @@ const linkModules = [];
     }
     if (p.isSymbolicLink()) {
       const dest = fs.readlinkSync(path.join('node_modules', p.name));
-      // TODO: this shouldn't assume 'dist'; it should read 'main' the package.json
-      linkAliases[p.name] = path.resolve(path.join('node_modules', dest, 'dist'));
-      linkModules.push(path.resolve(path.join('node_modules', dest, 'node_modules')));
+      const pjpath = path.join('node_modules', dest, 'package.json');
+      const pj = require(pjpath);
+      const main = pj['main'];
+      if (main) {
+        const mainFile = path.resolve(path.join('node_modules', dest, main));
+        const modules = path.resolve(path.join('node_modules', dest, 'node_modules'));
+        linkAliases[p.name] = mainFile;
+        linkModules.push(modules);
+      }
     }
   }
 }
+
+console.log(JSON.stringify(linkAliases, undefined, 2));
 
 module.exports = {
   devServer: {
@@ -40,10 +49,7 @@ module.exports = {
   configureWebpack: {
     resolve: {
       symlinks: false,
-      alias:
-        {
-          ...linkAliases
-        },
+      alias: linkAliases,
       modules: [
         path.resolve('./node_modules'),
         ...linkModules

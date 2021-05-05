@@ -15,9 +15,9 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import '../vue_comp';
+import './vue_comp';
 import {computed, defineComponent} from '@vue/composition-api';
-import {wfType} from '../wf';
+import {wfType} from 'vue_workflow';
 
 export default defineComponent({
   name: 'wf-container',
