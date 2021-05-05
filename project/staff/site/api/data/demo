@@ -1,3 +1,0 @@
-#!/bin/bash
-echo "demo ${DB_URL}"
-psql -e -d ${DB_URL} --echo-all -f ./data/demo_data.sql

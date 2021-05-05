@@ -1,26 +1,27 @@
 <template>
-  <wf-container
+  <wf-step
     :wf="wf"
-    :steps="steps"
+    :commit="commit"
   >
-  </wf-container>
+    <template slot="title">Test Init</template>
+    <template slot="content">
+      test
+    </template>
+  </wf-step>
 </template>
 
 <script lang="ts">
 import "@/vue_comp";
 import {defineComponent} from "@vue/composition-api";
-import wfWorkflow from "vue_workflow/dist/wf/wf_container.vue";
+import wfWorkflow from "vue_workflow/dist/wf/wf_step.vue";
 import {wfType} from "vue_workflow";
-import init from "./test/init.vue";
 
 export default defineComponent({
-  components: {
-    wfWorkflow
-  },
+  components: {wfWorkflow},
   props: {wf: {type: Object, required: true}},
   setup({wf}: { wf: wfType }) {
-    const steps = {init};
-    return {wf, steps};
+    const commit = () => "done";
+    return {commit};
   },
 });
 

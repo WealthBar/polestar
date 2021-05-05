@@ -3,15 +3,14 @@
     <v-form @submit.prevent="onSubmit">
       <v-card raised outlined>
         <v-card-title class="grey lighten-5">
-          {{ title }}
+          <slot name="title"/>
           <v-spacer v-if="close"></v-spacer>
           <v-btn icon @click="onClose" v-if="close">
             <font-awesome-icon :icon="['far','close']"></font-awesome-icon>
           </v-btn>
         </v-card-title>
         <v-card-text>
-          <slot>
-          </slot>
+          <slot name="content"/>
         </v-card-text>
         <v-card-actions v-if="actions">
           <v-btn v-if="origin" :to="origin">Previous</v-btn>
@@ -35,7 +34,6 @@ export default defineComponent({
   name: 'wfStep',
   props: {
     wf: {type: Object, required: true},
-    title: {type: String, required: true},
     origin: {type: String, required: false, default: undefined},
     validate: {type: Function, required: false, default: undefined},
     next: {type: Function, required: false, default: undefined},
@@ -45,10 +43,12 @@ export default defineComponent({
   },
   setup({
     wf,
+    origin,
     validate,
     next,
     sign,
     commit,
+    close,
   }: {
     wf: wfType,
     title: string,

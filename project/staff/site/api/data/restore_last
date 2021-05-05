@@ -1,4 +1,0 @@
-#!/bin/bash
-echo "todo"
-# find ./data/snapshots with highest date
-# restore it
