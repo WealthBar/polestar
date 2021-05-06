@@ -8,4 +8,8 @@ popd
 pushd ../../../../lib/node_script
 ./build
 popd
+if [ -e dist ]
+then
+  rm -rf dist
+fi
 yarn build

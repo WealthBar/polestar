@@ -11,4 +11,8 @@ popd
 pushd ../../../../lib/vue_workflow_components
 ./build
 popd
+if [ -e dist ]
+then
+  rm -rf dist
+fi
 yarn build

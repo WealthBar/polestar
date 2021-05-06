@@ -5,24 +5,24 @@
         <v-row>
           <v-col cols="12">
             <v-text-field
-                validate-on-blur
-                v-model="email"
-                :rules="emailRules"
-                label="Email"
-                required
-                autocomplete="email"
-                @keyup="emailChange"
+              validate-on-blur
+              v-model="email"
+              :rules="emailRules"
+              label="Email"
+              required
+              autocomplete="email"
+              @keyup="emailChange"
             ></v-text-field>
           </v-col>
           <v-col cols="12">
             <v-text-field
-                validate-on-blur
-                v-model="password"
-                :rules="[rules.required, rules.min]"
-                :type="passwordInputType"
-                label="Password"
-                hint="At least 8 characters"
-                autocomplete="password"
+              validate-on-blur
+              v-model="password"
+              :rules="[rules.required, rules.min]"
+              :type="passwordInputType"
+              label="Password"
+              hint="At least 8 characters"
+              autocomplete="password"
             >
               <button type="button" @click.prevent="toggleShowPassword" slot="append">
                 <font-awesome-icon :icon="appendIcon()"></font-awesome-icon>
@@ -35,12 +35,12 @@
           <v-spacer></v-spacer>
           <v-col class="d-flex" cols="12" sm="3" xsm="12" align-end>
             <v-btn
-                x-large
-                block
-                :disabled="!valid"
-                color="success"
-                @click.prevent="validate"
-                :loading="authenticating"
+              x-large
+              block
+              :disabled="!valid"
+              color="success"
+              @click.prevent="validate"
+              :loading="authenticating"
             >
               Sign In
             </v-btn>
@@ -73,24 +73,24 @@ export default defineComponent({
     const emailRules = [
       (v: string) => !!v || 'required',
       (v: string) => /.+@.+\..+/.test(v) || 'invalid email',
-      () => wsSignup.state.callsOutstanding > 0 || wsSignup.state?.loginStatus?.inUse || 'login not found',
+      () => wsSignup.callsOutstanding.value > 0 || wsSignup.loginStatus?.inUse || 'login not found',
     ];
 
     watch(
-        wsSignup.state,
-        (v, ov) => {
-          console.log('watch', v, ov);
-          if (wsSignup.state.callsOutstanding) {
-            message.value = 'waiting...';
-            return;
-          }
-          if (loginFailed.value) {
-            message.value = 'Login Failed';
-            return;
-          }
-          message.value = '';
-        },
-        {deep: true},
+      wsSignup.callsOutstanding,
+      (v, ov) => {
+        console.log('watch', v, ov);
+        if (wsSignup.callsOutstanding.value > 0) {
+          message.value = 'waiting...';
+          return;
+        }
+        if (loginFailed.value) {
+          message.value = 'Login Failed';
+          return;
+        }
+        message.value = '';
+      },
+      {deep: true},
     );
 
     const rules = {
@@ -102,7 +102,7 @@ export default defineComponent({
 
     function updateFormValid() {
       loginFailed.value = false;
-      valid.value = !!(form.value?.validate() && wsSignup.state?.loginStatus?.inUse);
+      valid.value = !!(form.value?.validate() && wsSignup.loginStatus?.inUse);
       wsSignup.updateLoginStatus({login: email.value});
     }
 
@@ -148,9 +148,9 @@ export default defineComponent({
 
     function appendIcon() {
       return (
-          showPassword.value ?
-              ['far', 'eye-slash'] :
-              ['far', 'eye']
+        showPassword.value ?
+          ['far', 'eye-slash'] :
+          ['far', 'eye']
       );
     }
 
@@ -158,7 +158,7 @@ export default defineComponent({
       console.log('nop', e);
     }
 
-    function emailChange(e: any) {
+    function emailChange(e: unknown) {
       console.log('emailChange', e, email.value);
       loginFailed.value = false;
       wsSignup.updateLoginStatus({login: email.value});

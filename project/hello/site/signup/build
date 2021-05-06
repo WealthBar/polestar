@@ -5,4 +5,8 @@ popd
 pushd ../../../../lib/ts_browser
 ./build
 popd
-yarn tsc
+if [ -e dist ]
+then
+  rm -rf dist
+fi
+yarn build

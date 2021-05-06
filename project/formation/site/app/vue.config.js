@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const cwd = process.cwd();
+
 const mcwd = cwd.match(/project\/(?<domain>[^/]+)\/site\/(?<subdomain>[^/]+)/);
 if (!mcwd) {
   throw new Error(`invalid cwd: ${cwd}`);

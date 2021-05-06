@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import '@/vue_comp';
 import {limitedMemoFCtor} from 'ts_agnostic';
 import {rateLimitEmitLast} from 'ts_browser';
 import {ws} from '@/ws';
 import {reactive} from '@vue/composition-api';
+import {callTrackerCtor} from "../../../../../../lib/vue_workflow";
 
 const delayTimeMilliseconds = 100;
 export type loginStatusType = { login: string; inUse: boolean; allowGoogleLogin: boolean };
@@ -18,10 +18,10 @@ const wsSignupLoginStatus = ws.callCtor<{ login: string }, loginStatusType>(
 const wsLimitedMemoLoginStatus = limitedMemoFCtor(15000, wsSignupLoginStatus, (p) => p.login);
 const wsSignupSendVerification = ws.callCtor<{ login: string }, { nb64: string }>('signup/sendVerification');
 const wsSignupForgotPassword = ws.callCtor<{ login: string }, { nb64: string }>('signup/forgotPassword');
-const wsSignupChangePassword = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/changePassword');
-const wsSignupCreateAccount = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, {}>('signup/createAccount');
+const wsSignupChangePassword = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, Record<string, never>>('signup/changePassword');
+const wsSignupCreateAccount = ws.callCtor<{ login: string; code: string; nb64: string; hpnb64: string }, Record<string, never>>('signup/createAccount');
 const wsSignupInitChallenge = ws.callCtor<{ login: string }, { nb64: string; r: string; salt: string }>('signup/initChallenge');
-const wsSignupVerifyLogin = ws.callCtor<{ login: string; fb64: string }, {}>('signup/verifyLogin');
+const wsSignupVerifyLogin = ws.callCtor<{ login: string; fb64: string }, Record<string, never>>('signup/verifyLogin');
 
 function liftLoginStatusResult(to: loginStatusType, from?: Partial<loginStatusType>) {
   to.login = from?.login || '';
@@ -29,64 +29,51 @@ function liftLoginStatusResult(to: loginStatusType, from?: Partial<loginStatusTy
   to.allowGoogleLogin = !!from?.allowGoogleLogin;
 }
 
-const state =
-  reactive({
-    callsOutstanding: 0,
-    loginStatus: {login: '', inUse: false, allowGoogleLogin: false},
-  });
+const loginStatus = reactive({login: '', inUse: false, allowGoogleLogin: false});
 
+export const deps = {window};
 
-async function trackCall<T>(f: () => Promise<T>): Promise<T> {
-  ++state.callsOutstanding;
+const tracker = callTrackerCtor(deps.window.setTimeout, delayTimeMilliseconds * 2);
 
-  try {
-    return await f();
-  } catch (e) {
-    console.error(e);
-    throw e;
-  } finally {
-    // delay the decrement to help smooth out 1->0->1->0->1->0 flicker caused
-    // by updates that are watching $wsOutstanding and updating UI elements
-    if (state.callsOutstanding === 1) {
-      setTimeout(() => --state.callsOutstanding, delayTimeMilliseconds * 2);
-    } else {
-      --state.callsOutstanding;
-    }
-  }
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const sendVerification = (params: Parameters<typeof wsSignupSendVerification>[0]) => {
+  return tracker(() => wsSignupSendVerification(params));
 }
 
-async function sendVerification(params: Parameters<typeof wsSignupSendVerification>[0]) {
-  return trackCall(() => wsSignupSendVerification(params));
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const forgotPassword = (params: Parameters<typeof wsSignupForgotPassword>[0]) => {
+  return tracker(() => wsSignupForgotPassword(params));
 }
 
-async function forgotPassword(params: Parameters<typeof wsSignupForgotPassword>[0]) {
-  return trackCall(() => wsSignupForgotPassword(params));
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const changePassword = (params: Parameters<typeof wsSignupChangePassword>[0]) => {
+  return tracker(() => wsSignupChangePassword(params));
 }
 
-async function changePassword(params: Parameters<typeof wsSignupChangePassword>[0]) {
-  return trackCall(() => wsSignupChangePassword(params));
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const createAccount = (params: Parameters<typeof wsSignupCreateAccount>[0]) => {
+  return tracker(() => wsSignupCreateAccount(params));
 }
 
-async function createAccount(params: Parameters<typeof wsSignupCreateAccount>[0]) {
-  return trackCall(() => wsSignupCreateAccount(params));
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const initChallenge = (params: Parameters<typeof wsSignupInitChallenge>[0]) => {
+  return tracker(() => wsSignupInitChallenge(params));
 }
 
-async function initChallenge(params: Parameters<typeof wsSignupInitChallenge>[0]) {
-  return trackCall(() => wsSignupInitChallenge(params));
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const verifyLogin = (params: Parameters<typeof wsSignupVerifyLogin>[0]) => {
+  return tracker(() => wsSignupVerifyLogin(params));
 }
 
-async function verifyLogin(params: Parameters<typeof wsSignupVerifyLogin>[0]) {
-  return trackCall(() => wsSignupVerifyLogin(params));
-}
-
-async function updateLoginStatusImmediate(params: Parameters<typeof wsSignupLoginStatus>[0]) {
-  liftLoginStatusResult(state.loginStatus, await trackCall(() => wsSignupLoginStatus(params)));
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const updateLoginStatusImmediate = async (params: Parameters<typeof wsSignupLoginStatus>[0]) => {
+  liftLoginStatusResult(loginStatus, await tracker(() => wsSignupLoginStatus(params)));
 }
 
 const rlLoginStatus = rateLimitEmitLast(
   delayTimeMilliseconds,
   wsLimitedMemoLoginStatus,
-  (result) => liftLoginStatusResult(state.loginStatus, result),
+  (result) => liftLoginStatusResult(loginStatus, result),
 );
 
 async function updateLoginStatus(params: { login: string }): Promise<void> {
@@ -98,7 +85,8 @@ async function updateLoginStatus(params: { login: string }): Promise<void> {
 }
 
 export const wsSignup = {
-  state,
+  callsOutstanding: tracker.callsOutstanding,
+  loginStatus,
   sendVerification,
   forgotPassword,
   changePassword,

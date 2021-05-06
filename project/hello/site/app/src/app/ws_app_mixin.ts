@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/camelcase */
-
 import {limitedMemoFCtor} from 'ts_agnostic';
 import Vue from 'vue';
 import {ws} from '@/ws';
 
 const delayTimeMilliseconds = 100;
 
-const wsWhoAmI = ws.callCtor<{}, { login: string }>('app/whoAmI');
+const wsWhoAmI = ws.callCtor<Record<string, never>, { login: string }>('app/whoAmI');
 const wsLimitedWhoAmI = limitedMemoFCtor(15000, wsWhoAmI, () => '_');
 
 export const wsAppMixin = Vue.extend({
