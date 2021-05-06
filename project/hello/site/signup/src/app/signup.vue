@@ -1,80 +1,212 @@
 <template>
-  <div>
-  todo
-<!--    <form ref="form_ep" @submit.prevent="submit">-->
-<!--      <b-field-->
-<!--          label="Email Address"-->
-<!--      >-->
-<!--        <b-input ref="email"-->
-<!--            type="email"-->
-<!--            name="email"-->
-<!--            placeholder="alice@example.com"-->
-<!--            v-model="email"-->
-<!--            @focus="emailFocus"-->
-<!--            @blur="emailBlur"-->
-<!--        />-->
-<!--      </b-field>-->
-<!--      <b-field-->
-<!--          label="Password"-->
-<!--      >-->
-<!--        <b-input-->
-<!--            type="password"-->
-<!--            name="password"-->
-<!--            minlength="8"-->
-<!--            placeholder="super secret password"-->
-<!--            password-reveal-->
-<!--            v-model="password"-->
-<!--            @focus="passwordFocus"-->
-<!--            @blur="passwordBlur"-->
-<!--        />-->
-<!--      </b-field>-->
-<!--      <b-field-->
-<!--          label="Code"-->
-<!--      >-->
-<!--        <b-input-->
-<!--            type="text"-->
-<!--            minlength="8"-->
-<!--            maxlength="8"-->
-<!--            name="code"-->
-<!--            @focus="codeFocus"-->
-<!--            @blur="codeBlur"-->
-<!--            placeholder="00000000"-->
-<!--            v-model="code"-->
-<!--            :disabled="disableSendCode"-->
-<!--        />-->
-<!--      </b-field>-->
-<!--      <div class="columns is-mobile">-->
-<!--        <div class="column is-narrow ml-1">-->
-<!--          <b-button type="is-primary is-light" @click="sendCode" :disabled="disableSendCode">-->
-<!--            Send Code-->
-<!--          </b-button>-->
-<!--        </div>-->
-<!--        <div class="column p-0"></div>-->
-<!--        <div class="column is-pulled-right is-narrow">-->
-<!--          <b-button :disabled="loginDisabled" :loading="$wsOutstanding" type="is-primary" native-type="submit"-->
-<!--              icon-right="arrow-right">-->
-<!--            Sign Up-->
-<!--          </b-button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <b-notification :closable="false" :type="notificationType">-->
-<!--        {{ notificationMessage }}-->
-<!--      </b-notification>-->
-<!--    </form>-->
-  </div>
+  <v-card class="px-4">
+    <v-card-text>
+      <v-form ref="form" v-model="valid" lazy-validation>
+        <v-row>
+          <v-col cols="12">
+            <v-text-field
+              validate-on-blur
+              v-model="email"
+              :rules="emailRules"
+              label="Email"
+              required
+              autocomplete="email"
+              @keyup="emailChange"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-text-field
+              validate-on-blur
+              v-model="password"
+              :rules="[rules.required, rules.min]"
+              :type="passwordInputType"
+              label="Password"
+              hint="At least 8 characters"
+              autocomplete="password"
+            >
+              <button type="button" @click.prevent="toggleShowPassword" slot="append">
+                <font-awesome-icon :icon="appendIcon()"></font-awesome-icon>
+              </button>
+            </v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-text-field
+              validate-on-blur
+              v-model="code"
+              :rules="[rules.required]"
+              type="number"
+              label="Code"
+            >
+              <v-btn type="button" slot="prepend" @click.prevent="sendCode" :loading="codeLoading">Send</v-btn>
+            </v-text-field>
+          </v-col>
+          <v-col class="d-flex" cols="12" sm="6" xsm="12">
+            {{ message }}
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col class="d-flex" cols="12" sm="3" xsm="12" align-end>
+            <v-btn
+              x-large
+              block
+              :disabled="!valid"
+              color="success"
+              @click.prevent="validate"
+              :loading="authenticating"
+            >
+              Sign In
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-form>
+    </v-card-text>
+  </v-card>
+
 </template>
 
 <script lang="ts">
-
-import {crClientSetupInit} from 'ts_browser';
-import {getMessage, getMessageType} from '@/app/messages';
-import Vue from 'vue';
-
+import '@/vue_comp';
+import {crClientResponse, crClientSetupInit} from 'ts_browser';
+import {computed, defineComponent, ref, watch} from "@vue/composition-api";
+import {wsSignup} from "@/app/ws_signup";
+import {vFormType} from "@/app/vuetify.type";
 
 export const deps = {window};
 
-export default Vue.extend({
+export default defineComponent({
   name: 'signup',
+  setup() {
+    const email = ref('');
+    const password = ref('');
+    const code = ref('');
+    const codeLoading = ref(false);
+    const valid = ref(false);
+    const showPassword = ref(false);
+    const loginFailed = ref(false);
+    const authenticating = ref(false);
+    const message = ref('');
+    const emailRules = [
+      (v: string) => !!v || 'required',
+      (v: string) => /.+@.+\..+/.test(v) || 'invalid email',
+      () => wsSignup.callsOutstanding.value > 0 || wsSignup.loginStatus.inUse || 'login already in use',
+    ];
+
+    watch(
+      wsSignup.callsOutstanding,
+      (v, ov) => {
+        console.log('watch', v, ov);
+        if (wsSignup.callsOutstanding.value > 0) {
+          message.value = 'waiting...';
+          return;
+        }
+        if (loginFailed.value) {
+          message.value = 'Sign up failed';
+          return;
+        }
+        message.value = '';
+      },
+      {deep: true},
+    );
+
+    const rules = {
+      required: (v: string) => !!v || 'required',
+      min: (v: string) => (v && v.length >= 8) || '8 characters required',
+    };
+
+    const form = ref<vFormType>(undefined);
+
+    function updateFormValid() {
+      loginFailed.value = false;
+      valid.value = !!(form.value?.validate() && wsSignup.loginStatus?.inUse);
+      wsSignup.updateLoginStatus({login: email.value});
+    }
+
+    async function submit() {
+      authenticating.value = true;
+      try {
+        await wsSignup.updateLoginStatusImmediate({login: email.value});
+        updateFormValid();
+        if (!valid) {
+          return;
+        }
+        const {nb64, r, salt, error} = await wsSignup.initChallenge({login: email.value});
+        if (nb64 && r && salt && !error) {
+          const {fb64} = crClientResponse(r, nb64, salt, password.value);
+          const {error} = await wsSignup.verifyLogin({login: email.value, fb64});
+          if (error) {
+            console.log('error');
+            loginFailed.value = true;
+          } else {
+            const url = deps.window.location.toString().replace(/sign(up|in)\./, 'app.');
+            deps.window.location.assign(url);
+          }
+        } else {
+          message.value = 'Login Failed';
+        }
+      } finally {
+        authenticating.value = false;
+      }
+    }
+
+    async function validate() {
+      updateFormValid();
+      if (valid) {
+        await submit();
+      }
+    }
+
+    function toggleShowPassword() {
+      showPassword.value = !showPassword.value;
+    }
+
+    const passwordInputType = computed(() => showPassword.value ? 'text' : 'password');
+
+    function appendIcon() {
+      return (
+        showPassword.value ?
+          ['far', 'eye-slash'] :
+          ['far', 'eye']
+      );
+    }
+
+    function nop(e: unknown) {
+      console.log('nop', e);
+    }
+
+    function emailChange(e: unknown) {
+      console.log('emailChange', e, email.value);
+      loginFailed.value = false;
+      wsSignup.updateLoginStatus({login: email.value});
+    }
+
+    function sendCode() {
+      // todo
+    }
+
+    return {
+      email,
+      password,
+      code,
+      valid,
+      showPassword,
+      loginFailed,
+      authenticating,
+      rules,
+      emailRules,
+      validate,
+      appendIcon,
+      toggleShowPassword,
+      passwordInputType,
+      message,
+      nop,
+      emailChange,
+      sendCode,
+      codeLoading,
+    };
+  },
+});
+
+// export default Vue.extend({
+//   name: 'signup',
   // data() {
   //   return {
   //     email: '',
@@ -230,7 +362,7 @@ export default Vue.extend({
   //     return getMessage(this.locale, this.notificationTag, {email: this.email});
   //   },
   // },
-});
+// });
 
 </script>
 <style lang="scss" scoped>

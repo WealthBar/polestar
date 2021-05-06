@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
-pushd ../ts_agnostic
-./build
-popd
 
-if [[ -e dist ]]
+if [ -e dist ]
 then
   rm -rf dist
 fi
 
-yarn tsc
+yarn tsc && yarn cache clean vue_workflow && yarn pack

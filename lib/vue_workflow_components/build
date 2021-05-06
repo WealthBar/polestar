@@ -4,4 +4,4 @@ then
   rm -rf dist
 fi
   
-yarn build
+yarn build && yarn cache clean vue_workflow_components && yarn pack

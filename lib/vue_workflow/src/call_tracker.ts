@@ -1,3 +1,4 @@
+import '@/vue_comp';
 import {ref} from "@vue/composition-api";
 
 // return type is inferred correctly.

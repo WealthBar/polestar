@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
-yarn tsc
+if [ -e dist ]
+then
+  rm -rf dist
+fi
+yarn tsc && yarn cache clean node_script && yarn pack
+

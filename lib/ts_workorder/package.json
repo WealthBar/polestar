@@ -9,6 +9,9 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "ts-node": "^9.1.1"
+  },
+  "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.10",
@@ -19,9 +22,11 @@
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "sinon": "^10.0.0",
-    "ts-node": "^9.1.1",
     "typescript": "^4.2.4",
-    "ts_agnostic": "link:../ts_agnostic"
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz"
+  },
+  "peerDependencies": {
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz"
   },
   "scripts": {
     "lint": "eslint src --ext .ts",

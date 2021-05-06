@@ -1,2 +1,6 @@
 #!/usr/bin/env bash
-yarn install
+if [ -e node_modules ]
+then
+  rm -rf node_modules
+fi
+yarn install --no-lockfile

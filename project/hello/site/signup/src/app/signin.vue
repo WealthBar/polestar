@@ -126,7 +126,7 @@ export default defineComponent({
             deps.window.location.assign(url);
           }
         } else {
-          message.value = 'Login Failed';
+          message.value = 'Sing in failed';
         }
       } finally {
         authenticating.value = false;

@@ -11,24 +11,23 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "immer": "^9.0.1",
-    "jssha": "^3.2.0",
-    "nyc": "^15.1.0",
-    "ts_agnostic": "link:../ts_agnostic",
-    "typescript": "^4.2.4"
+    "jssha": "^3.2.0"
   },
-  "dev_dependencies": {
+  "devDependencies": {
     "ts-node": "^9.1.1",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@types/mocha": "^8.0.4",
     "@types/sinon": "^9.0.9",
-    "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
     "eslint": "^7.14.0",
     "mocha": "^8.2.1",
-    "nyc": "^15.1.0",
     "sinon": "^9.2.1",
-    "ts-node": "^9.0.0",
-    "typescript": "^4.1.2"
+    "nyc": "^15.1.0",
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz",
+    "typescript": "^4.2.4"
+  },
+  "peerDependencies": {
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz"
   },
   "scripts": {
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",

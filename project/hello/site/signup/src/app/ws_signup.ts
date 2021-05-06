@@ -3,7 +3,7 @@ import {limitedMemoFCtor} from 'ts_agnostic';
 import {rateLimitEmitLast} from 'ts_browser';
 import {ws} from '@/ws';
 import {reactive} from '@vue/composition-api';
-import {callTrackerCtor} from "../../../../../../lib/vue_workflow";
+import {callTrackerCtor} from "vue_workflow";
 
 const delayTimeMilliseconds = 100;
 export type loginStatusType = { login: string; inUse: boolean; allowGoogleLogin: boolean };

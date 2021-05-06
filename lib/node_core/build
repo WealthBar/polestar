@@ -3,4 +3,5 @@ if [ -e dist ]
 then
   rm -rf dist
 fi
-yarn tsc
+yarn tsc && yarn cache clean node_core && yarn pack
+

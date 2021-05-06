@@ -27,10 +27,11 @@ export function rateLimitCtor(
   };
 }
 
-export function rateLimitEmitLastCtor(
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const rateLimitEmitLastCtor = (
   getTime: () => number,
   setTimeout: (f: () => void, ms: number) => number,
-) {
+) => {
   // rateLimitEmitLast wraps an async function f and "rate limits" calls to it
   // ensures f is called at most once every delayBetweenCallsMs
   // ensures the last call made to rateLimitedF in the last delayBetweenCallsMs is the one forwarded to callF

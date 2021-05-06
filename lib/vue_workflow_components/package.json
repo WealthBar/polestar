@@ -1,6 +1,6 @@
 {
   "name": "vue_workflow_components",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "license": "MIT",
   "main": "dist/vue_workflow_components.esm.js",
@@ -22,7 +22,7 @@
     "build:unpkg": "cross-env NODE_ENV=production rollup --config rollup/rollup.config.js --format iife"
   },
   "dependencies": {
-    "vue_workflow": "link:../vue_workflow"
+
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -49,10 +49,18 @@
     "rollup-plugin-vue": "^5.1.9",
     "typescript": "^3.8.3",
     "vue": "^2.6.12",
-    "vue-template-compiler": "^2.6.12"
+    "vue-template-compiler": "^2.6.12",
+    "vue_workflow": "file:../vue_workflow/vue_workflow-v0.1.0.tgz",
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz",
+    "ts_workorder": "file:../ts_workorder/ts_workorder-v0.1.0.tgz",
+    "node_core": "file:../node_core/node_core-v0.1.0.tgz"
   },
   "peerDependencies": {
-    "vue": "^2.6.12"
+    "vue": "^2.6.12",
+    "vue_workflow": "file:../vue_workflow/vue_workflow-v0.1.0.tgz",
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz",
+    "ts_workorder": "file:../ts_workorder/ts_workorder-v0.1.0.tgz",
+    "node_core": "file:../node_core/node_core-v0.1.0.tgz"
   },
   "engines": {
     "node": ">=12"

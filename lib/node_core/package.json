@@ -9,6 +9,17 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "axios": "^0.21.1",
+    "bcryptjs": "^2.4.3",
+    "debug": "^4.3.1",
+    "lodash": "^4.17.20",
+    "luxon": "^1.26.0",
+    "pg-promise": "^10.9.5",
+    "ts-node": "^9.1.1",
+    "ts-toolbelt": "^9.6.0",
+    "ws": "^7.4.4"
+  },
+  "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/lodash": "^4.14.168",
     "@types/luxon": "^1.25.0",
@@ -16,23 +27,15 @@
     "@types/node": "^14.14.37",
     "@types/sinon": "^9.0.9",
     "@types/ws": "^7.4.0",
-    "axios": "^0.21.1",
-    "bcryptjs": "^2.4.3",
-    "debug": "^4.3.1",
-    "immer": "^9.0.1",
-    "lodash": "^4.17.20",
-    "luxon": "^1.26.0",
-    "minimist": "^1.2.5",
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz",
+    "typescript": "^4.2.4",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
-    "pg-promise": "^10.9.5",
     "sinon": "^9.2.1",
-    "sql_to_ts": "link:../../tool/sql_to_ts",
-    "ts-node": "^9.1.1",
-    "ts-toolbelt": "^9.6.0",
-    "ts_agnostic": "link:../ts_agnostic",
-    "typescript": "^4.2.4",
-    "ws": "^7.4.4"
+    "sql_to_ts": "link:../../tool/sql_to_ts"
+  },
+  "peerDependencies": {
+    "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz"
   },
   "scripts": {
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx,.vue",

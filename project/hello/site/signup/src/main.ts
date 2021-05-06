@@ -1,5 +1,5 @@
+import '@/vue_comp';
 import Vue from 'vue';
-import '@vue/composition-api';
 import Vuetify, {VuetifyPreset} from 'vuetify';
 import 'vuetify/dist/vuetify.min.css';
 import './theme.scss';
