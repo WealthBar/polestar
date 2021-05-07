@@ -1,14 +1,20 @@
 import * as assert from 'assert';
-import {limitedMemoFCtorCtor, limitedMemoFCtorType} from './limited_memo';
+import {limitedMemoFCtor, limitedMemoFCtorCtor, limitedMemoFCtorType} from './limited_memo';
 
 describe('limitedMemoFCtorCtor', () => {
+  it('fo`realz', async () => {
+    const f = async (p: Record<string, never>) => 1;
+    const lmf = limitedMemoFCtor(1, f, p => p.toString());
+    assert.strictEqual(await lmf({}), 1);
+  });
+
   it('Memoizes', async () => {
     const getTimeStub = () => getTimeStub.returnValue
     getTimeStub.returnValue = 0
 
     // The file under test exports limitedMemoFCtor
     // but in this case we need to do it ourselves so we can control time
-    const limitedMemoFCtor:limitedMemoFCtorType = limitedMemoFCtorCtor(getTimeStub);
+    const limitedMemoFCtor: limitedMemoFCtorType = limitedMemoFCtorCtor(getTimeStub);
     const maxTimeToHoldResultForMs = 100;
     const fStub = (param) => {
       fStub.callCount++;
@@ -59,8 +65,8 @@ describe('limitedMemoFCtorCtor', () => {
     getTimeStub.returnValue = 325;
     limitedMemoF.invalidate();
     assert.deepStrictEqual(
-      limitedMemoF.internal.memos, 
-      { barKey: { r: 'computer says bar', at: 250 } },
+      limitedMemoF.internal.memos,
+      {barKey: {r: 'computer says bar', at: 250}},
     );
   });
 });
