@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-
 if [ -e dist ]
 then
   rm -rf dist
 fi
-
+rm ./*-v0.1.0.tgz
 yarn tsc && yarn cache clean vue_workflow && yarn pack

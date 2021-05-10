@@ -3,6 +3,7 @@ if [ -e dist ]
 then
   rm -rf dist
 fi
+rm ./*-v0.1.0.tgz
 yarn tsc && yarn cache clean node_workorder && yarn pack
 
 

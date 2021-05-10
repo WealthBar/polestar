@@ -11,7 +11,7 @@
               label="Email"
               required
               autocomplete="email"
-              @keyup="emailChange"
+              @keyup="updateValid"
             ></v-text-field>
           </v-col>
           <v-col cols="12">
@@ -23,6 +23,7 @@
               label="Password"
               hint="At least 8 characters"
               autocomplete="password"
+              @keyup="updateValid"
             >
               <button type="button" @click.prevent="toggleShowPassword" slot="append">
                 <font-awesome-icon :icon="appendIcon()"></font-awesome-icon>
@@ -54,7 +55,6 @@
 <script lang="ts">
 import '@/vue_comp';
 import {crClientResponse} from 'ts_browser';
-import {vFormType} from '@/app/vuetify.type';
 import {computed, defineComponent, ref, watch} from '@vue/composition-api';
 import {wsSignup} from '@/app/ws_signup';
 
@@ -98,20 +98,23 @@ export default defineComponent({
       min: (v: string) => (v && v.length >= 8) || '8 characters required',
     };
 
-    const form = ref<vFormType>(undefined);
-
-    function updateFormValid() {
+    function updateValid() {
       loginFailed.value = false;
-      valid.value = !!(form.value?.validate() && wsSignup.loginStatus?.inUse);
       wsSignup.updateLoginStatus({login: email.value});
+
+      valid.value = !!email.value
+        && !!password.value
+        && password.value.length >= 8
+        && emailRules.every(r => r(email.value) === true)
+        && wsSignup.loginStatus?.inUse;
     }
 
     async function submit() {
       authenticating.value = true;
       try {
         await wsSignup.updateLoginStatusImmediate({login: email.value});
-        updateFormValid();
-        if (!valid) {
+        updateValid();
+        if (!valid.value) {
           return;
         }
         const {nb64, r, salt, error} = await wsSignup.initChallenge({login: email.value});
@@ -134,8 +137,8 @@ export default defineComponent({
     }
 
     async function validate() {
-      updateFormValid();
-      if (valid) {
+      updateValid();
+      if (valid.value) {
         await submit();
       }
     }
@@ -158,11 +161,8 @@ export default defineComponent({
       console.log('nop', e);
     }
 
-    function emailChange(e: unknown) {
-      console.log('emailChange', e, email.value);
-      loginFailed.value = false;
-      wsSignup.updateLoginStatus({login: email.value});
-    }
+
+    validate();
 
     return {
       email,
@@ -179,7 +179,7 @@ export default defineComponent({
       passwordInputType,
       message,
       nop,
-      emailChange,
+      updateValid,
     };
   },
 });

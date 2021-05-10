@@ -20,7 +20,7 @@
     "eslint": "^7.23.0",
     "eslint-plugin-vue": "^7.8.0",
     "typescript": "^4.2.3",
-    "@vue/composition-api": "^1.0.0-rc.6",
+    "@vue/composition-api": "^1.0.0-rc.8",
     "vue": "^2.6.12",
     "vuetify": "^2.4.11",
     "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz",
@@ -28,7 +28,7 @@
     "node_core": "file:../node_core/node_core-v0.1.0.tgz"
   },
   "peerDependencies": {
-    "@vue/composition-api": "^1.0.0-rc.6",
+    "@vue/composition-api": "^1.0.0-rc.8",
     "vue": "^2.6.12",
     "vuetify": "^2.4.11",
     "ts_agnostic": "file:../ts_agnostic/ts_agnostic-v0.1.0.tgz",
