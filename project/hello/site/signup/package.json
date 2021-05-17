@@ -22,7 +22,6 @@
     "ts_browser": "file:../../../../lib/ts_browser/ts_browser-v0.1.0.tgz",
     "vue": "^2.6.12",
     "vue-router": "^3.5.1",
-    "vue-typed-mixins": "^0.2.0",
     "vue_workflow": "file:../../../../lib/vue_workflow/vue_workflow-v0.1.0.tgz",
     "vuetify": "^2.4.11"
   },

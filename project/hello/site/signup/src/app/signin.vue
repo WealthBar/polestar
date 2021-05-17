@@ -1,7 +1,7 @@
 <template>
   <v-card class="px-4">
     <v-card-text>
-      <v-form ref="form" v-model="valid" lazy-validation>
+      <v-form lazy-validation>
         <v-row>
           <v-col cols="12">
             <v-text-field
@@ -11,7 +11,6 @@
               label="Email"
               required
               autocomplete="email"
-              @keyup="updateValid"
             ></v-text-field>
           </v-col>
           <v-col cols="12">
@@ -23,7 +22,6 @@
               label="Password"
               hint="At least 8 characters"
               autocomplete="password"
-              @keyup="updateValid"
             >
               <button type="button" @click.prevent="toggleShowPassword" slot="append">
                 <font-awesome-icon :icon="appendIcon()"></font-awesome-icon>
@@ -65,7 +63,6 @@ export default defineComponent({
   setup() {
     const email = ref('');
     const password = ref('');
-    const valid = ref(false);
     const showPassword = ref(false);
     const loginFailed = ref(false);
     const authenticating = ref(false);
@@ -79,7 +76,6 @@ export default defineComponent({
     watch(
       wsSignup.callsOutstanding,
       (v, ov) => {
-        console.log('watch', v, ov);
         if (wsSignup.callsOutstanding.value > 0) {
           message.value = 'waiting...';
           return;
@@ -98,23 +94,24 @@ export default defineComponent({
       min: (v: string) => (v && v.length >= 8) || '8 characters required',
     };
 
-    function updateValid() {
+    function isValid(): boolean {
       loginFailed.value = false;
       wsSignup.updateLoginStatus({login: email.value});
 
-      valid.value = !!email.value
+      return !!email.value
         && !!password.value
         && password.value.length >= 8
         && emailRules.every(r => r(email.value) === true)
         && wsSignup.loginStatus?.inUse;
     }
 
+    const valid = computed(isValid);
+
     async function submit() {
       authenticating.value = true;
       try {
         await wsSignup.updateLoginStatusImmediate({login: email.value});
-        updateValid();
-        if (!valid.value) {
+        if (!isValid()) {
           return;
         }
         const {nb64, r, salt, error} = await wsSignup.initChallenge({login: email.value});
@@ -137,8 +134,7 @@ export default defineComponent({
     }
 
     async function validate() {
-      updateValid();
-      if (valid.value) {
+      if (isValid()) {
         await submit();
       }
     }
@@ -179,7 +175,7 @@ export default defineComponent({
       passwordInputType,
       message,
       nop,
-      updateValid,
+      updateValid: isValid,
     };
   },
 });

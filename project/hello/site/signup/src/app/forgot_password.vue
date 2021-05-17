@@ -1,7 +1,7 @@
 <template>
   <v-card class="px-4">
     <v-card-text>
-      <v-form v-model="valid" lazy-validation>
+      <v-form lazy-validation>
         <v-row>
           <v-col cols="12">
             <v-text-field
@@ -11,7 +11,6 @@
               label="Email"
               required
               autocomplete="email"
-              @keyup="updateValid"
             ></v-text-field>
           </v-col>
           <v-col cols="12">
@@ -23,7 +22,6 @@
               label="Password"
               hint="At least 8 characters"
               autocomplete="password"
-              @keyup="updateValid"
             >
               <button type="button" @click.prevent="toggleShowPassword" slot="append">
                 <font-awesome-icon :icon="appendIcon()"></font-awesome-icon>
@@ -38,7 +36,6 @@
               :rules="[rules.required]"
               type="number"
               label="Code"
-              @keyup="updateValid"
             >
             </v-text-field>
           </v-col>
@@ -82,7 +79,6 @@ export default defineComponent({
     const code = ref('');
     const codeSent = ref(false);
     const codeSentByServer = ref(false);
-    const valid = ref(false);
     const showPassword = ref(false);
     const authenticating = ref(false);
     const message = ref('');
@@ -132,19 +128,21 @@ export default defineComponent({
       return emailPasswordValid.value && !codeLoading.value;
     });
 
-    function updateValid() {
+    function isValid():boolean {
       wsSignup.updateLoginStatus({login: email.value});
-      valid.value = emailPasswordValid.value && code.value.length === 8;
+      return emailPasswordValid.value && code.value.length === 8;
     }
+
+    const valid = computed(isValid);
 
     async function submit() {
       authenticating.value = true;
-      if (!valid.value) {
+      if (!isValid()) {
         return;
       }
 
       await wsSignup.updateLoginStatusImmediate({login: email.value});
-      if (!valid.value) {
+      if (!isValid()) {
         return;
       }
 
@@ -166,8 +164,7 @@ export default defineComponent({
     }
 
     async function validate() {
-      updateValid();
-      if (valid.value) {
+      if (isValid()) {
         await submit();
       }
     }
@@ -233,7 +230,6 @@ export default defineComponent({
       message,
       sendCode,
       canSendCode,
-      updateValid,
       codeField
     };
   },

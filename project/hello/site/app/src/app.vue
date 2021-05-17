@@ -1,7 +1,12 @@
 <template>
   <div id="app">
     <div v-if="loading">
-      <b-loading is-full-page :active="loading"></b-loading>
+      <v-overlay :value="true">
+        <v-progress-circular
+          indeterminate
+          size="64"
+        ></v-progress-circular>
+      </v-overlay>
     </div>
     <div v-else>
       <div id="nav">
@@ -39,12 +44,13 @@
 
 <script lang="ts">
 
-import mixins from 'vue-typed-mixins';
-import {wsAppMixin} from '@/app/ws_app_mixin';
+import {wsApp} from '@/app/ws';
+import '@/vue_comp';
+import {defineComponent} from "@vue/composition-api";
 
 const deps = {window};
 
-export default mixins(wsAppMixin).extend({
+export default defineComponent({
   data() {
     return {
       loading: true,
@@ -52,9 +58,11 @@ export default mixins(wsAppMixin).extend({
     };
   },
   async created() {
-    const r = await this.$wsWhoAmI();
+    const r = await wsApp.whoAmI({});
     if (!r?.login) {
-      deps.window.location.assign(deps.window.location.protocol + '//' + deps.window.location.hostname.replace('app.', 'signin.'));
+      // deps.window.location.assign(deps.window.location.protocol + '//' + deps.window.location.hostname.replace('app.', 'signin.'));
+      console.log(r);
+      this.loading = false;
       return;
     }
     this.login = r.login;

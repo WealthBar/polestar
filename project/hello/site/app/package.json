@@ -10,14 +10,18 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-brands-svg-icons": "^5.15.3",
+    "@fortawesome/free-regular-svg-icons": "^5.15.3",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/vue-fontawesome": "^2.0.2",
+    "@vue/composition-api": "^1.0.0-rc.8",
     "core-js": "^3.10.0",
     "ts_agnostic": "link:../../../../lib/ts_agnostic",
     "ts_browser": "link:../../../../lib/ts_browser",
     "vue": "^2.6.12",
     "vue-router": "^3.5.1",
-    "vue-typed-mixins": "^0.2.0"
+    "vue_workflow": "file:../../../../lib/vue_workflow/vue_workflow-v0.1.0.tgz",
+    "vuetify": "^2.4.11"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
