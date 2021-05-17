@@ -17,7 +17,7 @@
             <v-text-field
               validate-on-blur
               v-model="password"
-              :rules="[rules.required, rules.min]"
+              :rules="passwordRules"
               :type="passwordInputType"
               label="Password"
               hint="At least 8 characters"
@@ -101,10 +101,10 @@ export default defineComponent({
       {deep: true},
     );
 
-    const rules = {
-      required: (v: string) => !!v || 'required',
-      min: (v: string) => (v && v.length >= 8) || '8 characters required',
-    };
+    const passwordRules = [
+      (v: string) => !!v || 'required',
+      (v: string) => (v && v.length >= 8) || '8 characters required',
+    ];
 
     const resendAllowed = ref(true);
 
@@ -118,7 +118,7 @@ export default defineComponent({
     const emailPasswordValid = computed(()=>{
       return !!email.value
         && !!password.value
-        && password.value.length >= 8
+        && passwordRules.every(r => r(password.value) === true)
         && emailRules.every(r => r(email.value) === true)
         && !wsSignup.loginStatus?.inUse;
     });
@@ -219,7 +219,7 @@ export default defineComponent({
       valid,
       showPassword,
       authenticating,
-      rules,
+      passwordRules,
       emailRules,
       validate,
       appendIcon,
