@@ -9359,13 +9359,24 @@ ts-pnp@^1.1.6:
   resolved "https://registry.yarnpkg.com/ts-pnp/-/ts-pnp-1.2.0.tgz#a500ad084b0798f1c3071af391e65912c86bca92"
   integrity sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==
 
-"ts_agnostic@link:../../../../lib/ts_agnostic":
-  version "0.0.0"
-  uid ""
+"ts_agnostic@file:../../../../lib/ts_agnostic/ts_agnostic-v0.1.0.tgz":
+  version "0.1.0"
+  resolved "file:../../../../lib/ts_agnostic/ts_agnostic-v0.1.0.tgz#b113667ab51aff508375d1adad2a998265699d53"
+  dependencies:
+    debug "^4.3.1"
+    immer "^9.0.2"
+    json-stable-stringify "^1.0.1"
+    lodash "^4.17.20"
+    luxon "^1.26.0"
+    xxhashjs "^0.2.2"
 
-"ts_browser@link:../../../../lib/ts_browser":
-  version "0.0.0"
-  uid ""
+"ts_browser@file:../../../../lib/ts_browser/ts_browser-v0.1.0.tgz":
+  version "0.1.0"
+  resolved "file:../../../../lib/ts_browser/ts_browser-v0.1.0.tgz#9e4df8168e3522780ab74134c97693c0c8b67b51"
+  dependencies:
+    bcryptjs "^2.4.3"
+    immer "^9.0.1"
+    jssha "^3.2.0"
 
 tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"

@@ -1,2 +1,4 @@
 **/crypt/** filter=git-crypt diff=git-crypt
 .gitattributes !filter !diff
+
+*.tgz diff=tar-gz binary

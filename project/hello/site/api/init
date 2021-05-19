@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
+if [ -e node_modules ]
+then
+  rm -rf node_modules
+fi
+yarn install --update-checksums > /dev/null 2>&1
 yarn install
