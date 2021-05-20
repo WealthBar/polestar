@@ -1,0 +1,12 @@
+SELECT
+  user_cad_value,
+  date
+FROM
+  billing_user_daily_cad_values biudcv
+  JOIN users u ON biudcv.user_id = u.id
+WHERE
+  u.ci_id = $(ciId)
+  AND biudcv.date >= $(asOf)::date - INTERVAL '5 day'
+ORDER BY
+  biudcv.date DESC
+LIMIT 1;

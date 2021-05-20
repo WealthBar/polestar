@@ -20,8 +20,8 @@ export type dbProviderType = <T>(
 const dbs: Record<string, dbType> = {};
 
 function parseConnectionString(connectionString: string): { connectionParameters: IConnectionParameters, key: string } {
-  const m = connectionString.match(/^postgres:\/\/((?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
-  if (!m || !m.groups?.user || !m.groups?.host || !m.groups?.database || !m.groups?.password) {
+  const m = connectionString.match(/^postgres:\/\/(?<user>[^:@]+)(:(?<password>[^@]+))?@(?<host>[^:]+):(?<port>[^/]+)\/(?<database>[^?]+)/);
+  if (!m || !m.groups?.user || !m.groups?.host || !m.groups?.database) {
     throw new Error('Invalid connection string: ' + connectionString);
   }
   const user = m.groups.user;
@@ -31,7 +31,7 @@ function parseConnectionString(connectionString: string): { connectionParameters
 
   debug('DB: %s@%s:%s/%s', user, host, port, database);
 
-  const password = m.groups.password;
+  const password = m.groups.password || '';
   const connectionParameters: IConnectionParameters = {
     application_name: 'ems',
     database,
