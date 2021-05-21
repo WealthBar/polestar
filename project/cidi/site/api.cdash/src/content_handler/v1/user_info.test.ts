@@ -59,7 +59,7 @@ const getStubs = ({db, path, params, authorization}: {
 
 describe('userInfoV1Handler', () => {
   it('currentDate', () => {
-    assert(internal.currentDate());
+    assert(internal.currentDate().match(/^\d{4}-\d{2}-\d{2}$/));
   });
 
   it('ignores non v1/user_info request', () => setup(async (db: dbType) => {
