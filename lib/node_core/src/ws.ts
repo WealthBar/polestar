@@ -24,12 +24,13 @@ export type wsType = {
 
 export function wsInit(
   wsHandlerRegistry: readonlyRegistryType<wsHandlerType>,
-  wsOnConnectHandler: (ctxWs: ctxWsType) => Promise<serializableType>,
-  wsOnCloseHandler: (ctxWs: ctxWsType) => Promise<serializableType>,
   server: Server,
   settings: serverSettingsType,
   sessionInit: reqHandlerType,
-  dbProvider: dbProviderType): wsType {
+  dbProvider: dbProviderType,
+  wsOnConnectHandler?: (ctxWs: ctxWsType) => Promise<serializableType>,
+  wsOnCloseHandler?: (ctxWs: ctxWsType) => Promise<serializableType>,
+): wsType {
   const wss = new WebSocket.Server({
     noServer: true,
     backlog: 32,
@@ -104,7 +105,7 @@ export function wsInit(
   async function onClose(ctxWs: ctxWsType) {
     if (ctxWsRegistry.remove(ctxWs.sessionId)) {
       try {
-        await wsOnCloseHandler(ctxWs);
+        await wsOnCloseHandler?.(ctxWs);
       } catch (e) {
         console.error('onClose exception:', e);
       }
@@ -128,7 +129,7 @@ export function wsInit(
     ctxWs.ws.on('close', () => onClose(ctxWs));
     ctxWs.ws.on('pong', () => heartbeat(ctxWs));
     try {
-      await wsOnConnectHandler(ctxWs);
+      await wsOnConnectHandler?.(ctxWs);
     } catch (e) {
       console.error('onConnect exception:', e);
     }

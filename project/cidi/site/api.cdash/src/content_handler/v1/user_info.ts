@@ -1,16 +1,21 @@
-import {resolvedVoid} from 'ts_agnostic';
+import {resolvedVoid, serialize} from 'ts_agnostic';
 import {ctxType, dbProviderCtxType} from 'node_core';
 import {settings} from "../../settings";
 import {value as userInfoSql} from "./user_info_sql";
 import {DateTime} from 'luxon';
 import {Object as O} from 'ts-toolbelt';
 
-export const userInfoV1HandlerCtor = (currentDate: () => string) => {
+export const userInfoV1HandlerCtor = (
+  currentDate: () => string,
+  onError: (err: string) => void,
+) => {
   /*
   assumes:
 
     ALTER TABLE users
       ADD COLUMN ci_id uuid;
+
+    CREATE INDEX users_ci_id ON users (ci_id);
 
   */
   const errForbidden = JSON.stringify({err: "Forbidden"});
@@ -20,12 +25,12 @@ export const userInfoV1HandlerCtor = (currentDate: () => string) => {
 
   const fromDbUserInfo = (row: Record<string, string>) => ({
     userCadValue: row['user_cad_value'],
-    date: row['date'],
+    asOf: row['date'],
   });
 
   const firstOrUndefined = <T>(ts: T[]) => ts.length > 0 ? ts[0] : undefined;
 
-  const prodHandler = (db: dbProviderCtxType, ciId: string) =>
+  const prodHandler = async (db: dbProviderCtxType, ciId: string) =>
     db(
       async (db) =>
         firstOrUndefined(
@@ -37,23 +42,28 @@ export const userInfoV1HandlerCtor = (currentDate: () => string) => {
         )
     );
 
-  const demoData: Record<string, string> = {};
+  const demoData: Record<string, Record<string, string>> = {
+    '00050000-4000-8000-0000-000000000001': {
+      userCadValue: '123456',
+      asOf: '2021-03-01',
+    }
+  };
 
-  const demoHandler = (_: dbProviderCtxType, ciId: string) => demoData[ciId];
+  const demoHandler = async (_: dbProviderCtxType, ciId: string) => demoData[ciId];
 
-  const bearerMapping = {
+  const bearerMapping: Record<string, (db: dbProviderCtxType, ciId: string) => Promise<Record<string, string> | undefined>> = {
     "p": prodHandler,
     "d": demoHandler
   };
   const modes = Object.keys(bearerMapping);
 
-  const userInfoV1Handler = (ctx: Pick<ctxType, 'url' | 'db'>
+  const userInfoV1Handler = async (ctx: Pick<ctxType, 'url' | 'db'>
     & O.P.Pick<ctxType, ['res', 'statusCode' | 'setHeader' | 'end']>
     & O.P.Pick<ctxType, ['req', 'headers']>) => {
     const res = ctx.res;
 
     try {
-      if (ctx.url.path !== '/v1/user_details') {
+      if (ctx.url.path !== '/v1/user_info') {
         return resolvedVoid;
       }
       res.statusCode = 200;
@@ -75,10 +85,10 @@ export const userInfoV1HandlerCtor = (currentDate: () => string) => {
         return resolvedVoid;
       }
 
-      const userInfo = bearerMapping[mode]?.(ciId);
+      const userInfo = await bearerMapping[mode](ctx.db, ciId);
 
       if (userInfo) {
-        res.end(JSON.stringify({
+        res.end(serialize({
           res: {
             userInfo
           }
@@ -87,7 +97,7 @@ export const userInfoV1HandlerCtor = (currentDate: () => string) => {
         res.end(resNoUserInfo);
       }
     } catch (e) {
-      console.error(e.toString());
+      onError(e.toString());
       res.end(errServer);
     }
     return resolvedVoid;
@@ -98,5 +108,16 @@ export const userInfoV1HandlerCtor = (currentDate: () => string) => {
 
 const currentDate = (): string => DateTime.utc().toISODate();
 
-export const internal = {currentDate};
-export const userInfoV1Handler = userInfoV1HandlerCtor(currentDate);
+// istanbul ignore next -- correct by inspection
+const onError = (err: string): void => {
+  console.error(err);
+};
+
+export const internal = {
+  currentDate,
+  onError,
+};
+export const userInfoV1Handler = userInfoV1HandlerCtor(
+  currentDate,
+  onError,
+);

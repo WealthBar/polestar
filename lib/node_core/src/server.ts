@@ -9,7 +9,7 @@ import {sessionInfoCtor, sessionInitCtor, sessionSetCtor} from './session';
 import {secureTokenCtor, secureTokenVerify} from './stoken';
 import axios from 'axios';
 import {wsInit, wsType} from './ws';
-import {readonlyRegistryType} from 'ts_agnostic';
+import {readonlyRegistryCtor, readonlyRegistryType} from 'ts_agnostic';
 import {serializableType} from 'ts_agnostic';
 import {dbProviderCtor, sessionExpire, sessionUpdate} from './db';
 
@@ -18,11 +18,15 @@ import {dbProviderCtor, sessionExpire, sessionUpdate} from './db';
 export function server(
   settings: serverSettingsType,
   handlerArray: contentHandlerType[],
-  wsHandlerRegistry: readonlyRegistryType<wsHandlerType>,
-  wsOnConnectHandler: (ctxWs: ctxWsType) => Promise<serializableType>,
-  wsOnCloseHandler: (ctxWs: ctxWsType) => Promise<serializableType>,
+  wsHandlerRegistry?: readonlyRegistryType<wsHandlerType>,
+  wsOnConnectHandler?: (ctxWs: ctxWsType) => Promise<serializableType>,
+  wsOnCloseHandler?: (ctxWs: ctxWsType) => Promise<serializableType>,
   onUserData?: gauthOnUserData,
 ): { server: Server, ws: wsType } {
+  if (!wsHandlerRegistry) {
+    wsHandlerRegistry = readonlyRegistryCtor<wsHandlerType>([]);
+  }
+
   function handleNotFound(res: ServerResponse) {
     res.statusCode = 404;
     res.setHeader('Content-Type', 'text/plain');
@@ -109,7 +113,7 @@ export function server(
 
   server.listen(+settings.port, settings.host);
 
-  const ws = wsInit(wsHandlerRegistry, wsOnConnectHandler, wsOnCloseHandler, server, settings, sessionInit, dbProvider);
+  const ws = wsInit(wsHandlerRegistry, server, settings, sessionInit, dbProvider, wsOnConnectHandler, wsOnCloseHandler);
 
   return {server, ws};
 }
