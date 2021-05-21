@@ -5,6 +5,7 @@ import {value as userInfoSql} from "./user_info_sql";
 import {DateTime} from 'luxon';
 import {Object as O} from 'ts-toolbelt';
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const userInfoV1HandlerCtor = (
   currentDate: () => string,
   onError: (err: string) => void,
@@ -106,10 +107,12 @@ export const userInfoV1HandlerCtor = (
   return userInfoV1Handler;
 }
 
-const currentDate = (): string => DateTime.utc().toISODate();
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const currentDate = () => DateTime.utc().toISODate() as string;
 
 // istanbul ignore next -- correct by inspection
-const onError = (err: string): void => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const onError = (err: string) => {
   console.error(err);
 };
 

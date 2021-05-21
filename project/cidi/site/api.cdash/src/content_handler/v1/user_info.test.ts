@@ -98,6 +98,7 @@ describe('userInfoV1Handler', () => {
     sinon.assert.called(currentDate);
     sinon.assert.calledWith(ctx.res.end, `{"res":{"userInfo":{"asOf":"2021-02-01","userCadValue":"200001"}}}`);
   }));
+
   it('handles v1/user_info request with server error', () => setup(async (db: dbType) => {
     const {
       currentDate,
@@ -210,7 +211,6 @@ describe('userInfoV1Handler', () => {
       path: '/v1/user_info',
       params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
     });
-
 
     currentDate.returns('2021-02-02');
 
