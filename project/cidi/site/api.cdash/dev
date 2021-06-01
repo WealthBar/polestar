@@ -1,11 +1,2 @@
 #!/usr/bin/env bash
-pushd ../../../../lib/ts_agnostic
-./build
-popd
-pushd ../../../../lib/node_core
-./build
-popd
-pushd ../../../../lib/node_script
-./build
-popd
 PORT=$(cat .port) yarn dev

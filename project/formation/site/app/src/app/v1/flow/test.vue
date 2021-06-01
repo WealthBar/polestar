@@ -21,7 +21,7 @@ export default defineComponent({
   props: {wf: {type: Object, required: true}},
   setup({wf}: { wf: wfType }) {
     const steps = {init, done};
-    return {wf, steps};
+    return {steps};
   },
 });
 

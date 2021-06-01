@@ -1,0 +1,2 @@
+nginx: node ./nginx/nginx.conf.js && nginx -c $(pwd)/nginx/nginx.conf
+api_cdash_cidi: cd project/cidi/site/api.cdash && ./dev

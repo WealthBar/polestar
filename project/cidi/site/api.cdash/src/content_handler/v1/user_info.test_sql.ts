@@ -1,7 +1,7 @@
 export const value = `
 INSERT INTO
   users
-  (id, ci_id)
+  (id, cidi_id)
 VALUES
   (1, '00050000-4000-8000-0000-000000000001'),
   (2, '00050000-4000-8000-0000-000000000002'),

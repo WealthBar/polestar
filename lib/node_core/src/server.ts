@@ -2,7 +2,7 @@
 // -- bootstrap
 
 import {createServer, IncomingMessage, Server, ServerResponse} from 'http';
-import {contentHandlerType, ctxType, wsHandlerType, serverSettingsType, ctxWsType} from './server.type';
+import {contentHandlerType, ctxType, wsHandlerType, serverSettingsType, ctxWsType, ctxReqType} from './server.type';
 import {ctxCtor} from './ctx';
 import {gauthContinueCtor, gauthInitCtor, gauthOnUserData} from './gauth';
 import {sessionInfoCtor, sessionInitCtor, sessionSetCtor} from './session';
@@ -22,7 +22,7 @@ export function server(
   wsOnConnectHandler?: (ctxWs: ctxWsType) => Promise<serializableType>,
   wsOnCloseHandler?: (ctxWs: ctxWsType) => Promise<serializableType>,
   onUserData?: gauthOnUserData,
-): { server: Server, ws: wsType } {
+): { server: Server, ws?: wsType } {
   if (!wsHandlerRegistry) {
     wsHandlerRegistry = readonlyRegistryCtor<wsHandlerType>([]);
   }
@@ -50,14 +50,21 @@ export function server(
     res.end(`500 Server Error:\n${e}`);
   }
 
-  const sessionInit = sessionInitCtor(settings);
-  const sessionSet = sessionSetCtor(settings);
-  const sessionInfo = sessionInfoCtor(settings);
+  let sessionInit: contentHandlerType | undefined = undefined;
+  let sessionSet: contentHandlerType | undefined = undefined;
+  let sessionInfo: contentHandlerType | undefined = undefined;
+
+  if (settings.mode) {
+    sessionInit = sessionInitCtor(settings);
+    sessionSet = sessionSetCtor(settings);
+    sessionInfo = sessionInfoCtor(settings);
+  }
 
   let gauthInit: (ctx: ctxType) => Promise<void>;
   let gauthContinue: (ctx: ctxType) => Promise<void>;
 
-  if (settings.google && onUserData) {
+  // you must set mode to use gauth
+  if (settings.google && onUserData && settings.mode) {
     gauthInit = gauthInitCtor({
         google: settings.google,
       },
@@ -72,9 +79,16 @@ export function server(
       onUserData,
       axios.post,
     );
-    ha = [sessionInit, sessionSet, gauthInit, gauthContinue, sessionInfo, ...handlerArray];
+    // istanbul ignore next: these must be defined by the logic above, but the compiler is not that smart.
+    if (sessionInit && sessionSet && sessionInfo) {
+      ha = [sessionInit, sessionSet, gauthInit, gauthContinue, sessionInfo, ...handlerArray];
+    }
   } else {
-    ha = [sessionInit, sessionSet, sessionInfo, ...handlerArray];
+    if (sessionInit && sessionSet && sessionInfo) {
+      ha = [sessionInit, sessionSet, sessionInfo, ...handlerArray];
+    } else {
+      ha = handlerArray;
+    }
   }
 
   const dbProvider = dbProviderCtor(settings.dbConnectionString);
@@ -113,7 +127,12 @@ export function server(
 
   server.listen(+settings.port, settings.host);
 
-  const ws = wsInit(wsHandlerRegistry, server, settings, sessionInit, dbProvider, wsOnConnectHandler, wsOnCloseHandler);
-
+  let ws: wsType | undefined;
+  if (settings.mode) {
+    // istanbul ignore next: these must be defined by the logic above, but the compiler is not that smart.
+    if (sessionInit) {
+      ws = wsInit(wsHandlerRegistry, server, settings, sessionInit, dbProvider, wsOnConnectHandler, wsOnCloseHandler);
+    }
+  }
   return {server, ws};
 }

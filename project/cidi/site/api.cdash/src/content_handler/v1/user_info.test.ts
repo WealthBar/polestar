@@ -87,7 +87,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
       authorization: prodAuthorization,
     });
 
@@ -108,7 +108,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
       authorization: prodAuthorization,
     });
 
@@ -129,7 +129,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
       authorization: prodAuthorization,
     });
 
@@ -149,7 +149,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-100000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-100000000001']] as [string, string][],
       authorization: prodAuthorization,
     });
 
@@ -161,7 +161,7 @@ describe('userInfoV1Handler', () => {
     sinon.assert.calledWith(ctx.res.end, `{"res":{}}`);
   }));
 
-  it('handles v1/user_info request missing ci_id', () => setup(async (db: dbType) => {
+  it('handles v1/user_info request missing cidi_id', () => setup(async (db: dbType) => {
     const {
       currentDate,
       ctx,
@@ -169,7 +169,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ciid', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidiId', '00050000-4000-8000-0000-000000000001']] as [string, string][],
       authorization: prodAuthorization,
     });
 
@@ -189,7 +189,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
       authorization: demoAuthorization,
     });
 
@@ -209,7 +209,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
     });
 
     currentDate.returns('2021-02-02');
@@ -228,7 +228,7 @@ describe('userInfoV1Handler', () => {
     } = getStubs({
       db,
       path: '/v1/user_info',
-      params: [['ci_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
+      params: [['cidi_id', '00050000-4000-8000-0000-000000000001']] as [string, string][],
       authorization: 'Bearer Bob',
     });
 

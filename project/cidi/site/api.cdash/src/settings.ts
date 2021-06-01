@@ -21,8 +21,7 @@ export const settings: serverSettingsType & { bearerMapping: typeof bearerMappin
   host: process.env.HOST || '0.0.0.0',
   port: process.env.PORT || 8000,
   schema: 'http://', // we should be able to get the forwarder to tell us this.
-  mode: 'client',
-  appUrl: `app.formation.${process.env.HOST_POSTFIX}`,
+  appUrl: `api.cdash.cidi.${process.env.HOST_POSTFIX}`,
   dbConnectionString: process.env.DB_WB_CLIENT_URL || 'postgres://postgres@localhost:5432/wealthbar_dev',
   secret: process.env.CDASH_SECRET,
   bearerMapping,

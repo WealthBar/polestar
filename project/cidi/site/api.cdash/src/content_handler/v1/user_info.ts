@@ -14,9 +14,9 @@ export const userInfoV1HandlerCtor = (
   assumes:
 
     ALTER TABLE users
-      ADD COLUMN ci_id uuid;
+      ADD COLUMN cidi_id uuid;
 
-    CREATE INDEX users_ci_id ON users (ci_id);
+    CREATE INDEX users_cidi_id ON users (cidi_id);
 
   */
   const errForbidden = JSON.stringify({err: "Forbidden"});
@@ -31,12 +31,12 @@ export const userInfoV1HandlerCtor = (
 
   const firstOrUndefined = <T>(ts: T[]) => ts.length > 0 ? ts[0] : undefined;
 
-  const prodHandler = async (db: dbProviderCtxType, ciId: string) =>
+  const prodHandler = async (db: dbProviderCtxType, cidiId: string) =>
     db(
       async (db) =>
         firstOrUndefined(
           (
-            await db.any(userInfoSql, {ciId, asOf: currentDate()})
+            await db.any(userInfoSql, {cidiId, asOf: currentDate()})
           ).map(
             fromDbUserInfo
           )
@@ -50,9 +50,9 @@ export const userInfoV1HandlerCtor = (
     }
   };
 
-  const demoHandler = async (_: dbProviderCtxType, ciId: string) => demoData[ciId];
+  const demoHandler = async (_: dbProviderCtxType, cidiId: string) => demoData[cidiId];
 
-  const bearerMapping: Record<string, (db: dbProviderCtxType, ciId: string) => Promise<Record<string, string> | undefined>> = {
+  const bearerMapping: Record<string, (db: dbProviderCtxType, cidiId: string) => Promise<Record<string, string> | undefined>> = {
     "p": prodHandler,
     "d": demoHandler
   };
@@ -79,14 +79,14 @@ export const userInfoV1HandlerCtor = (
       }
 
       const mode = settings.bearerMapping[token].toLowerCase();
-      const ciId = ctx.url.params.find(x => x[0] === 'ci_id')?.[1];
+      const cidiId = ctx.url.params.find(x => x[0] === 'cidi_id')?.[1];
 
-      if (!mode || !ciId || !modes.includes(mode)) {
+      if (!mode || !cidiId || !modes.includes(mode)) {
         res.end(errInvalid);
         return resolvedVoid;
       }
 
-      const userInfo = await bearerMapping[mode](ctx.db, ciId);
+      const userInfo = await bearerMapping[mode](ctx.db, cidiId);
 
       if (userInfo) {
         res.end(serialize({
